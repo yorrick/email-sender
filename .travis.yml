@@ -1,0 +1,8 @@
+language: scala
+scala:
+   - 2.10.3
+script: sbt test
+
+services:
+  - mongodb
+#  - memcached

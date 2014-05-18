@@ -53,8 +53,11 @@ object SmsService extends Controller {
 
   def list = Action.async {
   	implicit val timeout = Timeout(1 second) 
-  	// TODO handle timeout errors
-	val futureSmsList = smsStorage ? ListSms
+  	
+	val futureSmsList = smsStorage.ask(ListSms) recover {
+	  case _ =>	List()
+	} 	
+
 	futureSmsList.map(list => Ok("Got result: " + list))
   }
 
