@@ -4,9 +4,11 @@ import play.api.mvc.{Action, Controller}
 import play.api.Logger
 import play.libs.Akka
 import akka.actor._
+import play.api.data._
+import play.api.data.Forms._
 
 
-case class Sms(val from: String, val content: String)
+case class Sms(val from: String, val to: String, val content: String)
 case class StoreSms(val sms: Sms)
 
 
@@ -28,19 +30,30 @@ object Application extends Controller {
     Ok(views.html.index("Hello Play Framework"))
   }
 
-  // TODO write a body parser
-  def sms = Action { request =>
-  	Logger.debug(s"Got this request ${request}")
-  	Logger.debug(s"Got those data ${request.body}")
-  	
-  	// TODO build sms object with a Form to check data validity
-  	val sms = Sms("06123456789", "Toto")
-  	
-	val smsStorage = Akka.system.actorOf(Props[SmsStorage])
-	smsStorage ! StoreSms(sms)
+  def sms = Action { implicit request =>
+  	val smsForm = Form(
+	  mapping(
+	    "From" -> text,
+	    "To" -> text,
+	    "Body" -> text
+	  )(Sms.apply)(Sms.unapply)
+	)
 
-	// TODO answer with TwiML instead
-    Ok("Hello there!")
+	smsForm.bindFromRequest.fold(
+	  formWithErrors => {
+	  	val message = s"Could not bind the form: ${formWithErrors}"
+	  	Logger.debug(message)
+	    BadRequest(message)
+	  },
+	  sms => {
+	  	Logger.debug(s"Built sms object $sms")
+    	val smsStorage = Akka.system.actorOf(Props[SmsStorage])
+		smsStorage ! StoreSms(sms)
+
+		// TODO answer with TwiML instead
+    	Ok("Hello there!")
+	  }
+	)
   }
 
 }
