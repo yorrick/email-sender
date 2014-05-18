@@ -41,7 +41,7 @@ class ApplicationSpec extends Specification {
       val response = route(request).get
 
       status(response) must equalTo(OK)
-      contentAsString(response) must contain ("Hello")
+      contentAsString(response) must contain ("Message")
 
       /*val data = new MultipartFormData(
         Map(

@@ -3,8 +3,8 @@
 # ~~~~
 
 GET     /                           controllers.Application.index()
-POST    /sms/						controllers.Application.sms()
-GET     /sms-list/					controllers.Application.smsList()
+POST    /sms/						controllers.SmsService.receive()
+GET     /sms/					    controllers.SmsService.list()
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
