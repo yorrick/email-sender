@@ -42,25 +42,6 @@ class ApplicationSpec extends Specification {
 
       status(response) must equalTo(OK)
       contentAsString(response) must contain ("Message")
-
-      /*val data = new MultipartFormData(
-        Map(
-          ("param1" -> Seq("test-1")), 
-          ("param2" -> Seq("test-2"))
-        ), 
-        List(
-          FilePart("payload", "message", Some("Content-Type: multipart/form-data"), 
-            play.api.libs.Files.TemporaryFile(new java.io.File("/tmp/pepe.txt")))
-        ), 
-        List(), 
-        List()
-      )
-
-      val Some(result) = routeAndCall(FakeRequest(POST, "/sms/", FakeHeaders(), data))
-      */
-
-      //withFormUrlEncodedBody
-      //val sms = route(FakeRequest(POST, "/sms/")).post
     }
 
   }
