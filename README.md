@@ -11,9 +11,9 @@ heroku config:set java_opts="-Xms384m -Xmx384m -Xss512k -XX:+UseCompressedOops -
 Heroku timezone:
 heroku config:add TZ="Europe/Paris"
 
+
 TODO 
  - listing page
- - monitoring + logging (see heroku sink)
  - send email with mailgun
  - use mongodb to store sms
  - use websockets to update message list
