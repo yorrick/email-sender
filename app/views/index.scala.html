@@ -1,13 +1,13 @@
 @(message: String)
 
-@main("Welcome to Play Framework") {
+@main("SMS sender") {
 
     <div class="well">
         <h1>@message</h1>
     </div>
 
 	<button type="button" class="btn btn-lg btn-default">
-		<a href="@routes.Assets.at("static-pages/listing.html")">Liste des numéros</a>
+		<a href="@routes.Assets.at("static-pages/listing.html")">Historique des SMS</a>
 	</button>
 
 }

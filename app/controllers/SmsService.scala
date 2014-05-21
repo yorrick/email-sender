@@ -1,6 +1,7 @@
 package controllers
 
 import scala.concurrent.duration._
+import scala.concurrent.Future
 
 import play.api.mvc.{Action, Controller}
 import play.api.Logger
@@ -50,17 +51,18 @@ object SmsService extends Controller {
 	    <Message></Message>
 	</Response>
 
-
+  // GET for browser
   def list = Action.async {
   	implicit val timeout = Timeout(1 second) 
   	
-	val futureSmsList = smsStorage.ask(ListSms) recover {
-	  case _ =>	List()
-	} 	
+	val futureSmsList = smsStorage.ask(ListSms).mapTo[List[Sms]] recover {
+	  case _ =>	List[Sms]()
+	}
 
-	futureSmsList.map(list => Ok("Got result: " + list))
+	futureSmsList.map(smsList => Ok(views.html.sms.list(smsList)))
   }
 
+  // POST for twilio when we receive an SMS
   def receive = Action { implicit request =>
 	smsForm.bindFromRequest.fold(
 	  formWithErrors => {
