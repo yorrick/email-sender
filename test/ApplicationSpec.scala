@@ -44,6 +44,15 @@ class ApplicationSpec extends Specification {
       contentAsString(response) must contain ("Message")
     }
 
+    "render the sms list page" in new WithApplication {
+      val home = route(FakeRequest(GET, "/sms/")).get
+
+      status(home) must equalTo(OK)
+      contentType(home) must beSome.which(_ == "text/html")
+      contentAsString(home) must contain ("List")
+    }
+
+
   }
 
 
