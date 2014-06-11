@@ -23,7 +23,7 @@ class ApplicationSpec extends Specification {
     }
 
     "render the index page" in new WithApplication {
-      val home = route(FakeRequest(GET, "/")).get
+      val home = controllers.Application.index()(FakeRequest())
 
       status(home) must equalTo(OK)
       contentType(home) must beSome.which(_ == "text/html")
@@ -38,18 +38,18 @@ class ApplicationSpec extends Specification {
         "Body" -> "hello toto"
       )
 
-      val response = route(request).get
+      val response = controllers.SmsService.receive()(request)
 
       status(response) must equalTo(OK)
       contentAsString(response) must contain ("Message")
     }
 
     "render the sms list page" in new WithApplication {
-      val home = route(FakeRequest(GET, "/sms/")).get
+      val response = controllers.SmsService.list()(FakeRequest())
 
-      status(home) must equalTo(OK)
-      contentType(home) must beSome.which(_ == "text/html")
-      contentAsString(home) must contain ("List")
+      status(response) must equalTo(OK)
+      contentType(response) must beSome.which(_ == "text/html")
+      contentAsString(response) must contain ("List")
     }
 
 
