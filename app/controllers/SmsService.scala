@@ -53,6 +53,7 @@ object SmsService extends Controller {
 
   // GET for browser
   def list = Action.async {
+  	import scala.language.postfixOps
   	implicit val timeout = Timeout(1 second) 
   	
 	val futureSmsList = smsStorage.ask(ListSms).mapTo[List[Sms]] recover {
