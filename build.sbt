@@ -30,6 +30,8 @@ ScoverageKeys.highlighting := {
   else false
 }
 
+ScoverageKeys.excludedPackages in ScoverageCompile := "<empty>;Reverse.*;.*AuthService.*;models\.data\..*"
+
 CoverallsPlugin.coverallsSettings
 
 coverallsToken := "fTcPVrhbSaPBVjGYlhRkGX8DqU8lQHrFf"
