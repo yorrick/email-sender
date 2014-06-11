@@ -20,6 +20,7 @@ heroku config:set SBT_CLEAN=true
 
 
 TODO 
+ - See why we get an error about sbt configuration (http://www.scala-sbt.org/0.13.5/docs/Launcher/GettingStarted.html#overview) when trying to run sbt on heroku
  - listing page
  - send email with mailgun
  - use mongodb to store sms

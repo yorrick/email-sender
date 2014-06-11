@@ -30,7 +30,7 @@ ScoverageKeys.highlighting := {
   else false
 }
 
-ScoverageKeys.excludedPackages in ScoverageCompile := "<empty>;Reverse.*;.*AuthService.*;models\.data\..*"
+ScoverageKeys.excludedPackages in ScoverageCompile := "<empty>;Reverse.*;"
 
 CoverallsPlugin.coverallsSettings
 
