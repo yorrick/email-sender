@@ -15,6 +15,9 @@ heroku config:set java_opts="-Xms384m -Xmx384m -Xss512k -XX:+UseCompressedOops -
 Heroku timezone:
 heroku config:add TZ="Europe/Paris"
 
+Enable clean compiles (https://devcenter.heroku.com/articles/scala-support#clean-builds):
+heroku config:set SBT_CLEAN=true
+
 
 TODO 
  - listing page
