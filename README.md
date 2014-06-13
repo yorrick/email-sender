@@ -18,6 +18,9 @@ heroku config:add TZ="Europe/Paris"
 Enable clean compiles (https://devcenter.heroku.com/articles/scala-support#clean-builds):
 heroku config:set SBT_CLEAN=true
 
+Set version of scala buildpack
+heroku config:set BUILDPACK_URL=https://github.com/heroku/heroku-buildpack-scala/tree/slugc-v301
+
 
 TODO 
  - See why we get an error about sbt configuration (http://www.scala-sbt.org/0.13.5/docs/Launcher/GettingStarted.html#overview) when trying to run sbt on heroku
