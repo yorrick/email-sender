@@ -19,7 +19,7 @@ Enable clean compiles (https://devcenter.heroku.com/articles/scala-support#clean
 heroku config:set SBT_CLEAN=true
 
 Set version of scala buildpack
-heroku config:set BUILDPACK_URL=https://github.com/heroku/heroku-buildpack-scala/tree/slugc-v301
+heroku config:set BUILDPACK_URL=https://github.com/heroku/heroku-buildpack-scala#slugc-v301
 
 
 TODO 
