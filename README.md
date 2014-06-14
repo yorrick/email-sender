@@ -18,8 +18,8 @@ heroku config:add TZ="Europe/Paris"
 Enable clean compiles (https://devcenter.heroku.com/articles/scala-support#clean-builds):
 heroku config:set SBT_CLEAN=true
 
-Set version of scala buildpack
-heroku config:set BUILDPACK_URL=https://github.com/heroku/heroku-buildpack-scala#slugc-v301
+To run sbt console, do not use heroku sbt script:
+java -Xmx1024M -Dfile.encoding=UTF8 -Duser.home=/app/.sbt_home/  -Dsbt.log.noformat=true -Divy.fault.ivy.user.dir="/app/.sbt_home/.ivy2" -jar .sbt_home/bin/sbt-launch.jar console
 
 
 TODO 
