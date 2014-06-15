@@ -11,6 +11,7 @@ Send emails using sms - scala / play 2 application
 To run sbt console, do not use heroku sbt script:
 java -Xmx1024M -Dfile.encoding=UTF8 -Duser.home=/app/.sbt_home/  -Dsbt.log.noformat=true -Divy.fault.ivy.user.dir="/app/.sbt_home/.ivy2" -jar .sbt_home/bin/sbt-launch.jar console
 
+
 Rebuild app on heroku without push any new commit
 heroku plugins:install https://github.com/heroku/heroku-repo.git
 heroku repo:rebuild
