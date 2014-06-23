@@ -1,3 +1,4 @@
+import java.util.concurrent.Future
 import java.util.logging.Logger
 
 import com.github.athieriot.{EmbedConnection, CleanAfterExample}
@@ -23,14 +24,29 @@ import reactivemongo.api.Cursor
 
 
 /**
- * Add your spec here.
- * You can mock out a whole application including requests, plugins etc.
- * For more information, consult the wiki.
+ * Provides a connection and a collection to a test
  */
-@RunWith(classOf[JUnitRunner])
-class SmsSpec extends Specification with EmbedConnection {
-  sequential
-//  isolated
+trait InitDB {
+  self: WithApplication =>
+
+    val collectionName: String
+    def db: reactivemongo.api.DB = ReactiveMongoPlugin.db
+    def collection: JSONCollection = db.collection[JSONCollection](collectionName)
+
+    override def around[T: AsResult](t: => T): Result = {
+      before
+      Helpers.running(app)(AsResult.effectively(t))
+    }
+
+    def before: Any
+
+}
+
+/**
+ * Remove all logs from embed mongodb
+ */
+trait QuietEmbedConnection extends EmbedConnection {
+  self: Specification =>
 
   override def embedMongoDBVersion(): Version.Main = { Version.Main.V2_6 }
 
@@ -42,47 +58,55 @@ class SmsSpec extends Specification with EmbedConnection {
     .processOutput(ProcessOutput.getDefaultInstanceSilent())
     .build();
   override lazy val runtime =  MongodStarter.getInstance(runtimeConfig)
+}
 
-  trait InitializedDB extends mutable.Before {
-    self: WithApplication =>
 
-    def db: reactivemongo.api.DB = ReactiveMongoPlugin.db
-    def collection: JSONCollection = db.collection[JSONCollection]("smslist")
-
-    def before = println("DB initialization TOOOOOOOOOOOOOOOOOOOO")
-  }
+/**
+ * Add your spec here.
+ * You can mock out a whole application including requests, plugins etc.
+ * For more information, consult the wiki.
+ */
+@RunWith(classOf[JUnitRunner])
+class SmsSpec extends Specification with QuietEmbedConnection with PlaySpecification {
+  sequential
+//  isolated
 
   step {
     println("Before class")
   }
 
+  trait SmsInitDB extends InitDB { self: WithApplication =>
+    val collectionName = "smsList"
+    def before = println("Should initialize DB here")
+  }
+
   "Sms module" should {
 
-    "Accept post data for sms" in new WithApplication with InitializedDB {
+    "Accept post data for sms" in new WithApplication with SmsInitDB {
 
-      running(FakeApplication()) {
-        import JsonFormats._
+      val request = FakeRequest(POST, "/sms/").withFormUrlEncodedBody(
+        "To" -> "666666666",
+        "From" -> "77777777",
+        "Body" -> "hello toto"
+      )
 
-        val cursor: Cursor[Sms] = collection.
-          // find all sms
-          find(Json.obj()).
-          // perform the query and get a cursor of JsObject
-          cursor[Sms]
+      val response = controllers.SmsService.receive()(request)
 
-        // gather all the JsObjects in a list
-        println(s"Sms list: ${cursor.collect[List]()}")
+      status(response) must equalTo(OK)
+      contentAsString(response) must contain("Message")
 
-        val request = FakeRequest(POST, "/sms/").withFormUrlEncodedBody(
-          "To" -> "666666666",
-          "From" -> "77777777",
-          "Body" -> "hello toto"
-        )
+      import JsonFormats._
+      val cursor: Cursor[Sms] = collection.
+        // find all sms
+        find(Json.obj()).
+        // perform the query and get a cursor of JsObject
+        cursor[Sms]
+//      val future : Future[List[Sms]] = cursor.collect[List]()
+      val future = cursor.collect[List]()
+      val result = await(future)
 
-        val response = controllers.SmsService.receive()(request)
-
-        status(response) must equalTo(OK)
-        contentAsString(response) must contain("Message")
-      }
+      println(db)
+      println(s"TOTO: $result")
     }
 
   }
