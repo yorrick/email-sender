@@ -5,39 +5,65 @@ import scala.concurrent.Future
 
 import play.api.mvc.{Action, Controller}
 import play.api.Logger
-import play.libs.Akka
 import play.api.data._
 import play.api.data.Forms._
 import play.api.libs.concurrent.Execution.Implicits._
+import play.api.Play.current
+import play.api.libs.json._
+
+import play.libs.Akka
+
+import play.modules.reactivemongo.ReactiveMongoPlugin
+import play.modules.reactivemongo.json.collection.JSONCollection
 
 import akka.actor._
 import akka.pattern.ask
 import akka.util.Timeout
 
+import reactivemongo.api._
 
+
+// TODO add creation date
 case class Sms(val from: String, val to: String, val content: String)
-case class StoreSms(val sms: Sms)
-case class ListSms()
+
+object JsonFormats {
+  import play.api.libs.json.Json
+  import play.api.data._
+  import play.api.data.Forms._
+
+  // Generates Writes and Reads for sms thanks to Json Macros
+  implicit val smsFormat = Json.format[Sms]
+}
 
 
-class SmsStorage extends Actor {
+object SmsStorage {
 
-  private var smsList = List[Sms]()
+  def db: reactivemongo.api.DB = ReactiveMongoPlugin.db
+  def collection: JSONCollection = db.collection[JSONCollection]("smslist")
 
-  def receive = {
-    case StoreSms(sms) =>
-      Logger.debug(s"Storing this sms: $sms")
-      smsList = smsList :+ sms
-    case ListSms =>
-      sender ! smsList
+  def storeSms(sms: Sms) {
+    import JsonFormats._
+    Logger.debug(s"Storing this sms: $sms")
+    collection.insert(sms)
+  }
+
+  def listSms() = {
+    import JsonFormats._
+    // let's do our query
+    val cursor: Cursor[Sms] = collection.
+      // find all sms
+      find(Json.obj()).
+      // perform the query and get a cursor of JsObject
+      cursor[Sms]
+
+    // gather all the JsObjects in a list
+    cursor.collect[List]()
   }
 
 }
 
 
 object SmsService extends Controller {
-
-  val smsStorage = Akka.system.actorOf(Props[SmsStorage])
 
   val smsForm = Form(
 	  mapping(
@@ -56,11 +82,13 @@ object SmsService extends Controller {
   	import scala.language.postfixOps
   	implicit val timeout = Timeout(1 second) 
   	
-	val futureSmsList = smsStorage.ask(ListSms).mapTo[List[Sms]] recover {
-	  case _ =>	List[Sms]()
-	}
+    val futureSmsList = SmsStorage.listSms().mapTo[List[Sms]] recover {
+      case error @ _ =>
+        Logger.debug(s"Could not get sms list: $error")
+        List[Sms]()
+    }
 
-	futureSmsList.map(smsList => Ok(views.html.sms.list(smsList)))
+    futureSmsList.map(smsList => Ok(views.html.sms.list(smsList)))
   }
 
   // POST for twilio when we receive an SMS
@@ -73,7 +101,7 @@ object SmsService extends Controller {
 	  },
 	  sms => {
 	  	Logger.debug(s"Built sms object $sms")
-		smsStorage ! StoreSms(sms)
+		  SmsStorage.storeSms(sms)
 
     	Ok(emptyTwiMLResponse)
 	  }

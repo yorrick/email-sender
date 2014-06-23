@@ -11,11 +11,15 @@ scalaVersion := Option(System.getProperty("scala.version")).getOrElse("2.10.4")
 
 scalacOptions ++= Seq("-feature", "-deprecation")
 
+resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
+
 libraryDependencies ++= Seq(
   "org.webjars" %% "webjars-play" % "2.2.0", 
   "org.webjars" % "bootstrap" % "3.1.1",
   "org.webjars" % "jquery" % "2.1.1",
-  "com.newrelic.agent.java" % "newrelic-agent" % "3.6.0"
+  "com.newrelic.agent.java" % "newrelic-agent" % "3.6.0",
+  "org.reactivemongo" %% "play2-reactivemongo" % "0.10.5.akka23-SNAPSHOT",
+  "com.github.athieriot" %% "specs2-embedmongo" % "0.7.0"
 )
 
 /// Scoverage plugin
@@ -35,3 +39,4 @@ ScoverageKeys.excludedPackages in ScoverageCompile := "<empty>;Reverse.*;"
 CoverallsPlugin.coverallsSettings
 
 coverallsToken := "fTcPVrhbSaPBVjGYlhRkGX8DqU8lQHrFf"
+
