@@ -50,5 +50,5 @@ You can update heroku configuration by running
 heroku config --app yorrick-email-sender-staging > docs/heroku-config-staging && heroku config --app yorrick-email-sender > docs/heroku-config-prod
 ```
 
- - [Staging](https://raw.githubusercontent.com/yorrick/email-sender/documentation/docs/heroku-config-staging)
- - [Production](https://raw.githubusercontent.com/yorrick/email-sender/documentation/docs/heroku-config-prod)
+ - [Staging](https://raw.githubusercontent.com/yorrick/email-sender/master/docs/heroku-config-staging)
+ - [Production](https://raw.githubusercontent.com/yorrick/email-sender/master/docs/heroku-config-prod)
