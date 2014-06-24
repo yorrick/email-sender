@@ -9,4 +9,4 @@ Send emails using sms - scala / play 2 application
 
 This app is deployed on heroku using [a custom scala buildpack](https://github.com/yorrick/heroku-buildpack-scala).
 
-Project documentation is [here](https://github.com/yorrick/email-sender/blob/documentation/docs/documentation.md).
+Project documentation is [here](https://github.com/yorrick/email-sender/blob/master/docs/documentation.md).
