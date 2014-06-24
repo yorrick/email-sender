@@ -18,8 +18,7 @@ libraryDependencies ++= Seq(
   "org.webjars" % "bootstrap" % "3.1.1",
   "org.webjars" % "jquery" % "2.1.1",
   "com.newrelic.agent.java" % "newrelic-agent" % "3.6.0",
-  "org.reactivemongo" %% "play2-reactivemongo" % "0.10.5.akka23-SNAPSHOT",
-  "com.github.athieriot" %% "specs2-embedmongo" % "0.7.0"
+  "org.reactivemongo" %% "play2-reactivemongo" % "0.10.5.akka23-SNAPSHOT"
 )
 
 /// Scoverage plugin

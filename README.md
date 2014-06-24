@@ -22,7 +22,8 @@ Test sms reception
 curl --data "From=11111111&To=222222222&Body=hello you" http://localhost:9000/sms/
 
 
-TODO 
+TODO
+ - use papertrail for logging
  - send email with mailgun
  - use mongodb to store sms
  - use websockets to update message list
