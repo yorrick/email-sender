@@ -1,0 +1,13 @@
+=== yorrick-email-sender-staging Config Vars
+BUILDPACK_URL:                 https://github.com/yorrick/heroku-buildpack-scala#master
+DATABASE_URL:                  postgres://hhndrxvnclmjsc:6DqrHRGmpu7myQpK2fUtCMZqW-@ec2-54-243-47-196.compute-1.amazonaws.com:5432/db286l0oodl1ae
+DOWNSTREAM_APP:                yorrick-email-sender
+HEROKU_POSTGRESQL_CRIMSON_URL: postgres://hhndrxvnclmjsc:6DqrHRGmpu7myQpK2fUtCMZqW-@ec2-54-243-47-196.compute-1.amazonaws.com:5432/db286l0oodl1ae
+NEW_RELIC_LICENSE_KEY:         16d921258b9f8cdf2ad97d53f6d4ec6228764b54
+NEW_RELIC_LOG:                 stdout
+PATH:                          .jdk/bin:.sbt_home/bin:/usr/local/bin:/usr/bin:/bin
+REPO:                          /app/.sbt_home/.ivy2/cache
+SBT_CLEAN:                     true
+SBT_OPTS:                      -Xmx384m -Xss512k -XX:+UseCompressedOops
+TZ:                            America/Montreal
+java_opts:                     -Xms384m -Xmx384m -Xss512k -XX:+UseCompressedOops -Dnewrelic.bootstrap_classpath=true -javaagent:target/universal/stage/lib/com.newrelic.agent.java.newrelic-agent-3.6.0.jar -Dnewrelic.config.file=target/universal/stage/conf/newrelic/newrelic-staging.yml
