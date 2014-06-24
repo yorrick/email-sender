@@ -13,13 +13,17 @@ import org.specs2.mutable._
 import org.specs2.runner._
 import org.specs2.specification.{Scope, AfterExample}
 
-import play.api.libs.iteratee.Enumerator
-import play.api.libs.json.{Format, Json}
+import play.api.libs.iteratee.{Iteratee, Enumerator}
+import play.api.libs.json.{JsValue, Format, Json}
 import play.api.{Application, Logger}
 import play.api.test._
 import play.api.test.Helpers._
 import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.collection.JSONCollection
+import play.modules.reactivemongo.json.BSONFormats
+import reactivemongo.api.collections.default.BSONCollection
+import reactivemongo.api.{Collection, Cursor}
+
 import reactivemongo.bson.BSONDocument
 import reactivemongo.core.commands.LastError
 
@@ -93,7 +97,7 @@ abstract class WithEnv(val app: FakeApplication = FakeApplication(),
 }
 
 
-class InitDB[T](val data: Tuple3[String, List[T], Format[T]]*) extends Around with Scope {
+class InitDB(val data: Tuple2[String, List[JsValue]]*) extends Around with Scope {
 
   import scala.concurrent.duration._
   import play.api.libs.concurrent.Execution.Implicits._
@@ -116,34 +120,25 @@ class InitDB[T](val data: Tuple3[String, List[T], Format[T]]*) extends Around wi
     val timeout = 20.seconds
     val db: reactivemongo.api.DB = ReactiveMongoPlugin.db
 
-    data.foreach {
-      case (collectionName, initialObjects, format) =>
-        Logger.warn(s"Initializing collection $collectionName with data $initialObjects")
-        val collection: JSONCollection = db.collection[JSONCollection](collectionName)
+    data foreach {
+      case (collectionName, jsonDocuments) =>
+        val bsonDocuments = jsonDocuments map {BSONFormats.BSONDocumentFormat.reads(_).get}
+
+        val collection: BSONCollection = db(collectionName)
 
         // recover in case the collection does not exist
-        val dropFuture = collection.drop() recover {
-          case t @ _ =>
-            false
+        val dropFuture: Future[Boolean] = collection.drop() recover {
+          case t @ _ => false
         }
         Await.result(dropFuture, timeout)
 
-        Logger.warn(s"Inserting data in DB")
-        implicit val implicitFormat = format
-//        val bsonObjects = initialObjects.map(obj => format.writes(obj))
-        val bsonObjects: List[BSONDocument] = initialObjects.map(obj => format.writes(obj).asInstanceOf[BSONDocument])
-
-        val insertFuture: Future[Int] = collection.bulkInsert(Enumerator.enumerate(bsonObjects)).mapTo[Int] recover {
-          case t @ _ =>
-            Logger.warn(s"Recovered $t")
-            0
+        val insertFuture: Future[Int] = collection.bulkInsert(Enumerator.enumerate(bsonDocuments)).mapTo[Int] recover {
+          case t @ _ => 0
         }
-        Logger.warn(s"Inserting data in DB DONE")
-        val inserted = Await.result(insertFuture, timeout)
 
-        Logger.warn(s"Inserting data in DB DONE")
-        if (inserted < initialObjects.length) {
-          throw new Exception(s"Could not insert all initial data of collection $initialObjects: inserted $inserted instead of ${initialObjects.length}")
+        val inserted = Await.result(insertFuture, timeout)
+        if (inserted < bsonDocuments.length) {
+          throw new Exception(s"Could not insert all initial data of collection $bsonDocuments: inserted $inserted instead of ${bsonDocuments.length}")
         }
     }
 
@@ -153,7 +148,7 @@ class InitDB[T](val data: Tuple3[String, List[T], Format[T]]*) extends Around wi
 
 
 @RunWith(classOf[JUnitRunner])
-class SmsSpec extends Specification with PlaySpecification {
+class SmsSpec extends Specification {
   sequential
 //  isolated
 
@@ -161,62 +156,32 @@ class SmsSpec extends Specification with PlaySpecification {
     Logger.info("Before class")
   }
 
-  val smsData = ("smsList", List(Sms("11111111", "222222222", "some text")), JsonFormats.smsFormat)
-
-//  def setup(app: Application) {
-//    Logger.info("------------------------------------------INIT DATABASE")
-//    implicit val application = app
-//
-//    val db: reactivemongo.api.DB = ReactiveMongoPlugin.db
-//    val collection: JSONCollection = db.collection[JSONCollection]("smslist")
-//
-//    val dropFuture = collection.drop()
-//    await(dropFuture)
-//
-//    import JsonFormats._
-//    val sms = Sms("11111111", "222222222", "some text")
-//
-//    val insertFuture = collection.insert(sms).mapTo[LastError] map { lastError =>
-//      if (lastError.inError == true) {
-//        val message = s"Could not save the sms: ${lastError.message}"
-//        Logger.warn(message)
-//      } else {
-//        Logger.warn(s"Ok: $lastError")
-//      }
-//    }
-//
-//    await(insertFuture)
-//  }
+  val smsList = List(Sms("11111111", "222222222", "some text"))
+  val bsonList: List[JsValue] = smsList map {JsonFormats.smsFormat.writes(_)}
+  val data = ("smslist", bsonList)
 
   "Sms module" should {
 
-//    "render the sms list page" in new WithEnv(setup = setup) {
-    "render the sms list page" in new InitDB(data=smsData) {
-
-      Logger.info("------------------------------------------Start test XXXXXXXXXXXXXXX")
+    "render the sms list page" in new InitDB(data) {
       val response = controllers.SmsService.list()(FakeRequest())
 
       status(response) must equalTo(OK)
       contentType(response) must beSome.which(_ == "text/html")
-      contentAsString(response) must contain ("List")
-
-      Logger.info(s"------------------------------------------${contentAsString(response)}")
+      contentAsString(response) must contain ("some text")
     }
 
-//    "Accept post data for sms" in new WithApplication with SmsInitDB {
-//      Logger.info("------------------------------------------Start test XXXXXXXXXXXXXXX")
-//
-//      val request = FakeRequest(POST, "/sms/").withFormUrlEncodedBody(
-//        "To" -> "666666666",
-//        "From" -> "77777777",
-//        "Body" -> "hello toto"
-//      )
-//
-//      val response = controllers.SmsService.receive()(request)
-//
-//      status(response) must equalTo(OK)
-//      contentAsString(response) must contain("Message")
-//
+    "Accept post data for sms" in new InitDB(data) {
+      val request = FakeRequest(POST, "/sms/").withFormUrlEncodedBody(
+        "To" -> "666666666",
+        "From" -> "77777777",
+        "Body" -> "hello toto"
+      )
+
+      val response = controllers.SmsService.receive()(request)
+
+      status(response) must equalTo(OK)
+      contentAsString(response) must contain("Message")
+
 //      import JsonFormats._
 //      val cursor: Cursor[Sms] = collection.
 //        // find all sms
@@ -227,7 +192,7 @@ class SmsSpec extends Specification with PlaySpecification {
 //      val result = await(future)
 //
 //      result should have size (1)
-//    }
+    }
 
   }
 
