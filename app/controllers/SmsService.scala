@@ -1,5 +1,6 @@
 package controllers
 
+import akka.actor.{Actor, ActorRef, Props}
 import models.{JsonFormats, Sms}
 import reactivemongo.core.commands.LastError
 import com.github.nscala_time.time.Imports.DateTime
@@ -7,7 +8,7 @@ import com.github.nscala_time.time.Imports.DateTime
 import scala.concurrent.duration._
 import scala.concurrent.Future
 
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.{WebSocket, Action, Controller}
 import play.api.Logger
 import play.api.data._
 import play.api.data.Forms._
@@ -112,4 +113,26 @@ object SmsService extends Controller {
     }
   }
 
+  /**
+   * Handles the sms updates websocket.
+   */
+  def updatesSocket = WebSocket.acceptWithActor[String, String] { request => out =>
+    SmsUpdatesWebSocketActor.props(out)
+  }
+
+  def updatesJs() = Action { implicit request =>
+    Ok(views.js.sms.updates())
+  }
+
+}
+
+object SmsUpdatesWebSocketActor {
+  def props(out: ActorRef) = Props(new SmsUpdatesWebSocketActor(out))
+}
+
+class SmsUpdatesWebSocketActor(out: ActorRef) extends Actor {
+  def receive = {
+    case msg: String =>
+      out ! ("I received your message: " + msg)
+  }
 }
