@@ -1,4 +1,7 @@
 import models.{Sms, JsonFormats}
+
+import com.github.nscala_time.time.Imports.DateTime
+
 import org.junit.runner.RunWith
 import org.specs2.mutable._
 import org.specs2.runner._
@@ -18,7 +21,7 @@ class SmsSpec extends Specification {
     Logger.info("Before class")
   }
 
-  val smsList = List(Sms("11111111", "222222222", "some text"))
+  val smsList = List(Sms("11111111", "222222222", "some text", DateTime.now))
   val bsonList: List[JsValue] = smsList map {JsonFormats.smsFormat.writes(_)}
   val data = ("smslist", bsonList)
 
