@@ -2,6 +2,7 @@ package controllers
 
 import models.{JsonFormats, Sms}
 import reactivemongo.core.commands.LastError
+import com.github.nscala_time.time.Imports.DateTime
 
 import scala.concurrent.duration._
 import scala.concurrent.Future
@@ -55,7 +56,8 @@ object SmsService extends Controller {
 	  mapping(
 	    "From" -> text,
 	    "To" -> text,
-	    "Body" -> text
+	    "Body" -> text,
+      "creationDate" -> ignored(DateTime.now)
 	  )(Sms.apply)(Sms.unapply))
 
   val emptyTwiMLResponse = """<?xml version="1.0" encoding="UTF-8"?>""" + 
