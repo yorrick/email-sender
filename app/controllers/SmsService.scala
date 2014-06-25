@@ -40,6 +40,8 @@ object SmsStorage {
     val cursor: Cursor[Sms] = collection.
       // find all sms
       find(Json.obj()).
+      // sort by creation date
+      sort(Json.obj("creationDate" -> -1)).
       // perform the query and get a cursor of JsObject
       cursor[Sms]
 
