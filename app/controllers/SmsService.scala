@@ -1,7 +1,6 @@
 package controllers
 
-import java.io.Writer
-
+import models.{JsonFormats, Sms}
 import reactivemongo.core.commands.LastError
 
 import scala.concurrent.duration._
@@ -21,21 +20,6 @@ import play.modules.reactivemongo.json.collection.JSONCollection
 import akka.util.Timeout
 
 import reactivemongo.api._
-
-import scala.util.{Failure, Success}
-
-
-// TODO add creation date
-case class Sms(val from: String, val to: String, val content: String)
-
-object JsonFormats {
-  import play.api.libs.json.Json
-  import play.api.data._
-  import play.api.data.Forms._
-
-  // Generates Writes and Reads for sms thanks to Json Macros
-  implicit val smsFormat = Json.format[Sms]
-}
 
 
 object SmsStorage {

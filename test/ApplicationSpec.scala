@@ -1,3 +1,4 @@
+import models.{Sms, JsonFormats}
 import org.junit.runner.RunWith
 import org.specs2.mutable._
 import org.specs2.runner._
@@ -6,8 +7,6 @@ import play.api.libs.json.{JsValue}
 import play.api.Logger
 import play.api.test._
 import play.api.test.Helpers._
-
-import controllers.{JsonFormats, Sms}
 
 
 @RunWith(classOf[JUnitRunner])
