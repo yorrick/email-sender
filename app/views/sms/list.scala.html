@@ -3,31 +3,27 @@
 
 @main("SMS sender") {
 
-<div class="page-header">
-<h1>Liste des numéros</h1>
-</div>
+    <div class="page-header">
+    <h1>Message list</h1>
+    </div>
 
-<div class="list-group">
+    <div class="list-group">
 
-@if(smsList.isEmpty) {
-  	  <a href="#" class="list-group-item">
-		  <h4 class="list-group-item-heading">No SMS sent</h4>
-		  <p class="list-group-item-text"></p>
-	  </a>
-} else {
-  @for(sms <- smsList) {
-	  <a href="#" class="list-group-item">
-		  <h4 class="list-group-item-heading">@sms.from</h4>
-		  <p class="list-group-item-text">@sms.content</p>
-	  </a>
-  }
-}
-
-
-
-<div class="well">
-	<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas sed diam eget risus varius blandit sit amet non magna. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent commodo cursus magna, vel scelerisque nisl consectetur et. Cras mattis consectetur purus sit amet fermentum. Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit. Aenean lacinia bibendum nulla sed consectetur.</p>
-</div>	
-
+    @if(smsList.isEmpty) {
+          <a href="#" class="list-group-item">
+              <h4 class="list-group-item-heading">No SMS sent</h4>
+              <p class="list-group-item-text"></p>
+          </a>
+    } else {
+      @for(sms <- smsList) {
+          <a href="#" class="list-group-item clearfix">
+              <h4 class="list-group-item-heading">@sms.from</h4>
+              <span class="list-group-item-text">@sms.content</span>
+              <span class="pull-right">
+                  <button class="btn btn-xs btn-info">@sms.formattedCreationDate</button>
+              </span>
+          </a>
+      }
+    }
 
 }

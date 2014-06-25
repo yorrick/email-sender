@@ -1,6 +1,9 @@
 package models
 
 import com.github.nscala_time.time.Imports._
+import org.joda.time.PeriodType
+import org.joda.time.format.PeriodFormatterBuilder
+
 
 object JsonFormats {
   import play.api.libs.json.Json
@@ -9,5 +12,7 @@ object JsonFormats {
   implicit val smsFormat = Json.format[Sms]
 }
 
-// TODO add creation date
-case class Sms(val from: String, val to: String, val content: String, val creationDate: DateTime)
+
+case class Sms(val from: String, val to: String, val content: String, val creationDate: DateTime) {
+  val formattedCreationDate = creationDate.toString("yyyy-MM-dd' 'HH:mm:ss")
+}
