@@ -1,5 +1,6 @@
 package models
 
+import com.github.nscala_time.time.Imports._
 
 object JsonFormats {
   import play.api.libs.json.Json
@@ -9,4 +10,4 @@ object JsonFormats {
 }
 
 // TODO add creation date
-case class Sms(val from: String, val to: String, val content: String)
+case class Sms(val from: String, val to: String, val content: String, val creationDate: DateTime)
