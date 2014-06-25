@@ -1,4 +1,0 @@
-=== yorrick-email-sender Config Vars
-MONGOHQ_URL:          mongodb://heroku:nFsD5zrpb_qmNXClkyFJbawtQnvWmTkPnI_4nJm9UeDX60clrQBP2FavhuAhyzBlo0i3eAipCHsLy-R6oqCHng@kahana.mongohq.com:10094/app25414421
-PAPERTRAIL_API_TOKEN: Xx5ILI38wDPH9n5lCB5
-java_opts:            -Xms384m -Xmx384m -Xss512k -XX:+UseCompressedOops -Dnewrelic.bootstrap_classpath=true -javaagent:target/universal/stage/lib/com.newrelic.agent.java.newrelic-agent-3.6.0.jar -Dnewrelic.config.file=target/universal/stage/conf/newrelic/newrelic-production.yml
