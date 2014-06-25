@@ -1,8 +1,8 @@
 package controllers
 
-import java.io.Writer
-
+import models.{JsonFormats, Sms}
 import reactivemongo.core.commands.LastError
+import com.github.nscala_time.time.Imports.DateTime
 
 import scala.concurrent.duration._
 import scala.concurrent.Future
@@ -22,21 +22,6 @@ import akka.util.Timeout
 
 import reactivemongo.api._
 
-import scala.util.{Failure, Success}
-
-
-// TODO add creation date
-case class Sms(val from: String, val to: String, val content: String)
-
-object JsonFormats {
-  import play.api.libs.json.Json
-  import play.api.data._
-  import play.api.data.Forms._
-
-  // Generates Writes and Reads for sms thanks to Json Macros
-  implicit val smsFormat = Json.format[Sms]
-}
-
 
 object SmsStorage {
 
@@ -55,6 +40,8 @@ object SmsStorage {
     val cursor: Cursor[Sms] = collection.
       // find all sms
       find(Json.obj()).
+      // sort by creation date
+      sort(Json.obj("creationDate" -> -1)).
       // perform the query and get a cursor of JsObject
       cursor[Sms]
 
@@ -71,7 +58,8 @@ object SmsService extends Controller {
 	  mapping(
 	    "From" -> text,
 	    "To" -> text,
-	    "Body" -> text
+	    "Body" -> text,
+      "creationDate" -> ignored(DateTime.now)
 	  )(Sms.apply)(Sms.unapply))
 
   val emptyTwiMLResponse = """<?xml version="1.0" encoding="UTF-8"?>""" + 
