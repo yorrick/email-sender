@@ -1,5 +1,7 @@
 package controllers
 
+import play.api.mvc.WebSocket.FrameFormatter
+
 import scala.collection.mutable
 import scala.concurrent.duration._
 import scala.concurrent.Future
@@ -113,17 +115,20 @@ object SmsService extends Controller {
         BadRequest(message)
       } else {
         // send notification
-        smsUpdatesMaster ! Broadcast(sms.toString)
+        smsUpdatesMaster ! Broadcast(sms)
         Ok(emptyTwiMLResponse)
       }
     }
 
   }
 
+  import JsonFormats.smsFormat
+  implicit val smsFrameFormatter = FrameFormatter.jsonFrame[Sms]
+
   /**
    * Handles the sms updates websocket.
    */
-  def updatesSocket = WebSocket.acceptWithActor[String, String] { request => outActor =>
+  def updatesSocket = WebSocket.acceptWithActor[JsValue, Sms] { request => outActor =>
     val inActor = SmsUpdatesWebSocketActor.props(outActor, smsUpdatesMaster)
     smsUpdatesMaster ! SmsUpdatesMaster.Connect(outActor)
 
@@ -140,7 +145,7 @@ object SmsService extends Controller {
 object SmsUpdatesMaster {
   case class Connect(val outActor: ActorRef)
   case class Disconnect(val outActor: ActorRef)
-  case class Broadcast(val message: String)
+  case class Broadcast(val sms: Sms)
 }
 
 
@@ -156,9 +161,9 @@ class SmsUpdatesMaster extends Actor {
       Logger.debug("Websocket connection has closed")
       webSocketOutActors -= actor
       Logger.debug(s"webSocketOutActors: $webSocketOutActors")
-    case Broadcast(message) =>
-      Logger.debug(s"Broadcast message $message")
-      webSocketOutActors foreach {outActor => outActor ! message}
+    case Broadcast(sms) =>
+      Logger.debug(s"Broadcast sms $sms")
+      webSocketOutActors foreach {outActor => outActor ! sms}
   }
 }
 
