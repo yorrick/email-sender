@@ -61,15 +61,7 @@ object SmsService extends Controller {
   // create the master actor once
   val smsUpdatesMaster = Akka.system.actorOf(Props[SmsUpdatesMaster], name="smsUpdatesMaster")
 
-  val smsForm = Form(
-	  mapping(
-	    "From" -> text,
-	    "To" -> text,
-	    "Body" -> text,
-      "creationDate" -> ignored(DateTime.now)
-	  )(Sms.apply)(Sms.unapply))
-
-  val emptyTwiMLResponse = """<?xml version="1.0" encoding="UTF-8"?>""" + 
+  val emptyTwiMLResponse = """<?xml version="1.0" encoding="UTF-8"?>""" +
 	<Response>
 	    <Message></Message>
 	</Response>
@@ -91,6 +83,13 @@ object SmsService extends Controller {
 
   // POST for twilio when we receive an SMS
   def receive = Action.async { implicit request =>
+    val smsForm = Form(
+      mapping(
+        "From" -> text,
+        "To" -> text,
+        "Body" -> text,
+        "creationDate" -> ignored(DateTime.now)
+      )(Sms.apply)(Sms.unapply))
 
     smsForm.bindFromRequest.fold(
       formWithErrors => handleFormError(formWithErrors),

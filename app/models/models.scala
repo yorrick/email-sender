@@ -1,8 +1,6 @@
 package models
 
 import com.github.nscala_time.time.Imports._
-import org.joda.time.PeriodType
-import org.joda.time.format.PeriodFormatterBuilder
 
 
 object JsonFormats {

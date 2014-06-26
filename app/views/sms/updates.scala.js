@@ -11,8 +11,6 @@ $(function() {
     var receiveEvent = function(event) {
         var data = JSON.parse(event.data)
 
-        console.log("------------------------" + data.@CreationMapping.jsonName);
-
         var smsElement = $(elementTemplate).html(function(index, html){
             var replaced = html.replace("@FromMapping.templateTag", data.@FromMapping.jsonName);
             var replaced = replaced.replace("@ToMapping.templateTag", data.@ToMapping.jsonName);
@@ -20,9 +18,7 @@ $(function() {
             var replaced = replaced.replace("@CreationMapping.templateTag", data.@CreationMapping.jsonName);
 
             return replaced;
-        });
-
-        $('#smsList').prepend(smsElement)
+        }).hide().prependTo('#smsList').fadeIn("slow");
     }
 
 
