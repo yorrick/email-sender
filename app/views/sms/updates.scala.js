@@ -1,57 +1,31 @@
+@import SmsDisplay._
+
 @()(implicit r: RequestHeader)
 
 $(function() {
 
     var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket
     var chatSocket = new WS("@routes.SmsService.updatesSocket().webSocketURL()")
+    var elementTemplate = '@views.html.sms.listElement(SmsDisplay(FromMapping.templateTag, ToMapping.templateTag, ContentMapping.templateTag, CreationMapping.templateTag))'
 
     var receiveEvent = function(event) {
         var data = JSON.parse(event.data)
 
-        // Handle errors
-        if(data.error) {
-            chatSocket.close()
-            $("#onError span").text(data.error)
-            $("#onError").show()
-            return
-        } else {
-            $("#onChat").show()
-        }
+        console.log("------------------------" + data.@CreationMapping.jsonName);
 
-        // Create the message element
-        var el = $('<div class="message"><span></span><p></p></div>')
-        $("span", el).text(data.user)
-        $("p", el).text(data.message)
-        $(el).addClass(data.kind)
-        $('#messages').append(el)
+        var smsElement = $(elementTemplate).html(function(index, html){
+            var replaced = html.replace("@FromMapping.templateTag", data.@FromMapping.jsonName);
+            var replaced = replaced.replace("@ToMapping.templateTag", data.@ToMapping.jsonName);
+            var replaced = replaced.replace("@ContentMapping.templateTag", data.@ContentMapping.jsonName);
+            var replaced = replaced.replace("@CreationMapping.templateTag", data.@CreationMapping.jsonName);
 
-        // Update the members list
-        $("#members").html('')
-        $(data.members).each(function() {
-            var li = document.createElement('li');
-            li.textContent = this;
-            $("#members").append(li);
-        })
+            return replaced;
+        });
+
+        $('#smsList').prepend(smsElement)
     }
 
+
     chatSocket.onmessage = receiveEvent
-
-
-//    var sendMessage = function() {
-//        chatSocket.send(JSON.stringify(
-//            {text: $("#talk").val()}
-//        ))
-//        $("#talk").val('')
-//    }
-//
-//    var handleReturnKey = function(e) {
-//        if(e.charCode == 13 || e.keyCode == 13) {
-//            e.preventDefault()
-//            sendMessage()
-//        }
-//    }
-
-//    $("#talk").keypress(handleReturnKey)
-
 
 })

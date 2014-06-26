@@ -24,7 +24,7 @@ import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.collection.JSONCollection
 
 import controllers.SmsUpdatesMaster.{Broadcast, Disconnect, Connect}
-import models.{JsonFormats, Sms}
+import models.{SmsDisplay, JsonFormats, Sms}
 
 
 object SmsStorage {
@@ -81,7 +81,7 @@ object SmsService extends Controller {
   	
     val futureSmsList = SmsStorage.listSms().mapTo[List[Sms]]
 
-    futureSmsList.map(smsList => Ok(views.html.sms.list(smsList))) recover {
+    futureSmsList.map(smsList => Ok(views.html.sms.list(smsList map {SmsDisplay.fromSms(_)}))) recover {
       case error @ _ =>
         val message = s"Could not get sms list: $error"
         Logger.warn(message)
@@ -122,13 +122,13 @@ object SmsService extends Controller {
 
   }
 
-  import JsonFormats.smsFormat
-  implicit val smsFrameFormatter = FrameFormatter.jsonFrame[Sms]
+  import JsonFormats.smsDisplayFormat
+  implicit val smsFrameFormatter = FrameFormatter.jsonFrame[SmsDisplay]
 
   /**
    * Handles the sms updates websocket.
    */
-  def updatesSocket = WebSocket.acceptWithActor[JsValue, Sms] { request => outActor =>
+  def updatesSocket = WebSocket.acceptWithActor[JsValue, SmsDisplay] { request => outActor =>
     val inActor = SmsUpdatesWebSocketActor.props(outActor, smsUpdatesMaster)
     smsUpdatesMaster ! SmsUpdatesMaster.Connect(outActor)
 
@@ -163,7 +163,7 @@ class SmsUpdatesMaster extends Actor {
       Logger.debug(s"webSocketOutActors: $webSocketOutActors")
     case Broadcast(sms) =>
       Logger.debug(s"Broadcast sms $sms")
-      webSocketOutActors foreach {outActor => outActor ! sms}
+      webSocketOutActors foreach {outActor => outActor ! SmsDisplay.fromSms(sms)}
   }
 }
 

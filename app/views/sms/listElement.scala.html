@@ -1,0 +1,11 @@
+@(sms: SmsDisplay)
+
+<a href="#" class="list-group-item clearfix">
+    <h4 class="list-group-item-heading">@sms.from</h4>
+    <span class="list-group-item-text">@sms.content</span>
+    <span class="pull-right">
+        @if(!sms.creationDate.isEmpty) {
+            <button class="btn btn-xs btn-info">@sms.creationDate</button>
+        }
+    </span>
+</a>
