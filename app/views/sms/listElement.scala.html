@@ -1,10 +1,10 @@
-@(sms: SmsDisplay)
+@(sms: SmsDisplay, empty: Boolean = false)
 
-<a href="#" class="list-group-item clearfix">
+<a href="#" class="list-group-item clearfix @if(empty) {empty-sms}">
     <h4 class="list-group-item-heading">@sms.from</h4>
     <span class="list-group-item-text">@sms.content</span>
     <span class="pull-right">
-        @if(!sms.creationDate.isEmpty) {
+        @if(!empty) {
             <button class="btn btn-xs btn-info">@sms.creationDate</button>
         }
     </span>

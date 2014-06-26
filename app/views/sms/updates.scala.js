@@ -18,7 +18,10 @@ $(function() {
             var replaced = replaced.replace("@CreationMapping.templateTag", data.@CreationMapping.jsonName);
 
             return replaced;
-        }).hide().prependTo('#smsList').fadeIn("slow");
+        }).hide().prependTo('#smsList')
+
+        $(".empty-sms").fadeOut("slow").remove();
+        smsElement.fadeIn("slow");
     }
 
 
