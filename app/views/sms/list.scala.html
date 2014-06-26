@@ -1,4 +1,6 @@
-@(smsList: List[Sms])
+@import org.joda.time.DateTime
+
+@(smsList: List[SmsDisplay])
 
 
 @main("SMS sender") {
@@ -7,23 +9,16 @@
     <h1>Message list</h1>
     </div>
 
-    <div class="list-group">
+    <div id="smsList" class="list-group">
 
     @if(smsList.isEmpty) {
-          <a href="#" class="list-group-item">
-              <h4 class="list-group-item-heading">No SMS sent</h4>
-              <p class="list-group-item-text"></p>
-          </a>
+          @views.html.sms.listElement(SmsDisplay("", "", "No sms sent", ""), empty = true)
     } else {
       @for(sms <- smsList) {
-          <a href="#" class="list-group-item clearfix">
-              <h4 class="list-group-item-heading">@sms.from</h4>
-              <span class="list-group-item-text">@sms.content</span>
-              <span class="pull-right">
-                  <button class="btn btn-xs btn-info">@sms.formattedCreationDate</button>
-              </span>
-          </a>
+          @views.html.sms.listElement(sms)
       }
     }
+
+    <script type="text/javascript" charset="utf-8" src="@routes.SmsService.updatesJs()"></script>
 
 }
