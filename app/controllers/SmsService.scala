@@ -113,8 +113,15 @@ object SmsService extends Controller {
         Logger.warn(message)
         BadRequest(message)
       } else {
-        // send notification
-        smsUpdatesMaster ! Broadcast(sms)
+        // TODO send notification to redis
+//        Jedis j = play.Play.application().plugin(RedisPlugin.class).jedisPool().getResource();
+//        try {
+//          //All messages are pushed through the pub/sub channel
+//          j.publish(ChatRoom.CHANNEL, Json.stringify(Json.toJson(talk)));
+//        } finally {
+//          play.Play.application().plugin(RedisPlugin.class).jedisPool().returnResource(j);
+//        }
+        smsUpdatesMaster ! Broadcast(SmsDisplay.fromSms(sms))
         Ok(emptyTwiMLResponse)
       }
     }
@@ -144,8 +151,22 @@ object SmsService extends Controller {
 object SmsUpdatesMaster {
   case class Connect(val outActor: ActorRef)
   case class Disconnect(val outActor: ActorRef)
-  case class Broadcast(val sms: Sms)
+  case class Broadcast(val smsDisplay: SmsDisplay)
 }
+
+
+// TODO plug this actor to redis channel
+////subscribe to the message channel
+//Akka.system().scheduler().scheduleOnce(
+//Duration.create(10, TimeUnit.MILLISECONDS),
+//new Runnable() {
+//public void run() {
+//Jedis j = play.Play.application().plugin(RedisPlugin.class).jedisPool().getResource();
+//j.subscribe(new MyListener(), CHANNEL);
+//}
+//},
+//Akka.system().dispatcher()
+//);
 
 
 class SmsUpdatesMaster extends Actor {
@@ -160,9 +181,9 @@ class SmsUpdatesMaster extends Actor {
       Logger.debug("Websocket connection has closed")
       webSocketOutActors -= actor
       Logger.debug(s"webSocketOutActors: $webSocketOutActors")
-    case Broadcast(sms) =>
-      Logger.debug(s"Broadcast sms $sms")
-      webSocketOutActors foreach {outActor => outActor ! SmsDisplay.fromSms(sms)}
+    case Broadcast(smsDisplay) =>
+      Logger.debug(s"Broadcast smsDisplay $smsDisplay")
+      webSocketOutActors foreach {outActor => outActor ! smsDisplay}
   }
 }
 
@@ -170,6 +191,7 @@ class SmsUpdatesMaster extends Actor {
 object SmsUpdatesWebSocketActor {
   def props(out: ActorRef, master: ActorRef) = Props(new SmsUpdatesWebSocketActor(out, master))
 }
+
 
 class SmsUpdatesWebSocketActor(val outActor: ActorRef, val master: ActorRef) extends Actor {
   def receive = {
