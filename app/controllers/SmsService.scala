@@ -1,27 +1,28 @@
 package controllers
 
-import akka.actor.{Actor, ActorRef, Props}
-import models.{JsonFormats, Sms}
-import reactivemongo.core.commands.LastError
-import com.github.nscala_time.time.Imports.DateTime
-
+import scala.collection.mutable
 import scala.concurrent.duration._
 import scala.concurrent.Future
+
+import akka.actor._
+import akka.util.Timeout
+import com.github.nscala_time.time.Imports.DateTime
+import reactivemongo.core.commands.LastError
+import reactivemongo.api._
 
 import play.api.mvc.{WebSocket, Action, Controller}
 import play.api.Logger
 import play.api.data._
 import play.api.data.Forms._
-import play.api.libs.concurrent.Execution.Implicits._
 import play.api.Play.current
 import play.api.libs.json._
-
+import play.api.libs.concurrent.Execution.Implicits._
+import play.api.libs.concurrent.Akka
 import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.collection.JSONCollection
 
-import akka.util.Timeout
-
-import reactivemongo.api._
+import controllers.SmsUpdatesMaster.{Broadcast, Disconnect, Connect}
+import models.{JsonFormats, Sms}
 
 
 object SmsStorage {
@@ -54,6 +55,9 @@ object SmsStorage {
 
 
 object SmsService extends Controller {
+
+  // create the master actor once
+  val smsUpdatesMaster = Akka.system.actorOf(Props[SmsUpdatesMaster], name="smsUpdatesMaster")
 
   val smsForm = Form(
 	  mapping(
@@ -108,16 +112,22 @@ object SmsService extends Controller {
         Logger.warn(message)
         BadRequest(message)
       } else {
+        // send notification
+        smsUpdatesMaster ! Broadcast(sms.toString)
         Ok(emptyTwiMLResponse)
       }
     }
+
   }
 
   /**
    * Handles the sms updates websocket.
    */
-  def updatesSocket = WebSocket.acceptWithActor[String, String] { request => out =>
-    SmsUpdatesWebSocketActor.props(out)
+  def updatesSocket = WebSocket.acceptWithActor[String, String] { request => outActor =>
+    val inActor = SmsUpdatesWebSocketActor.props(outActor, smsUpdatesMaster)
+    smsUpdatesMaster ! SmsUpdatesMaster.Connect(outActor)
+
+    inActor
   }
 
   def updatesJs() = Action { implicit request =>
@@ -126,13 +136,44 @@ object SmsService extends Controller {
 
 }
 
-object SmsUpdatesWebSocketActor {
-  def props(out: ActorRef) = Props(new SmsUpdatesWebSocketActor(out))
+
+object SmsUpdatesMaster {
+  case class Connect(val outActor: ActorRef)
+  case class Disconnect(val outActor: ActorRef)
+  case class Broadcast(val message: String)
 }
 
-class SmsUpdatesWebSocketActor(out: ActorRef) extends Actor {
+
+class SmsUpdatesMaster extends Actor {
+  private val webSocketOutActors = mutable.ListBuffer[ActorRef]()
+
+  def receive = {
+    case Connect(actor) =>
+      Logger.debug("Opened a websocket connection")
+      webSocketOutActors += actor
+      Logger.debug(s"webSocketOutActors: $webSocketOutActors")
+    case Disconnect(actor) =>
+      Logger.debug("Websocket connection has closed")
+      webSocketOutActors -= actor
+      Logger.debug(s"webSocketOutActors: $webSocketOutActors")
+    case Broadcast(message) =>
+      Logger.debug(s"Broadcast message $message")
+      webSocketOutActors foreach {outActor => outActor ! message}
+  }
+}
+
+
+object SmsUpdatesWebSocketActor {
+  def props(out: ActorRef, master: ActorRef) = Props(new SmsUpdatesWebSocketActor(out, master))
+}
+
+class SmsUpdatesWebSocketActor(val outActor: ActorRef, val master: ActorRef) extends Actor {
   def receive = {
     case msg: String =>
-      out ! ("I received your message: " + msg)
+      outActor ! ("I received your message: " + msg)
+  }
+
+  override def postStop() = {
+    master ! SmsUpdatesMaster.Disconnect(outActor)
   }
 }
