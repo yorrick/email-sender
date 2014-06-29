@@ -29,3 +29,4 @@ object SmsDisplay {
 }
 
 case class SmsDisplay(val from: String, val to: String, val content: String, val creationDate: String)
+
