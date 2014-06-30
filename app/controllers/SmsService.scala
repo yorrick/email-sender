@@ -1,10 +1,6 @@
 package controllers
 
-import java.net.InetSocketAddress
-
-import play.modules.rediscala.RedisPlugin
-import redis.RedisClient
-import redis.actors.RedisSubscriberActor
+import play.modules.rediscala.{RedisPluginSubscriberActor, RedisPlugin}
 import redis.api.pubsub.{PMessage, Message}
 
 import scala.collection.mutable
@@ -19,7 +15,7 @@ import reactivemongo.core.commands.LastError
 import reactivemongo.api._
 
 import play.api.mvc.{WebSocket, Action, Controller}
-import play.api.{PlayException, Logger}
+import play.api.Logger
 import play.api.data._
 import play.api.data.Forms._
 import play.api.Play.current
@@ -152,17 +148,17 @@ object SmsUpdatesMaster {
   implicit val system = Akka.system
   val redisClient = RedisPlugin.client()
 
-  val channels = Seq("smsList")
-  val patterns = Seq("*")
-
   // create SubscribeActor instance
-  Akka.system.actorOf(Props(classOf[SubscribeActor], smsUpdatesMaster, channels)
+  Akka.system.actorOf(Props(classOf[SubscribeActor], smsUpdatesMaster, Seq("smsList"))
     .withDispatcher("rediscala.rediscala-client-worker-dispatcher"))
-
-
 }
 
 
+/**
+ * Consumes messages from redis
+ * @param master
+ * @param channels
+ */
 class SubscribeActor(val master: ActorRef, channels: Seq[String]) extends RedisPluginSubscriberActor(channels, Nil) {
   def onMessage(message: Message) {
     Logger.debug(s"message received: $message")
@@ -171,20 +167,6 @@ class SubscribeActor(val master: ActorRef, channels: Seq[String]) extends RedisP
   }
 
   def onPMessage(pmessage: PMessage) {}
-}
-
-
-/**
- * This actor uses play application configuration to create the InetSocketAddress
- * @param channels
- * @param patterns
- */
-abstract class RedisPluginSubscriberActor(channels: Seq[String] = Nil, patterns: Seq[String] = Nil)
-    extends RedisSubscriberActor(new InetSocketAddress("localhost", 6379), channels, patterns) {
-
-  // use application configuration
-  val redisConfig = RedisPlugin.parseConf(current.configuration)
-  override val address = new InetSocketAddress(redisConfig._1, redisConfig._2)
 }
 
 

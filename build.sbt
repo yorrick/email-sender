@@ -23,7 +23,7 @@ libraryDependencies ++= Seq(
   "com.newrelic.agent.java" % "newrelic-agent" % "3.6.0",
   "org.reactivemongo" %% "play2-reactivemongo" % "0.10.5.akka23-SNAPSHOT",
   "com.github.nscala-time" %% "nscala-time" % "1.2.0",
-  "fr.njin" %% "play2-rediscala" % "1.0.2" exclude("org.scala-stm", "scala-stm_2.10.0")
+  "fr.njin" %% "play2-rediscala" % "1.0.3" exclude("org.scala-stm", "scala-stm_2.10.0")
 )
 
 
