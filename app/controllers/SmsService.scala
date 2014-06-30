@@ -3,6 +3,7 @@ package controllers
 import java.net.InetSocketAddress
 
 import play.modules.rediscala.RedisPlugin
+import redis.RedisClient
 import redis.actors.RedisSubscriberActor
 import redis.api.pubsub.{PMessage, Message}
 
@@ -18,7 +19,7 @@ import reactivemongo.core.commands.LastError
 import reactivemongo.api._
 
 import play.api.mvc.{WebSocket, Action, Controller}
-import play.api.Logger
+import play.api.{PlayException, Logger}
 import play.api.data._
 import play.api.data.Forms._
 import play.api.Play.current
@@ -147,22 +148,43 @@ object SmsUpdatesMaster {
   // create the master actor once
   val smsUpdatesMaster = Akka.system.actorOf(Props[SmsUpdatesMaster], name="smsUpdatesMaster")
 
+
+  implicit val system = Akka.system
+  val redisClient = RedisPlugin.client()
+
   val channels = Seq("smsList")
   val patterns = Seq("*")
-  val address = new InetSocketAddress("localhost", 6379)
+
   // create SubscribeActor instance
-  Akka.system.actorOf(Props(classOf[SubscribeActor], channels, patterns).withDispatcher("rediscala.rediscala-client-worker-dispatcher"))
+  Akka.system.actorOf(Props(classOf[SubscribeActor], smsUpdatesMaster, channels)
+    .withDispatcher("rediscala.rediscala-client-worker-dispatcher"))
 
-  class SubscribeActor(channels: Seq[String] = Nil, patterns: Seq[String] = Nil) extends RedisSubscriberActor(address, channels, patterns) {
-    def onMessage(message: Message) {
-      Logger.debug(s"message received: $message")
-      val smsDisplay = SmsDisplay.smsDisplayByteStringFormatter.deserialize(ByteString(message.data))
-      smsUpdatesMaster ! Broadcast(smsDisplay)
-    }
 
-    def onPMessage(pmessage: PMessage) {}
+}
+
+
+class SubscribeActor(val master: ActorRef, channels: Seq[String]) extends RedisPluginSubscriberActor(channels, Nil) {
+  def onMessage(message: Message) {
+    Logger.debug(s"message received: $message")
+    val smsDisplay = SmsDisplay.smsDisplayByteStringFormatter.deserialize(ByteString(message.data))
+    master ! Broadcast(smsDisplay)
   }
 
+  def onPMessage(pmessage: PMessage) {}
+}
+
+
+/**
+ * This actor uses play application configuration to create the InetSocketAddress
+ * @param channels
+ * @param patterns
+ */
+abstract class RedisPluginSubscriberActor(channels: Seq[String] = Nil, patterns: Seq[String] = Nil)
+    extends RedisSubscriberActor(new InetSocketAddress("localhost", 6379), channels, patterns) {
+
+  // use application configuration
+  val redisConfig = RedisPlugin.parseConf(current.configuration)
+  override val address = new InetSocketAddress(redisConfig._1, redisConfig._2)
 }
 
 
@@ -185,9 +207,7 @@ class SmsUpdatesMaster extends Actor {
       Logger.debug(s"ReceivedSms sms $sms")
 
       // send notification to redis
-      implicit val system = Akka.system
-      val client = RedisPlugin.client()
-      client.publish("smsList", SmsDisplay.fromSms(sms)) onComplete {
+      SmsUpdatesMaster.redisClient.publish("smsList", SmsDisplay.fromSms(sms)) onComplete {
         case Success(message) => Logger.info(message.toString)
         case Failure(t) => Logger.warn("An error has occured: " + t.getMessage)
       }
@@ -203,8 +223,7 @@ object SmsUpdatesWebSocketActor {
 
 class SmsUpdatesWebSocketActor(val outActor: ActorRef, val master: ActorRef) extends Actor {
   def receive = {
-    case msg: String =>
-//      outActor ! ("I received your message: " + msg)
+    case _ =>
   }
 
   override def postStop() = {
