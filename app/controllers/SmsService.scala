@@ -1,13 +1,15 @@
 package controllers
 
-import play.api.mvc.WebSocket.FrameFormatter
+import play.modules.rediscala.{RedisPluginSubscriberActor, RedisPlugin}
+import redis.api.pubsub.{PMessage, Message}
 
 import scala.collection.mutable
 import scala.concurrent.duration._
 import scala.concurrent.Future
+import scala.util.{Success, Failure}
 
 import akka.actor._
-import akka.util.Timeout
+import akka.util.{ByteString, Timeout}
 import com.github.nscala_time.time.Imports.DateTime
 import reactivemongo.core.commands.LastError
 import reactivemongo.api._
@@ -23,8 +25,8 @@ import play.api.libs.concurrent.Akka
 import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.collection.JSONCollection
 
-import controllers.SmsUpdatesMaster.{Broadcast, Disconnect, Connect}
-import models.{SmsDisplay, JsonFormats, Sms}
+import controllers.SmsUpdatesMaster.{ReceivedSms, Broadcast, Disconnect, Connect}
+import models.{SmsDisplay, Sms}
 
 
 object SmsStorage {
@@ -33,13 +35,11 @@ object SmsStorage {
   def collection: JSONCollection = db.collection[JSONCollection]("smslist")
 
   def storeSms(sms: Sms): Future[LastError] = {
-    import JsonFormats._
     Logger.debug(s"Storing this sms: $sms")
     collection.insert(sms)
   }
 
   def listSms(): Future[List[Sms]] = {
-    import JsonFormats._
     // let's do our query
     val cursor: Cursor[Sms] = collection.
       // find all sms
@@ -58,8 +58,6 @@ object SmsStorage {
 
 object SmsService extends Controller {
 
-  // create the master actor once
-  val smsUpdatesMaster = Akka.system.actorOf(Props[SmsUpdatesMaster], name="smsUpdatesMaster")
 
   val emptyTwiMLResponse = """<?xml version="1.0" encoding="UTF-8"?>""" +
 	<Response>
@@ -113,23 +111,19 @@ object SmsService extends Controller {
         Logger.warn(message)
         BadRequest(message)
       } else {
-        // send notification
-        smsUpdatesMaster ! Broadcast(sms)
+        SmsUpdatesMaster.smsUpdatesMaster ! ReceivedSms(sms)
         Ok(emptyTwiMLResponse)
       }
     }
 
   }
 
-  import JsonFormats.smsDisplayFormat
-  implicit val smsFrameFormatter = FrameFormatter.jsonFrame[SmsDisplay]
-
   /**
    * Handles the sms updates websocket.
    */
   def updatesSocket = WebSocket.acceptWithActor[JsValue, SmsDisplay] { request => outActor =>
-    val inActor = SmsUpdatesWebSocketActor.props(outActor, smsUpdatesMaster)
-    smsUpdatesMaster ! SmsUpdatesMaster.Connect(outActor)
+    val inActor = SmsUpdatesWebSocketActor.props(outActor, SmsUpdatesMaster.smsUpdatesMaster)
+    SmsUpdatesMaster.smsUpdatesMaster ! SmsUpdatesMaster.Connect(outActor)
 
     inActor
   }
@@ -144,7 +138,35 @@ object SmsService extends Controller {
 object SmsUpdatesMaster {
   case class Connect(val outActor: ActorRef)
   case class Disconnect(val outActor: ActorRef)
-  case class Broadcast(val sms: Sms)
+  case class Broadcast(val smsDisplay: SmsDisplay)
+  case class ReceivedSms(val sms: Sms)
+
+  // create the master actor once
+  val smsUpdatesMaster = Akka.system.actorOf(Props[SmsUpdatesMaster], name="smsUpdatesMaster")
+
+
+  implicit val system = Akka.system
+  val redisClient = RedisPlugin.client()
+
+  // create SubscribeActor instance
+  Akka.system.actorOf(Props(classOf[SubscribeActor], smsUpdatesMaster, Seq("smsList"))
+    .withDispatcher("rediscala.rediscala-client-worker-dispatcher"))
+}
+
+
+/**
+ * Consumes messages from redis
+ * @param master
+ * @param channels
+ */
+class SubscribeActor(val master: ActorRef, channels: Seq[String]) extends RedisPluginSubscriberActor(channels, Nil) {
+  def onMessage(message: Message) {
+    Logger.debug(s"message received: $message")
+    val smsDisplay = SmsDisplay.smsDisplayByteStringFormatter.deserialize(ByteString(message.data))
+    master ! Broadcast(smsDisplay)
+  }
+
+  def onPMessage(pmessage: PMessage) {}
 }
 
 
@@ -160,9 +182,18 @@ class SmsUpdatesMaster extends Actor {
       Logger.debug("Websocket connection has closed")
       webSocketOutActors -= actor
       Logger.debug(s"webSocketOutActors: $webSocketOutActors")
-    case Broadcast(sms) =>
-      Logger.debug(s"Broadcast sms $sms")
-      webSocketOutActors foreach {outActor => outActor ! SmsDisplay.fromSms(sms)}
+    case Broadcast(smsDisplay) =>
+      Logger.debug(s"Broadcast smsDisplay $smsDisplay")
+      webSocketOutActors foreach {outActor => outActor ! smsDisplay}
+    case ReceivedSms(sms) =>
+      Logger.debug(s"ReceivedSms sms $sms")
+
+      // send notification to redis
+      SmsUpdatesMaster.redisClient.publish("smsList", SmsDisplay.fromSms(sms)) onComplete {
+        case Success(message) => Logger.info(message.toString)
+        case Failure(t) => Logger.warn("An error has occured: " + t.getMessage)
+      }
+
   }
 }
 
@@ -171,10 +202,10 @@ object SmsUpdatesWebSocketActor {
   def props(out: ActorRef, master: ActorRef) = Props(new SmsUpdatesWebSocketActor(out, master))
 }
 
+
 class SmsUpdatesWebSocketActor(val outActor: ActorRef, val master: ActorRef) extends Actor {
   def receive = {
-    case msg: String =>
-      outActor ! ("I received your message: " + msg)
+    case _ =>
   }
 
   override def postStop() = {

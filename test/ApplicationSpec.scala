@@ -1,4 +1,4 @@
-import models.{Sms, JsonFormats}
+import models.{SmsDisplay, Sms}
 
 import com.github.nscala_time.time.Imports.DateTime
 
@@ -22,7 +22,7 @@ class SmsSpec extends Specification {
   }
 
   val smsList = List(Sms("11111111", "222222222", "some text", DateTime.now))
-  val bsonList: List[JsValue] = smsList map {JsonFormats.smsFormat.writes(_)}
+  val bsonList: List[JsValue] = smsList map {Sms.smsFormat.writes(_)}
   val data = ("smslist", bsonList)
 
   "Sms module" should {
