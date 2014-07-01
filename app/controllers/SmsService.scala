@@ -147,15 +147,15 @@ object SmsUpdatesMaster {
   // create the master actor once
   val smsUpdatesMaster = Akka.system.actorOf(Props[SmsUpdatesMaster], name="smsUpdatesMaster")
 
-
   implicit val system = Akka.system
   val redisClient = RedisPlugin.client()
+  val redisChannel = "smsList"
 
 // use application configuration
   val redisConfig = RedisPlugin.parseConf(current.configuration)
   val address = new InetSocketAddress(redisConfig._1, redisConfig._2)
   // create SubscribeActor instance
-  Akka.system.actorOf(Props(classOf[SubscribeActor], smsUpdatesMaster, address, Seq("smsList"), Seq())
+  Akka.system.actorOf(Props(classOf[SubscribeActor], smsUpdatesMaster, address, Seq(redisChannel), Seq("*"))
     .withDispatcher("rediscala.rediscala-client-worker-dispatcher"))
 }
 
@@ -174,7 +174,9 @@ class SubscribeActor(val master: ActorRef, address: InetSocketAddress, channels:
     master ! Broadcast(smsDisplay)
   }
 
-  def onPMessage(pmessage: PMessage) {}
+  def onPMessage(pmessage: PMessage) {
+    Logger.debug(s"pmessage received: $pmessage")
+  }
 }
 
 
@@ -197,8 +199,8 @@ class SmsUpdatesMaster extends Actor {
       Logger.debug(s"ReceivedSms sms $sms")
 
       // send notification to redis
-      SmsUpdatesMaster.redisClient.publish("smsList", SmsDisplay.fromSms(sms)) onComplete {
-        case Success(message) => Logger.info(message.toString)
+      SmsUpdatesMaster.redisClient.publish(SmsUpdatesMaster.redisChannel, SmsDisplay.fromSms(sms)) onComplete {
+        case Success(message) => Logger.info(s"Successfuly published message ($message)")
         case Failure(t) => Logger.warn("An error has occured: " + t.getMessage)
       }
 
