@@ -154,7 +154,7 @@ object SmsUpdatesMaster {
 // use application configuration
   val redisConfig = RedisPlugin.parseConf(current.configuration)
   val address = new InetSocketAddress(redisConfig._1, redisConfig._2)
-  val authPassword = redisConfig._3
+  val authPassword = redisConfig._3 map {userPasswordTuple => userPasswordTuple._2}
   // create SubscribeActor instance
   Akka.system.actorOf(Props(classOf[SubscribeActor], smsUpdatesMaster, address, Seq(redisChannel), Seq(), authPassword)
     .withDispatcher("rediscala.rediscala-client-worker-dispatcher"))
