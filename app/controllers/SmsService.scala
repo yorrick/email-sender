@@ -154,8 +154,9 @@ object SmsUpdatesMaster {
 // use application configuration
   val redisConfig = RedisPlugin.parseConf(current.configuration)
   val address = new InetSocketAddress(redisConfig._1, redisConfig._2)
+  val authPassword = redisConfig._3
   // create SubscribeActor instance
-  Akka.system.actorOf(Props(classOf[SubscribeActor], smsUpdatesMaster, address, Seq(redisChannel), Seq("*"))
+  Akka.system.actorOf(Props(classOf[SubscribeActor], smsUpdatesMaster, address, Seq(redisChannel), Seq(), authPassword)
     .withDispatcher("rediscala.rediscala-client-worker-dispatcher"))
 }
 
@@ -165,8 +166,8 @@ object SmsUpdatesMaster {
  * @param master
  * @param channels
  */
-class SubscribeActor(val master: ActorRef, address: InetSocketAddress, channels: Seq[String], patterns: Seq[String])
-    extends RedisSubscriberActor(address, channels, patterns) {
+class SubscribeActor(val master: ActorRef, address: InetSocketAddress, channels: Seq[String], patterns: Seq[String], authPassword: Option[String])
+    extends RedisSubscriberActor(address, channels, patterns, authPassword) {
 
   def onMessage(message: Message) {
     Logger.debug(s"message received: $message")
