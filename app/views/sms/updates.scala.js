@@ -11,6 +11,8 @@ $(function() {
     var receiveEvent = function(event) {
         var data = JSON.parse(event.data)
 
+        console.log(data)
+
         var smsElement = $(elementTemplate).html(function(index, html){
             var replaced = html.replace("@FromMapping.templateTag", data.@FromMapping.jsonName);
             var replaced = replaced.replace("@ToMapping.templateTag", data.@ToMapping.jsonName);

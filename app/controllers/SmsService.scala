@@ -28,7 +28,7 @@ import play.api.libs.concurrent.Akka
 import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.collection.JSONCollection
 
-import controllers.SmsUpdatesMaster.{ReceivedSms, Broadcast, Disconnect, Connect}
+import controllers.SmsUpdatesMaster.{Disconnect, Connect}
 import models.{SmsDisplay, Sms}
 
 
@@ -114,7 +114,7 @@ object SmsService extends Controller {
         Logger.warn(message)
         BadRequest(message)
       } else {
-        SmsUpdatesMaster.smsUpdatesMaster ! ReceivedSms(sms)
+        SmsUpdatesMaster.smsUpdatesMaster ! sms
         Ok(emptyTwiMLResponse)
       }
     }
@@ -139,10 +139,12 @@ object SmsService extends Controller {
 
 
 object SmsUpdatesMaster {
+
+  /**
+   * Message that must be sent to web browsers clients.
+   */
   case class Connect(val outActor: ActorRef)
   case class Disconnect(val outActor: ActorRef)
-  case class Broadcast(val smsDisplay: SmsDisplay)
-  case class ReceivedSms(val sms: Sms)
 
   // create the master actor once
   val smsUpdatesMaster = Akka.system.actorOf(Props[SmsUpdatesMaster], name="smsUpdatesMaster")
@@ -151,13 +153,16 @@ object SmsUpdatesMaster {
   val redisClient = RedisPlugin.client()
   val redisChannel = "smsList"
 
-// use application configuration
+  // use application configuration
   val redisConfig = RedisPlugin.parseConf(current.configuration)
   val address = new InetSocketAddress(redisConfig._1, redisConfig._2)
   val authPassword = redisConfig._3 map {userPasswordTuple => userPasswordTuple._2}
   // create SubscribeActor instance
   Akka.system.actorOf(Props(classOf[SubscribeActor], smsUpdatesMaster, address, Seq(redisChannel), Seq(), authPassword)
     .withDispatcher("rediscala.rediscala-client-worker-dispatcher"))
+
+  // we periodically ping the client so the websocket connections do not close
+  Akka.system.scheduler.schedule(5.second, 5.second, smsUpdatesMaster, SmsDisplay.empty)
 }
 
 
@@ -173,7 +178,7 @@ class SubscribeActor(val master: ActorRef, address: InetSocketAddress,
   def onMessage(message: Message) {
     Logger.debug(s"message received: $message")
     val smsDisplay = SmsDisplay.smsDisplayByteStringFormatter.deserialize(ByteString(message.data))
-    master ! Broadcast(smsDisplay)
+    master ! smsDisplay
   }
 
   def onPMessage(pmessage: PMessage) {
@@ -190,14 +195,13 @@ class SmsUpdatesMaster extends Actor {
       Logger.debug("Opened a websocket connection")
       webSocketOutActors += actor
       Logger.debug(s"webSocketOutActors: $webSocketOutActors")
+
     case Disconnect(actor) =>
       Logger.debug("Websocket connection has closed")
       webSocketOutActors -= actor
       Logger.debug(s"webSocketOutActors: $webSocketOutActors")
-    case Broadcast(smsDisplay) =>
-      Logger.debug(s"Broadcast smsDisplay $smsDisplay")
-      webSocketOutActors foreach {outActor => outActor ! smsDisplay}
-    case ReceivedSms(sms) =>
+
+    case sms @ Sms(_, _, _, _) =>
       Logger.debug(s"ReceivedSms sms $sms")
 
       // send notification to redis
@@ -205,6 +209,14 @@ class SmsUpdatesMaster extends Actor {
         case Success(message) => Logger.info(s"Successfuly published message ($message)")
         case Failure(t) => Logger.warn("An error has occured: " + t.getMessage)
       }
+
+    case SmsDisplay.empty =>
+      Logger.debug(s"Broadcast empty smsDisplay")
+      webSocketOutActors foreach {outActor => outActor ! SmsDisplay.empty}
+
+    case smsDisplay @ SmsDisplay =>
+      Logger.debug(s"Broadcast smsDisplay $smsDisplay")
+      webSocketOutActors foreach {outActor => outActor ! smsDisplay}
 
   }
 }
