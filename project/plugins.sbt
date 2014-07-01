@@ -16,3 +16,5 @@ resolvers += Classpaths.sbtPluginReleases
 addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "0.99.5.1")
 
 addSbtPlugin("com.sksamuel.scoverage" %% "sbt-coveralls" % "0.0.5")
+
+addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.7.4")

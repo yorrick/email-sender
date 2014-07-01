@@ -45,3 +45,4 @@ CoverallsPlugin.coverallsSettings
 
 coverallsToken := "fTcPVrhbSaPBVjGYlhRkGX8DqU8lQHrFf"
 
+net.virtualvoid.sbt.graph.Plugin.graphSettings

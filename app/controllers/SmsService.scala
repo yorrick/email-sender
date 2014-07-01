@@ -166,7 +166,8 @@ object SmsUpdatesMaster {
  * @param master
  * @param channels
  */
-class SubscribeActor(val master: ActorRef, address: InetSocketAddress, channels: Seq[String], patterns: Seq[String], authPassword: Option[String])
+class SubscribeActor(val master: ActorRef, address: InetSocketAddress,
+                     channels: Seq[String], patterns: Seq[String], authPassword: Option[String])
     extends RedisSubscriberActor(address, channels, patterns, authPassword) {
 
   def onMessage(message: Message) {
