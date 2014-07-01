@@ -1,6 +1,9 @@
 package controllers
 
-import play.modules.rediscala.{RedisPluginSubscriberActor, RedisPlugin}
+import java.net.InetSocketAddress
+
+import play.modules.rediscala.RedisPlugin
+import redis.actors.RedisSubscriberActor
 import redis.api.pubsub.{PMessage, Message}
 
 import scala.collection.mutable
@@ -148,8 +151,11 @@ object SmsUpdatesMaster {
   implicit val system = Akka.system
   val redisClient = RedisPlugin.client()
 
+// use application configuration
+  val redisConfig = RedisPlugin.parseConf(current.configuration)
+  val address = new InetSocketAddress(redisConfig._1, redisConfig._2)
   // create SubscribeActor instance
-  Akka.system.actorOf(Props(classOf[SubscribeActor], smsUpdatesMaster, Seq("smsList"))
+  Akka.system.actorOf(Props(classOf[SubscribeActor], smsUpdatesMaster, address, Seq("smsList"), Seq())
     .withDispatcher("rediscala.rediscala-client-worker-dispatcher"))
 }
 
@@ -159,7 +165,9 @@ object SmsUpdatesMaster {
  * @param master
  * @param channels
  */
-class SubscribeActor(val master: ActorRef, channels: Seq[String]) extends RedisPluginSubscriberActor(channels, Nil) {
+class SubscribeActor(val master: ActorRef, address: InetSocketAddress, channels: Seq[String], patterns: Seq[String])
+    extends RedisSubscriberActor(address, channels, patterns) {
+
   def onMessage(message: Message) {
     Logger.debug(s"message received: $message")
     val smsDisplay = SmsDisplay.smsDisplayByteStringFormatter.deserialize(ByteString(message.data))
