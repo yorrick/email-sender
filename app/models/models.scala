@@ -34,10 +34,7 @@ object SmsDisplay {
   object ContentMapping extends Mapping("##Content", "content")
   object CreationMapping extends Mapping("##Creation", "creationDate")
 
-  // used to send those objects through websockets
   implicit val smsDisplayFormat = Json.format[SmsDisplay]
-  // used to send those objects through websockets (needs a JsonFormatter)
-  implicit val smsDisplayFrameFormatter = FrameFormatter.jsonFrame[SmsDisplay]
 
   implicit val smsDisplayByteStringFormatter = new ByteStringFormatter[SmsDisplay] {
     def serialize(smsDisplay: SmsDisplay): ByteString = {
@@ -63,9 +60,10 @@ object SmsDisplay {
 case class SmsDisplay(val from: String, val to: String, val content: String, val creationDate: String)
 
 
-//sealed case class Signal(content: String) {
-//  implicit val smsDisplayFormat = Json.format[Signal]
-//  implicit val pingFrameFormatter = FrameFormatter.jsonFrame[Signal]
-//}
-//
-//object ping extends Signal("ping")
+case class Signal(content: String)
+
+object Signal {
+  implicit val signalFormat = Json.format[Signal]
+}
+
+object Ping extends Signal("ping")

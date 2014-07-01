@@ -29,7 +29,7 @@ import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.collection.JSONCollection
 
 import controllers.SmsUpdatesMaster.{Disconnect, Connect}
-import models.{SmsDisplay, Sms}
+import models.{Ping, Signal, SmsDisplay, Sms}
 
 
 object SmsStorage {
@@ -124,7 +124,7 @@ object SmsService extends Controller {
   /**
    * Handles the sms updates websocket.
    */
-  def updatesSocket = WebSocket.acceptWithActor[JsValue, SmsDisplay] { request => outActor =>
+  def updatesSocket = WebSocket.acceptWithActor[JsValue, JsValue] { request => outActor =>
     val inActor = SmsUpdatesWebSocketActor.props(outActor, SmsUpdatesMaster.smsUpdatesMaster)
     SmsUpdatesMaster.smsUpdatesMaster ! SmsUpdatesMaster.Connect(outActor)
 
@@ -162,7 +162,7 @@ object SmsUpdatesMaster {
     .withDispatcher("rediscala.rediscala-client-worker-dispatcher"))
 
   // we periodically ping the client so the websocket connections do not close
-  Akka.system.scheduler.schedule(5.second, 5.second, smsUpdatesMaster, SmsDisplay.empty)
+  Akka.system.scheduler.schedule(5.second, 5.second, smsUpdatesMaster, Ping)
 }
 
 
@@ -210,13 +210,13 @@ class SmsUpdatesMaster extends Actor {
         case Failure(t) => Logger.warn("An error has occured: " + t.getMessage)
       }
 
-    case SmsDisplay.empty =>
-      Logger.debug(s"Broadcast empty smsDisplay")
-      webSocketOutActors foreach {outActor => outActor ! SmsDisplay.empty}
+    case signal @ Signal(_) =>
+      Logger.debug(s"Broadcast signal $signal")
+      webSocketOutActors foreach {outActor => outActor ! Signal.signalFormat.writes(signal)}
 
-    case smsDisplay @ SmsDisplay =>
+    case smsDisplay @ SmsDisplay(_, _, _, _) =>
       Logger.debug(s"Broadcast smsDisplay $smsDisplay")
-      webSocketOutActors foreach {outActor => outActor ! smsDisplay}
+      webSocketOutActors foreach {outActor => outActor ! SmsDisplay.smsDisplayFormat.writes(smsDisplay)}
 
   }
 }

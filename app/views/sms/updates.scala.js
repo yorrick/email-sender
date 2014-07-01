@@ -11,7 +11,10 @@ $(function() {
     var receiveEvent = function(event) {
         var data = JSON.parse(event.data)
 
-        console.log(data)
+        // do not display ping messages
+        if (data.content == "ping") {
+            return
+        }
 
         var smsElement = $(elementTemplate).html(function(index, html){
             var replaced = html.replace("@FromMapping.templateTag", data.@FromMapping.jsonName);
