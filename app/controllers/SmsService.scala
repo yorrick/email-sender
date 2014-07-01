@@ -162,7 +162,7 @@ object SmsUpdatesMaster {
     .withDispatcher("rediscala.rediscala-client-worker-dispatcher"))
 
   // we periodically ping the client so the websocket connections do not close
-  Akka.system.scheduler.schedule(5.second, 5.second, smsUpdatesMaster, Ping)
+  Akka.system.scheduler.schedule(30.second, 30.second, smsUpdatesMaster, Ping)
 }
 
 
@@ -211,7 +211,7 @@ class SmsUpdatesMaster extends Actor {
       }
 
     case signal @ Signal(_) =>
-      Logger.debug(s"Broadcast signal $signal")
+//      Logger.debug(s"Broadcast signal $signal")
       webSocketOutActors foreach {outActor => outActor ! Signal.signalFormat.writes(signal)}
 
     case smsDisplay @ SmsDisplay(_, _, _, _) =>
