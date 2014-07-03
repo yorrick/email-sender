@@ -1,5 +1,4 @@
 import java.io.File
-import camel.CamelConfig
 import play.api._
 import com.typesafe.config.ConfigFactory
 
@@ -12,7 +11,6 @@ object Global extends GlobalSettings {
 
   override def onStart(app: Application) {
     Logger.info("Application has started")
-    CamelConfig.createActor
   }
 
   override def onStop(app: Application) {

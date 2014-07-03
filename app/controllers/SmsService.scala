@@ -1,18 +1,15 @@
 package controllers
 
-import java.net.InetSocketAddress
+import java.nio.charset.Charset
 
-import play.modules.rediscala.RedisPlugin
-import redis.actors.RedisSubscriberActor
-import redis.api.pubsub.{PMessage, Message}
+import akka.camel.{CamelMessage, Consumer, Oneway, Producer}
 
 import scala.collection.mutable
 import scala.concurrent.duration._
 import scala.concurrent.Future
-import scala.util.{Success, Failure}
 
 import akka.actor._
-import akka.util.{ByteString, Timeout}
+import akka.util.Timeout
 import com.github.nscala_time.time.Imports.DateTime
 import reactivemongo.core.commands.LastError
 import reactivemongo.api._
@@ -29,7 +26,7 @@ import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.collection.JSONCollection
 
 import controllers.SmsUpdatesMaster.{Disconnect, Connect}
-import models.{Ping, Signal, SmsDisplay, Sms}
+import models._
 
 
 object SmsStorage {
@@ -149,40 +146,29 @@ object SmsUpdatesMaster {
   // create the master actor once
   val smsUpdatesMaster = Akka.system.actorOf(Props[SmsUpdatesMaster], name="smsUpdatesMaster")
 
-  implicit val system = Akka.system
-  val redisClient = RedisPlugin.client()
-  val redisChannel = "smsList"
-
-  // use application configuration
-  val redisConfig = RedisPlugin.parseConf(current.configuration)
-  val address = new InetSocketAddress(redisConfig._1, redisConfig._2)
-  val authPassword = redisConfig._3 map {userPasswordTuple => userPasswordTuple._2}
-  // create SubscribeActor instance
-  Akka.system.actorOf(Props(classOf[SubscribeActor], smsUpdatesMaster, address, Seq(redisChannel), Seq(), authPassword)
-    .withDispatcher("rediscala.rediscala-client-worker-dispatcher"))
+  val dispatcherName = "rabbitmq-dispatcher"
+  val rabbitMQProducer = Akka.system.actorOf(Props[RabbitMQProducer].withDispatcher(dispatcherName))
+  val rabbitMQConsumer = Akka.system.actorOf(Props(classOf[RabbitMQConsumer], smsUpdatesMaster).withDispatcher(dispatcherName))
 
   // we periodically ping the client so the websocket connections do not close
   Akka.system.scheduler.schedule(30.second, 30.second, smsUpdatesMaster, Ping)
 }
 
 
-/**
- * Consumes messages from redis
- * @param master
- * @param channels
- */
-class SubscribeActor(val master: ActorRef, address: InetSocketAddress,
-                     channels: Seq[String], patterns: Seq[String], authPassword: Option[String])
-    extends RedisSubscriberActor(address, channels, patterns, authPassword) {
+class RabbitMQProducer extends Producer with Oneway {
+  def endpointUri = "rabbitmq://localhost/testExchange?username=test&password=test&exchangeType=fanout"
+}
 
-  def onMessage(message: Message) {
-    Logger.debug(s"message received: $message")
-    val smsDisplay = SmsDisplay.smsDisplayByteStringFormatter.deserialize(ByteString(message.data))
-    master ! smsDisplay
-  }
 
-  def onPMessage(pmessage: PMessage) {
-    Logger.debug(s"pmessage received: $pmessage")
+class RabbitMQConsumer(master: ActorRef) extends Consumer {
+  def endpointUri = "rabbitmq://localhost/testExchange?username=test&password=test&exchangeType=fanout&threadPoolSize=1"
+
+  def receive = {
+    case msg: CamelMessage =>
+      Logger.debug("Received %s from rabbit MQ".format(msg.bodyAs[String]))
+      val json: JsValue = Json.parse(msg.bodyAs[String])
+
+      master ! SmsDisplay.smsDisplayFormat.reads(json).get
   }
 }
 
@@ -203,15 +189,12 @@ class SmsUpdatesMaster extends Actor {
 
     case sms @ Sms(_, _, _, _) =>
       Logger.debug(s"ReceivedSms sms $sms")
-
-      // send notification to redis
-      SmsUpdatesMaster.redisClient.publish(SmsUpdatesMaster.redisChannel, SmsDisplay.fromSms(sms)) onComplete {
-        case Success(message) => Logger.info(s"Successfuly published message ($message)")
-        case Failure(t) => Logger.warn("An error has occured: " + t.getMessage)
-      }
+      val bytes = SmsDisplay.smsDisplayFormat.writes(SmsDisplay.fromSms(sms)).toString()
+      Logger.debug(s"Sending $bytes to rabbitmq")
+      SmsUpdatesMaster.rabbitMQProducer ! bytes
 
     case signal @ Signal(_) =>
-//      Logger.debug(s"Broadcast signal $signal")
+      Logger.debug(s"Broadcast signal $signal")
       webSocketOutActors foreach {outActor => outActor ! Signal.signalFormat.writes(signal)}
 
     case smsDisplay @ SmsDisplay(_, _, _, _) =>

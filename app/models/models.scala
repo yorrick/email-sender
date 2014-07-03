@@ -2,8 +2,6 @@ package models
 
 import akka.util.ByteString
 import com.github.nscala_time.time.Imports._
-import redis.ByteStringFormatter
-import play.api.mvc.WebSocket.FrameFormatter
 import play.api.libs.json.Json
 
 
@@ -35,17 +33,6 @@ object SmsDisplay {
   object CreationMapping extends Mapping("##Creation", "creationDate")
 
   implicit val smsDisplayFormat = Json.format[SmsDisplay]
-
-  implicit val smsDisplayByteStringFormatter = new ByteStringFormatter[SmsDisplay] {
-    def serialize(smsDisplay: SmsDisplay): ByteString = {
-      ByteString(smsDisplay.from + "|" + smsDisplay.to + "|" + smsDisplay.content + "|" + smsDisplay.creationDate)
-    }
-
-    def deserialize(bs: ByteString): SmsDisplay = {
-      val result = bs.utf8String.split('|').toList
-      SmsDisplay(result(0), result(1), result(2), result(3))
-    }
-  }
 
 }
 
