@@ -1,0 +1,5 @@
+http://yorrick-email-sender-staging.herokuapp.com/
+http://yorrick-email-sender-staging.herokuapp.com/sms/
+
+http://yorrick-email-sender-staging.herokuapp.com/sms/ POST From=11111111&To=222222222&Body=some-text
+
