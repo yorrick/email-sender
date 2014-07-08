@@ -1,0 +1,5 @@
+http://localhost:9000/
+http://localhost:9000/sms/
+
+http://localhost:9000/sms/ POST From=11111111&To=222222222&Body=some-text
+

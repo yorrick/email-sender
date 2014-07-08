@@ -1,0 +1,88 @@
+[~/work/email-sender] (master *+) 110h4m $ mongo emailsender --eval "db.dropDatabase()" && siege -f test/siege-urls-local.txt --internet --concurrent=2 --time=10s
+MongoDB shell version: 2.6.1
+connecting to: emailsender
+[object Object]
+** SIEGE 3.0.5
+** Preparing 2 concurrent users for battle.
+The server is now under siege...
+Lifting the server siege..      done.
+
+Transactions:		         891 hits
+Availability:		      100.00 %
+Elapsed time:		        9.46 secs
+Data transferred:	       19.27 MB
+Response time:		        0.02 secs
+Transaction rate:	       94.19 trans/sec
+Throughput:		        2.04 MB/sec
+Concurrency:		        1.99
+Successful transactions:         891
+Failed transactions:	           0
+Longest transaction:	        1.73
+Shortest transaction:	        0.00
+
+[~/work/email-sender] (master *+) 110h5m $ mongo emailsender --eval "db.dropDatabase()" && siege -f test/siege-urls-local.txt --internet --concurrent=5 --time=30s
+MongoDB shell version: 2.6.1
+connecting to: emailsender
+[object Object]
+** SIEGE 3.0.5
+** Preparing 5 concurrent users for battle.
+The server is now under siege...
+Lifting the server siege..      done.
+
+Transactions:		        3146 hits
+Availability:		      100.00 %
+Elapsed time:		       29.40 secs
+Data transferred:	      238.78 MB
+Response time:		        0.05 secs
+Transaction rate:	      107.01 trans/sec
+Throughput:		        8.12 MB/sec
+Concurrency:		        4.97
+Successful transactions:        3146
+Failed transactions:	           0
+Longest transaction:	        6.11
+Shortest transaction:	        0.00
+
+[~/work/email-sender] (master *+) 110h6m $ mongo emailsender --eval "db.dropDatabase()" && siege -f test/siege-urls-local.txt --internet --concurrent=10 --time=20s
+MongoDB shell version: 2.6.1
+connecting to: emailsender
+[object Object]
+** SIEGE 3.0.5
+** Preparing 10 concurrent users for battle.
+The server is now under siege...
+Lifting the server siege..      done.
+
+Transactions:		        2412 hits
+Availability:		      100.00 %
+Elapsed time:		       19.62 secs
+Data transferred:	      155.07 MB
+Response time:		        0.08 secs
+Transaction rate:	      122.94 trans/sec
+Throughput:		        7.90 MB/sec
+Concurrency:		        9.85
+Successful transactions:        2412
+Failed transactions:	           0
+Longest transaction:	        6.02
+Shortest transaction:	        0.00
+
+[~/work/email-sender] (master *+) 110h7m $ mongo emailsender --eval "db.dropDatabase()" && siege -f test/siege-urls-local.txt --internet --concurrent=100 --time=20s
+MongoDB shell version: 2.6.1
+connecting to: emailsender
+[object Object]
+** SIEGE 3.0.5
+** Preparing 100 concurrent users for battle.
+The server is now under siege...
+Lifting the server siege..      done.
+
+Transactions:		        2454 hits
+Availability:		      100.00 %
+Elapsed time:		       19.64 secs
+Data transferred:	      144.16 MB
+Response time:		        0.74 secs
+Transaction rate:	      124.95 trans/sec
+Throughput:		        7.34 MB/sec
+Concurrency:		       92.37
+Successful transactions:        2454
+Failed transactions:	           0
+Longest transaction:	        7.55
+Shortest transaction:	        0.00
+
