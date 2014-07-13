@@ -64,7 +64,7 @@ object SmsService extends Controller {
   	
     val futureSmsList = SmsStorage.listSms().mapTo[List[Sms]]
 
-    futureSmsList.map(smsList => Ok(views.html.sms.list(smsList map {SmsDisplay.fromSms(_)}))) recover {
+    futureSmsList.map(smsList => Ok(ems.views.html.sms.list(smsList map {SmsDisplay.fromSms(_)}))) recover {
       case error @ _ =>
         val message = s"Could not get sms list: $error"
         Logger.warn(message)
@@ -122,7 +122,7 @@ object SmsService extends Controller {
   }
 
   def updatesJs() = Action { implicit request =>
-    Ok(views.js.sms.updates())
+    Ok(ems.views.js.sms.updates())
   }
 
 }

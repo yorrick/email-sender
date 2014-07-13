@@ -6,7 +6,7 @@ import play.api.mvc.{Action, Controller}
 object Application extends Controller {
 
   def index = Action {
-    Ok(views.html.index("Send emails using SMS"))
+    Ok(ems.views.html.index("Send emails using SMS"))
   }
 
 }

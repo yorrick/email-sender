@@ -6,7 +6,7 @@ $(function() {
 
     var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket
     var chatSocket = new WS("@routes.SmsService.updatesSocket().webSocketURL()")
-    var elementTemplate = '@views.html.sms.listElement(SmsDisplay(FromMapping.templateTag, ToMapping.templateTag, ContentMapping.templateTag, CreationMapping.templateTag))'
+    var elementTemplate = '@ems.views.html.sms.listElement(SmsDisplay(FromMapping.templateTag, ToMapping.templateTag, ContentMapping.templateTag, CreationMapping.templateTag))'
 
     var receiveEvent = function(event) {
         var data = JSON.parse(event.data)
