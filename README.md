@@ -9,4 +9,6 @@ Send emails using sms - scala / play 2 application
 
 This app is deployed on heroku using [a custom scala buildpack](https://github.com/yorrick/heroku-buildpack-scala).
 
+To run this app locally, you'll need [docker](http://www.docker.com/).
+
 Project documentation is [here](https://github.com/yorrick/email-sender/wiki).
