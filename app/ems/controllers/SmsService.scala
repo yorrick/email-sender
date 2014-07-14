@@ -69,7 +69,7 @@ object Mailgun {
 
   def toEmail(sms: Sms, to: String) = {
     val postData = Map(
-      "from" -> Seq(s"${sms.from}-$to"),
+      "from" -> Seq(to),
       "to" -> Seq(to),
       "subject" -> Seq("Sms forwarding"),
       "html" -> Seq(sms.content)
