@@ -17,7 +17,7 @@ resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositor
 resolvers += "play2-rediscala" at "http://dl.bintray.com/yorrick/maven"
 
 libraryDependencies ++= Seq(
-  "org.webjars" %% "webjars-play" % "2.2.0", 
+  "org.webjars" %% "webjars-play" % "2.3.0",
   "org.webjars" % "bootstrap" % "3.1.1",
   "org.webjars" % "jquery" % "2.1.1",
   "com.newrelic.agent.java" % "newrelic-agent" % "3.6.0",
@@ -25,6 +25,8 @@ libraryDependencies ++= Seq(
   "com.github.nscala-time" %% "nscala-time" % "1.2.0",
   "fr.njin" %% "play2-rediscala" % "1.0.2" exclude("org.scala-stm", "scala-stm_2.10.0")
 )
+
+libraryDependencies += ws
 
 
 /// Scoverage plugin

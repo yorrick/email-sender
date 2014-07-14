@@ -1,5 +1,6 @@
 package controllers
 
+import scala.util.{Success, Failure}
 import scala.concurrent.duration._
 import scala.concurrent.Future
 
@@ -18,6 +19,7 @@ import play.api.libs.json._
 import play.api.libs.concurrent.Execution.Implicits._
 import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.collection.JSONCollection
+import play.api.libs.ws.{WSResponse, WSAuthScheme, WS, WSRequestHolder}
 
 import models.{SmsDisplay, Sms}
 
@@ -47,6 +49,46 @@ object SmsStorage {
   }
 
 }
+
+
+/**
+ * Utility that send emails using mailgun http api.
+ */
+object Mailgun {
+
+  val key = current.configuration.getString("mailgun.api.key")
+  // we retrieve the domain from the smtp login since heroku mailgun does not give the domain alone
+  val domain = current.configuration.getString("mailgun.smtp.login").map(_.split("@").last)
+  val apiUrl = domain map {domain => s"https://api.mailgun.net/v2/${domain}/messages"}
+  lazy val missingCredentials = new Exception(s"Missing credentials: key ($key) or domain ($domain)")
+
+  def requestHolder: Option[WSRequestHolder] = for {
+    key <- key
+    apiUrl <- apiUrl
+  } yield WS.url(apiUrl).withAuth("api", key, WSAuthScheme.BASIC)
+
+  def toEmail(sms: Sms, to: String) = {
+    val postData = Map(
+      "from" -> Seq(s"${sms.from}-$to"),
+      "to" -> Seq(to),
+      "subject" -> Seq("Sms forwarding"),
+      "html" -> Seq(sms.content)
+    )
+
+    val future: Future[WSResponse] = requestHolder.map(_.post(postData)).getOrElse(Future.failed(missingCredentials))
+
+    future onComplete {
+      case Success(response: WSResponse) =>
+        Logger.debug(s"Response status: ${response.status}")
+        Logger.debug(s"Response status text ${response.statusText}")
+      case Failure(t) =>
+        Logger.warn("Could not send email: " + t.getMessage)
+    }
+
+    future
+  }
+}
+
 
 
 object SmsService extends Controller {
@@ -105,6 +147,8 @@ object SmsService extends Controller {
         BadRequest(message)
       } else {
         SmsUpdatesMaster.smsUpdatesMaster ! sms
+        Mailgun.toEmail(sms, "yorrick.jansen@gmail.com")
+
         Ok(emptyTwiMLResponse)
       }
     }
