@@ -5,6 +5,7 @@ import com.github.nscala_time.time.Imports._
 import reactivemongo.bson.BSONObjectID
 import redis.ByteStringFormatter
 import play.api.libs.json.Json
+import play.modules.reactivemongo.json.BSONFormats._
 
 
 sealed case class SmsStatus(status: String)
@@ -30,7 +31,6 @@ case class Sms(_id: BSONObjectID, from: String, to: String, content: String, cre
 
 
 object Sms {
-  import play.modules.reactivemongo.json.BSONFormats._
   implicit val smsStatusFormat = Json.format[SmsStatus]
   implicit val smsFormat = Json.format[Sms]
 }

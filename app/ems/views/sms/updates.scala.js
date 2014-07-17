@@ -16,16 +16,14 @@ $(function() {
             return
         }
 
-        var smsElement = $(elementTemplate).html(function(index, html){
-            var replaced = html.replace("@IdMapping.templateTag", data.@IdMapping.jsonName);
-            var replaced = html.replace("@FromMapping.templateTag", data.@FromMapping.jsonName);
-            var replaced = replaced.replace("@ToMapping.templateTag", data.@ToMapping.jsonName);
-            var replaced = replaced.replace("@ContentMapping.templateTag", data.@ContentMapping.jsonName);
-            var replaced = replaced.replace("@CreationMapping.templateTag", data.@CreationMapping.jsonName);
-            var replaced = replaced.replace("@StatusMapping.templateTag", data.@StatusMapping.jsonName);
+        var replaced = elementTemplate.replace("@IdMapping.templateTag", data.@IdMapping.jsonName);
+        var replaced = replaced.replace("@FromMapping.templateTag", data.@FromMapping.jsonName);
+        var replaced = replaced.replace("@ToMapping.templateTag", data.@ToMapping.jsonName);
+        var replaced = replaced.replace("@ContentMapping.templateTag", data.@ContentMapping.jsonName);
+        var replaced = replaced.replace("@CreationMapping.templateTag", data.@CreationMapping.jsonName);
+        var replaced = replaced.replace("@StatusMapping.templateTag", data.@StatusMapping.jsonName);
 
-            return replaced;
-        }).hide().prependTo('#smsList')
+        var smsElement = $(replaced).hide().prependTo('#smsList')
 
         $(".empty-sms").fadeOut("slow").remove();
         smsElement.fadeIn("slow");

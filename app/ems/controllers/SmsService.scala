@@ -1,6 +1,6 @@
 package controllers
 
-import reactivemongo.bson.BSONObjectID
+import reactivemongo.bson.{BSONDateTime, BSONDocument, BSONObjectID}
 
 import scala.util.{Failure, Try, Success}
 import scala.concurrent.duration._
@@ -22,6 +22,7 @@ import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.collection.JSONCollection
 import play.api.libs.ws.{WSResponse, WSAuthScheme, WS, WSRequestHolder}
 import play.api.mvc.Result
+import play.modules.reactivemongo.json.BSONFormats._
 
 
 import models._
@@ -33,7 +34,7 @@ object SmsStorage {
   def collection: JSONCollection = db.collection[JSONCollection]("smslist")
 
   /**
-   * This service will never reply with a failure, but with an sms that contains the updated status
+   * Save an sms
    * @param sms
    * @return
    */
@@ -42,13 +43,19 @@ object SmsStorage {
 
     collection.insert(sms) map { lastError =>
       sms.withStatus(SavedInMongo)
-    } recover {
-      case t: Throwable => sms.withStatus(NotSavedInMongo)
     }
   }
 
-  // TODO
-  def updateSmsStatus() = {}
+  /**
+   * Updates the status of an sms
+   * @param sms
+   */
+  def updateSmsStatus(sms: Sms): Future[Sms] = {
+    Logger.debug(s"Updating status of this sms: $sms")
+
+    val modifier = BSONDocument("$set" -> BSONDocument("status.status" -> sms.status.status))
+    collection.update(BSONDocument("_id" -> sms._id), modifier) map {lastError => sms}
+  }
 
   def listSms(): Future[List[Sms]] = {
     // let's do our query
@@ -175,7 +182,8 @@ object SmsService extends Controller {
 
     for {
       sms <- SmsStorage.storeSms(sms) andThen notifyWebsockets
-      sms <- Mailgun.toEmail(sms) andThen notifyWebsockets
+      sms <- Mailgun.toEmail(sms)
+      sms <- SmsStorage.updateSmsStatus(sms) andThen notifyWebsockets
     } yield Ok(emptyTwiMLResponse)
 
   }
