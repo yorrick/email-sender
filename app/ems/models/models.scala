@@ -48,7 +48,7 @@ case class SmsDisplay(id: String, from: String, to: String, content: String, cre
 
 object SmsDisplay {
   def fromSms(sms: Sms) =
-    SmsDisplay(sms._id.toString, sms.from, sms.to, sms.content, sms.formattedCreationDate, sms.status.toString)
+    SmsDisplay(sms._id.stringify, sms.from, sms.to, sms.content, sms.formattedCreationDate, sms.status.status)
   val empty = SmsDisplay("", "", "", "", "", "")
 
   case class Mapping(val templateTag: String, val jsonName: String)
