@@ -83,7 +83,7 @@ class SmsUpdatesMaster extends Actor {
       webSocketOutActors -= actor
       Logger.debug(s"webSocketOutActors: $webSocketOutActors")
 
-    case sms @ Sms(_, _, _, _) =>
+    case sms @ Sms(_, _, _, _, _, _) =>
       Logger.debug(s"ReceivedSms sms $sms")
 
       // send notification to redis
@@ -96,7 +96,7 @@ class SmsUpdatesMaster extends Actor {
       //      Logger.debug(s"Broadcast signal $signal")
       webSocketOutActors foreach {outActor => outActor ! Signal.signalFormat.writes(signal)}
 
-    case smsDisplay @ SmsDisplay(_, _, _, _) =>
+    case smsDisplay @ SmsDisplay(_, _, _, _, _, _) =>
       Logger.debug(s"Broadcast smsDisplay $smsDisplay")
       webSocketOutActors foreach {outActor => outActor ! SmsDisplay.smsDisplayFormat.writes(smsDisplay)}
 

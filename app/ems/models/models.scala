@@ -2,9 +2,17 @@ package models
 
 import akka.util.ByteString
 import com.github.nscala_time.time.Imports._
+import reactivemongo.bson.BSONObjectID
 import redis.ByteStringFormatter
-import play.api.mvc.WebSocket.FrameFormatter
 import play.api.libs.json.Json
+
+
+sealed case class SmsStatus(status: String)
+object NotSavedInMongo extends SmsStatus("NotSavedInMongo")
+object SavedInMongo extends SmsStatus("SavedInMongo")
+object SentToMailgun extends SmsStatus("SentToMailgun")
+object NotSentToMailgun extends SmsStatus("NotSentToMailgun")
+object AckedByMailgun extends SmsStatus("AckedByMailgun")
 
 
 /**
@@ -14,39 +22,17 @@ import play.api.libs.json.Json
  * @param content
  * @param creationDate
  */
-case class Sms(val from: String, val to: String, val content: String, val creationDate: DateTime) {
+case class Sms(_id: BSONObjectID, from: String, to: String, content: String, creationDate: DateTime, status: SmsStatus) {
   val formattedCreationDate = creationDate.toString("yyyy-MM-dd' 'HH:mm:ss")
+
+  def withStatus(status: SmsStatus) = copy(status = status)
 }
 
 
 object Sms {
+  import play.modules.reactivemongo.json.BSONFormats._
+  implicit val smsStatusFormat = Json.format[SmsStatus]
   implicit val smsFormat = Json.format[Sms]
-}
-
-
-object SmsDisplay {
-  def fromSms(sms: Sms) = SmsDisplay(sms.from, sms.to, sms.content, sms.formattedCreationDate)
-  val empty = SmsDisplay("", "", "", "")
-
-  case class Mapping(val templateTag: String, val jsonName: String)
-  object FromMapping extends Mapping("##From", "from")
-  object ToMapping extends Mapping("##To", "to")
-  object ContentMapping extends Mapping("##Content", "content")
-  object CreationMapping extends Mapping("##Creation", "creationDate")
-
-  implicit val smsDisplayFormat = Json.format[SmsDisplay]
-
-  implicit val smsDisplayByteStringFormatter = new ByteStringFormatter[SmsDisplay] {
-    def serialize(smsDisplay: SmsDisplay): ByteString = {
-      ByteString(smsDisplay.from + "|" + smsDisplay.to + "|" + smsDisplay.content + "|" + smsDisplay.creationDate)
-    }
-
-    def deserialize(bs: ByteString): SmsDisplay = {
-      val result = bs.utf8String.split('|').toList
-      SmsDisplay(result(0), result(1), result(2), result(3))
-    }
-  }
-
 }
 
 
@@ -57,7 +43,42 @@ object SmsDisplay {
  * @param content
  * @param creationDate
  */
-case class SmsDisplay(val from: String, val to: String, val content: String, val creationDate: String)
+case class SmsDisplay(id: String, from: String, to: String, content: String, creationDate: String, status: String)
+
+
+object SmsDisplay {
+  def fromSms(sms: Sms) =
+    SmsDisplay(sms._id.toString, sms.from, sms.to, sms.content, sms.formattedCreationDate, sms.status.toString)
+  val empty = SmsDisplay("", "", "", "", "", "")
+
+  case class Mapping(val templateTag: String, val jsonName: String)
+  object IdMapping extends Mapping("##Id", "id")
+  object FromMapping extends Mapping("##From", "from")
+  object ToMapping extends Mapping("##To", "to")
+  object ContentMapping extends Mapping("##Content", "content")
+  object CreationMapping extends Mapping("##Creation", "creationDate")
+  object StatusMapping extends Mapping("##Status", "status")
+
+  implicit val smsDisplayFormat = Json.format[SmsDisplay]
+
+  implicit val smsDisplayByteStringFormatter = new ByteStringFormatter[SmsDisplay] {
+    def serialize(smsDisplay: SmsDisplay): ByteString = {
+      ByteString(
+        smsDisplay.id + "|" +
+        smsDisplay.from + "|" +
+        smsDisplay.to + "|" +
+        smsDisplay.content + "|" +
+        smsDisplay.creationDate + "|" +
+        smsDisplay.status)
+    }
+
+    def deserialize(bs: ByteString): SmsDisplay = {
+      val result = bs.utf8String.split('|').toList
+      SmsDisplay(result(0), result(1), result(2), result(3), result(4), result(5))
+    }
+  }
+
+}
 
 
 case class Signal(content: String)

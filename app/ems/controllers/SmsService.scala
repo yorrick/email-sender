@@ -1,13 +1,14 @@
 package controllers
 
-import scala.util.{Success, Failure}
+import reactivemongo.bson.BSONObjectID
+
+import scala.util.{Failure, Try, Success}
 import scala.concurrent.duration._
 import scala.concurrent.Future
 
 import akka.actor._
 import akka.util.Timeout
 import com.github.nscala_time.time.Imports.DateTime
-import reactivemongo.core.commands.LastError
 import reactivemongo.api._
 
 import play.api.mvc.{WebSocket, Action, Controller}
@@ -20,8 +21,10 @@ import play.api.libs.concurrent.Execution.Implicits._
 import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.collection.JSONCollection
 import play.api.libs.ws.{WSResponse, WSAuthScheme, WS, WSRequestHolder}
+import play.api.mvc.Result
 
-import models.{SmsDisplay, Sms}
+
+import models._
 
 
 object SmsStorage {
@@ -29,10 +32,23 @@ object SmsStorage {
   def db: reactivemongo.api.DB = ReactiveMongoPlugin.db
   def collection: JSONCollection = db.collection[JSONCollection]("smslist")
 
-  def storeSms(sms: Sms): Future[LastError] = {
+  /**
+   * This service will never reply with a failure, but with an sms that contains the updated status
+   * @param sms
+   * @return
+   */
+  def storeSms(sms: Sms): Future[Sms] = {
     Logger.debug(s"Storing this sms: $sms")
-    collection.insert(sms)
+
+    collection.insert(sms) map { lastError =>
+      sms.withStatus(SavedInMongo)
+    } recover {
+      case t: Throwable => sms.withStatus(NotSavedInMongo)
+    }
   }
+
+  // TODO
+  def updateSmsStatus() = {}
 
   def listSms(): Future[List[Sms]] = {
     // let's do our query
@@ -62,12 +78,19 @@ object Mailgun {
   val apiUrl = domain map {domain => s"https://api.mailgun.net/v2/${domain}/messages"}
   lazy val missingCredentials = new Exception(s"Missing credentials: key ($key) or domain ($domain)")
 
-  def requestHolder: Option[WSRequestHolder] = for {
+  def requestHolderOption: Option[WSRequestHolder] = for {
     key <- key
     apiUrl <- apiUrl
   } yield WS.url(apiUrl).withAuth("api", key, WSAuthScheme.BASIC)
 
-  def toEmail(sms: Sms, to: String) = {
+  /**
+   * Mailgun call will never reply with a failure, but with an sms that contains the updated status
+   * @param sms
+   * @param to
+   * @return
+   */
+  def toEmail(sms: Sms, to: String = "yorrick.jansen@gmail.com"): Future[Sms] = {
+
     val postData = Map(
       "from" -> Seq(to),
       "to" -> Seq(to),
@@ -75,17 +98,15 @@ object Mailgun {
       "html" -> Seq(sms.content)
     )
 
-    val future: Future[WSResponse] = requestHolder.map(_.post(postData)).getOrElse(Future.failed(missingCredentials))
+    val responseFuture: Future[WSResponse] = requestHolderOption map { requestHolder =>
+      requestHolder.post(postData)
+    } getOrElse Future.failed(missingCredentials)
 
-    future onComplete {
-      case Success(response: WSResponse) =>
-        Logger.debug(s"Response status: ${response.status}")
-        Logger.debug(s"Response status text ${response.statusText}")
-      case Failure(t) =>
-        Logger.warn("Could not send email: " + t.getMessage)
+    responseFuture map { response =>
+      sms.withStatus(SentToMailgun)
+    } recover {
+      case _ => sms.withStatus(NotSentToMailgun)
     }
-
-    future
   }
 }
 
@@ -118,10 +139,12 @@ object SmsService extends Controller {
   def receive = Action.async { implicit request =>
     val smsForm = Form(
       mapping(
+        "_id" -> ignored(BSONObjectID.generate),
         "From" -> text,
         "To" -> text,
         "Body" -> text,
-        "creationDate" -> ignored(DateTime.now)
+        "creationDate" -> ignored(DateTime.now),
+        "status" -> ignored(NotSavedInMongo.asInstanceOf[SmsStatus])
       )(Sms.apply)(Sms.unapply))
 
     smsForm.bindFromRequest.fold(
@@ -130,7 +153,7 @@ object SmsService extends Controller {
     )
   }
 
-  private def handleFormError(formWithErrors: Form[Sms]) = {
+  private def handleFormError(formWithErrors: Form[Sms]): Future[Result] = {
     val message = s"Could not bind the form: ${formWithErrors}"
     Logger.warn(message)
     Future {
@@ -138,20 +161,22 @@ object SmsService extends Controller {
     }
   }
 
-  private def handleFormValidated(sms: Sms) = {
-    Logger.debug(s"Built sms object $sms")
-    SmsStorage.storeSms(sms).mapTo[LastError] map { lastError =>
-      if (lastError.inError == true) {
-        val message = s"Could not save the sms: ${lastError.message}"
-        Logger.warn(message)
-        BadRequest(message)
-      } else {
-        SmsUpdatesMaster.smsUpdatesMaster ! sms
-        Mailgun.toEmail(sms, "yorrick.jansen@gmail.com")
+  /**
+   * Helper function that can be used in futures
+   * @return
+   */
+  def notifyWebsockets: PartialFunction[Try[Sms], Unit] = {
+    case Success(sms) =>
+      SmsUpdatesMaster.smsUpdatesMaster ! sms
+  }
 
-        Ok(emptyTwiMLResponse)
-      }
-    }
+  private def handleFormValidated(sms: Sms): Future[Result] = {
+    Logger.debug(s"Built sms object $sms")
+
+    for {
+      sms <- SmsStorage.storeSms(sms) andThen notifyWebsockets
+      sms <- Mailgun.toEmail(sms) andThen notifyWebsockets
+    } yield Ok(emptyTwiMLResponse)
 
   }
 

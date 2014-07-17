@@ -6,7 +6,7 @@ $(function() {
 
     var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket
     var chatSocket = new WS("@routes.SmsService.updatesSocket().webSocketURL()")
-    var elementTemplate = '@ems.views.html.sms.listElement(SmsDisplay(FromMapping.templateTag, ToMapping.templateTag, ContentMapping.templateTag, CreationMapping.templateTag))'
+    var elementTemplate = '@ems.views.html.sms.listElement(SmsDisplay(IdMapping.templateTag, FromMapping.templateTag, ToMapping.templateTag, ContentMapping.templateTag, CreationMapping.templateTag, StatusMapping.templateTag))'
 
     var receiveEvent = function(event) {
         var data = JSON.parse(event.data)
@@ -17,10 +17,12 @@ $(function() {
         }
 
         var smsElement = $(elementTemplate).html(function(index, html){
+            var replaced = html.replace("@IdMapping.templateTag", data.@IdMapping.jsonName);
             var replaced = html.replace("@FromMapping.templateTag", data.@FromMapping.jsonName);
             var replaced = replaced.replace("@ToMapping.templateTag", data.@ToMapping.jsonName);
             var replaced = replaced.replace("@ContentMapping.templateTag", data.@ContentMapping.jsonName);
             var replaced = replaced.replace("@CreationMapping.templateTag", data.@CreationMapping.jsonName);
+            var replaced = replaced.replace("@StatusMapping.templateTag", data.@StatusMapping.jsonName);
 
             return replaced;
         }).hide().prependTo('#smsList')
