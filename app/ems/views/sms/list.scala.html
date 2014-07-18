@@ -1,5 +1,6 @@
 @import ems.views.html.main
 @import org.joda.time.DateTime
+@import ems.models.SmsDisplay
 
 @(smsList: List[SmsDisplay])
 
@@ -20,6 +21,6 @@
       }
     }
 
-    <script type="text/javascript" charset="utf-8" src="@routes.SmsService.updatesJs()"></script>
+    <script type="text/javascript" charset="utf-8" src="@ems.controllers.routes.JavascriptController.updatesJs()"></script>
 
 }

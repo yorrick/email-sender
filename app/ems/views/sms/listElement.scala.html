@@ -1,16 +1,24 @@
+@import ems.models.SmsDisplay
+
 @(sms: SmsDisplay, empty: Boolean = false)
 
 <a id="@sms.id" href="#" class="list-group-item clearfix @if(empty) {empty-sms}">
     <h4 class="list-group-item-heading">@sms.from</h4>
     <span class="list-group-item-text">@sms.content</span>
 
-    <span class="pull-right">
-        <span data-status="yes" class="@sms.status"></span>
-    </span>
+    <!--<span class="pull-right">-->
+        <!--<span data-status="yes" class="@sms.status"></span>-->
+    <!--</span>-->
 
     <span class="pull-right">
         @if(!empty) {
-            <button class="btn btn-xs btn-info">@sms.creationDate</button>
+            <button class="btn btn-xs btn-info">
+                @sms.creationDate
+            </button>
         }
+        <button class="btn btn-xs btn-info">
+            <i class="fa fa-spinner fa-spin"></i>
+        </button>
+
     </span>
 </a>

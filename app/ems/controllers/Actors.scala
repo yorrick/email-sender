@@ -1,7 +1,7 @@
-package controllers
+package ems.controllers
 
 import java.net.InetSocketAddress
-import controllers.SmsUpdatesMaster.{Connect, Disconnect}
+import ems.controllers.SmsUpdatesMaster.{Connect, Disconnect}
 
 import scala.collection.mutable
 import scala.util.{Failure, Success}
@@ -17,7 +17,7 @@ import play.modules.rediscala.RedisPlugin
 import play.api.Play.current
 import play.api.libs.concurrent.Execution.Implicits._
 
-import models.{Signal, Sms, SmsDisplay, Ping}
+import ems.models.{Signal, Sms, SmsDisplay, Ping}
 
 
 object SmsUpdatesMaster {
@@ -30,6 +30,7 @@ object SmsUpdatesMaster {
 
   // create the master actor once
   val smsUpdatesMaster = Akka.system.actorOf(Props[SmsUpdatesMaster], name="smsUpdatesMaster")
+
 
   implicit val system = Akka.system
   val redisClient = RedisPlugin.client()

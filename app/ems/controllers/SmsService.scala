@@ -1,4 +1,4 @@
-package controllers
+package ems.controllers
 
 import reactivemongo.bson.{BSONDateTime, BSONDocument, BSONObjectID}
 
@@ -27,7 +27,7 @@ import play.api.libs.concurrent.Akka
 import play.modules.reactivemongo.json.BSONFormats._
 
 
-import models._
+import ems.models._
 
 
 object SmsStorage {
@@ -198,10 +198,6 @@ object SmsService extends Controller {
     SmsUpdatesMaster.smsUpdatesMaster ! SmsUpdatesMaster.Connect(outActor)
 
     inActor
-  }
-
-  def updatesJs() = Action { implicit request =>
-    Ok(ems.views.js.sms.updates())
   }
 
 }

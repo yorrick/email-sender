@@ -1,4 +1,4 @@
-package models
+package ems.models
 
 import akka.util.ByteString
 import com.github.nscala_time.time.Imports._

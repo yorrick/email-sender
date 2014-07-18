@@ -1,11 +1,13 @@
-@import SmsDisplay._
+@import ems.models.SmsDisplay._
+@import ems.models.SmsDisplay
+@import ems.models.NotSavedInMongo
 
 @()(implicit r: RequestHeader)
 
 $(function() {
 
     var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket
-    var chatSocket = new WS("@routes.SmsService.updatesSocket().webSocketURL()")
+    var chatSocket = new WS("@ems.controllers.routes.SmsService.updatesSocket().webSocketURL()")
     var elementTemplate = '@ems.views.html.sms.listElement(SmsDisplay(IdMapping.templateTag, FromMapping.templateTag, ToMapping.templateTag, ContentMapping.templateTag, CreationMapping.templateTag, StatusMapping.templateTag))'
 
     var receiveEvent = function(event) {
