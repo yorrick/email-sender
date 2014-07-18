@@ -14,7 +14,7 @@
     <div id="smsList" class="list-group">
 
     @if(smsList.isEmpty) {
-          @ems.views.html.sms.listElement(SmsDisplay("", "", "", "No sms sent", "", "", "false", ""), empty = true)
+          @ems.views.html.sms.listElement(SmsDisplay("", "", "", "No sms sent", "", "", "", "false"), emptyClass = "empty-sms")
     } else {
       @for(sms <- smsList) {
           @ems.views.html.sms.listElement(sms)

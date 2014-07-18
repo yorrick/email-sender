@@ -1,3 +1,9 @@
+// do not display creation date and status for empty element
+.empty-sms span.pull-right {
+    display: none;
+}
+
+// status button
 button.status {
     width: 150px;
 }
@@ -30,5 +36,3 @@ button.status.NotSentToMailgun {
 button.status.AckedByMailgun {
     .button-color(green);
 }
-
-
