@@ -1,27 +1,34 @@
-.circle(@color) {
-    -moz-border-radius: 30px/30px;
-    -webkit-border-radius: 30px 30px;
-    border-radius: 30px/30px;;
-    border: solid 21px @color;
-    width: 30px;
-    height: 30px;
+button.status {
+    width: 150px;
+}
+
+button.status i {
     margin-left: 10px;
 }
 
-span.NotSavedInMongo {
-    .circle(black)
+.button-color(@color) {
+    background-color: @color;
+    border-color: @color;
 }
-span.SavedInMongo {
-    .circle(blue)
+
+button.status.NotSavedInMongo {
+    .button-color(red);
 }
-span.SentToMailgun {
-    .circle(yellow)
+
+button.status.SavedInMongo {
+    .button-color(gray);
 }
-span.NotSentToMailgun {
-    .circle(red)
+
+button.status.SentToMailgun {
+    .button-color(gray);
 }
-span.AckedByMailgun {
-    .circle(green)
+
+button.status.NotSentToMailgun {
+    .button-color(red);
+}
+
+button.status.AckedByMailgun {
+    .button-color(green);
 }
 
 

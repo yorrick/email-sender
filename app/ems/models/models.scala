@@ -43,13 +43,37 @@ object Sms {
  * @param content
  * @param creationDate
  */
-case class SmsDisplay(id: String, from: String, to: String, content: String, creationDate: String, status: String)
+case class SmsDisplay(id: String, from: String, to: String, content: String,
+                      creationDate: String, statusCode: String, status: String, spin: String)
 
 
 object SmsDisplay {
-  def fromSms(sms: Sms) =
-    SmsDisplay(sms._id.stringify, sms.from, sms.to, sms.content, sms.formattedCreationDate, sms.status.status)
-  val empty = SmsDisplay("", "", "", "", "", "")
+
+  /**
+   * Creates an SmsDisplay object
+   * @param sms
+   * @return
+   */
+  def fromSms(sms: Sms) = SmsDisplay(
+    sms._id.stringify,
+    sms.from,
+    sms.to,
+    sms.content,
+    sms.formattedCreationDate,
+    sms.status.status,
+    statusLabels(sms.status)._1,
+    statusLabels(sms.status)._2
+  )
+
+  val statusLabels = Map(
+    NotSavedInMongo -> ("Not saved in mongo", "false"),
+    SavedInMongo -> ("Saved in mongo", "true"),
+    SentToMailgun -> ("Sent to mailgun", "true"),
+    NotSentToMailgun -> ("Not sent to mailgun", "false"),
+    AckedByMailgun -> ("Acked by mailgun", "false")
+  )
+  
+  val empty = SmsDisplay("", "", "", "", "", "", "false", "")
 
   case class Mapping(val templateTag: String, val jsonName: String)
   object IdMapping extends Mapping("##Id", "id")
@@ -57,7 +81,9 @@ object SmsDisplay {
   object ToMapping extends Mapping("##To", "to")
   object ContentMapping extends Mapping("##Content", "content")
   object CreationMapping extends Mapping("##Creation", "creationDate")
+  object StatusCodeMapping extends Mapping("##StatusCode", "statusCode")
   object StatusMapping extends Mapping("##Status", "status")
+  object SpinMapping extends Mapping("##Spin", "spin")
 
   implicit val smsDisplayFormat = Json.format[SmsDisplay]
 
@@ -69,12 +95,15 @@ object SmsDisplay {
         smsDisplay.to + "|" +
         smsDisplay.content + "|" +
         smsDisplay.creationDate + "|" +
-        smsDisplay.status)
+        smsDisplay.statusCode + "|" +
+        smsDisplay.status + "|" +
+        smsDisplay.spin
+      )
     }
 
     def deserialize(bs: ByteString): SmsDisplay = {
       val result = bs.utf8String.split('|').toList
-      SmsDisplay(result(0), result(1), result(2), result(3), result(4), result(5))
+      SmsDisplay(result(0), result(1), result(2), result(3), result(4), result(5), result(6), result(7))
     }
   }
 
