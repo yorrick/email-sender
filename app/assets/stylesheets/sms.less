@@ -1,0 +1,38 @@
+// do not display creation date and status for empty element
+.empty-sms span.pull-right {
+    display: none;
+}
+
+// status button
+button.status {
+    width: 150px;
+}
+
+button.status i {
+    margin-left: 10px;
+}
+
+.button-color(@color) {
+    background-color: @color;
+    border-color: @color;
+}
+
+button.status.NotSavedInMongo {
+    .button-color(red);
+}
+
+button.status.SavedInMongo {
+    .button-color(gray);
+}
+
+button.status.SentToMailgun {
+    .button-color(gray);
+}
+
+button.status.NotSentToMailgun {
+    .button-color(red);
+}
+
+button.status.AckedByMailgun {
+    .button-color(green);
+}

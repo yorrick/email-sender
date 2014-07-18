@@ -2,11 +2,11 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-GET     /                               controllers.Application.index()
-POST    /sms/						    controllers.SmsService.receive()
-GET     /sms/					        controllers.SmsService.list()
-GET     /sms/updates                    controllers.SmsService.updatesSocket()
-GET     /assets/javascripts/updates.js  controllers.SmsService.updatesJs()
+GET     /                               ems.controllers.Application.index()
+POST    /sms/						    ems.controllers.SmsService.receive()
+GET     /sms/					        ems.controllers.SmsService.list()
+GET     /sms/updates.socket             ems.controllers.SmsService.updatesSocket()
+GET     /sms/updates.js                 ems.controllers.JavascriptController.updatesJs()
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

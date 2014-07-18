@@ -1,7 +1,7 @@
-package controllers
+package ems.controllers
 
 import java.net.InetSocketAddress
-import controllers.SmsUpdatesMaster.{Connect, Disconnect}
+import ems.controllers.SmsUpdatesMaster.{Connect, Disconnect}
 
 import scala.collection.mutable
 import scala.util.{Failure, Success}
@@ -17,7 +17,7 @@ import play.modules.rediscala.RedisPlugin
 import play.api.Play.current
 import play.api.libs.concurrent.Execution.Implicits._
 
-import models.{Signal, Sms, SmsDisplay, Ping}
+import ems.models.{Signal, Sms, SmsDisplay, Ping}
 
 
 object SmsUpdatesMaster {
@@ -30,6 +30,7 @@ object SmsUpdatesMaster {
 
   // create the master actor once
   val smsUpdatesMaster = Akka.system.actorOf(Props[SmsUpdatesMaster], name="smsUpdatesMaster")
+
 
   implicit val system = Akka.system
   val redisClient = RedisPlugin.client()
@@ -83,7 +84,7 @@ class SmsUpdatesMaster extends Actor {
       webSocketOutActors -= actor
       Logger.debug(s"webSocketOutActors: $webSocketOutActors")
 
-    case sms @ Sms(_, _, _, _) =>
+    case sms @ Sms(_, _, _, _, _, _) =>
       Logger.debug(s"ReceivedSms sms $sms")
 
       // send notification to redis
@@ -96,7 +97,7 @@ class SmsUpdatesMaster extends Actor {
       //      Logger.debug(s"Broadcast signal $signal")
       webSocketOutActors foreach {outActor => outActor ! Signal.signalFormat.writes(signal)}
 
-    case smsDisplay @ SmsDisplay(_, _, _, _) =>
+    case smsDisplay @ SmsDisplay(_, _, _, _, _, _, _, _) =>
       Logger.debug(s"Broadcast smsDisplay $smsDisplay")
       webSocketOutActors foreach {outActor => outActor ! SmsDisplay.smsDisplayFormat.writes(smsDisplay)}
 

@@ -1,5 +1,6 @@
 @import ems.views.html.main
 @import org.joda.time.DateTime
+@import ems.models.SmsDisplay
 
 @(smsList: List[SmsDisplay])
 
@@ -13,13 +14,13 @@
     <div id="smsList" class="list-group">
 
     @if(smsList.isEmpty) {
-          @ems.views.html.sms.listElement(SmsDisplay("", "", "No sms sent", ""), empty = true)
+          @ems.views.html.sms.listElement(SmsDisplay("", "", "", "No sms sent", "", "", "", "false"), emptyClass = "empty-sms")
     } else {
       @for(sms <- smsList) {
           @ems.views.html.sms.listElement(sms)
       }
     }
 
-    <script type="text/javascript" charset="utf-8" src="@routes.SmsService.updatesJs()"></script>
+    <script type="text/javascript" charset="utf-8" src="@ems.controllers.routes.JavascriptController.updatesJs()"></script>
 
 }

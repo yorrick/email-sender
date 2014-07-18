@@ -1,4 +1,4 @@
-import models.{SmsDisplay, Sms}
+import ems.models.{SmsDisplay, Sms, NotSavedInMongo}
 
 import com.github.nscala_time.time.Imports.DateTime
 
@@ -11,6 +11,8 @@ import play.api.Logger
 import play.api.test._
 import play.api.test.Helpers._
 
+import reactivemongo.bson.BSONObjectID
+
 
 @RunWith(classOf[JUnitRunner])
 class SmsSpec extends Specification {
@@ -21,14 +23,14 @@ class SmsSpec extends Specification {
     Logger.info("Before class")
   }
 
-  val smsList = List(Sms("11111111", "222222222", "some text", DateTime.now))
+  val smsList = List(Sms(BSONObjectID.generate, "11111111", "222222222", "some text", DateTime.now, NotSavedInMongo))
   val bsonList: List[JsValue] = smsList map {Sms.smsFormat.writes(_)}
   val data = ("smslist", bsonList)
 
   "Sms module" should {
 
     "render the sms list page" in new InitDB(data) {
-      val response = controllers.SmsService.list()(FakeRequest())
+      val response = ems.controllers.SmsService.list()(FakeRequest())
 
       status(response) must equalTo(OK)
       contentType(response) must beSome.which(_ == "text/html")
@@ -42,11 +44,11 @@ class SmsSpec extends Specification {
         "Body" -> "hello toto"
       )
 
-      val postResponse = controllers.SmsService.receive()(request)
+      val postResponse = ems.controllers.SmsService.receive()(request)
       status(postResponse) must equalTo(OK)
       contentAsString(postResponse) must contain("Message")
 
-      val listResponse = controllers.SmsService.list()(FakeRequest())
+      val listResponse = ems.controllers.SmsService.list()(FakeRequest())
       status(listResponse) must equalTo(OK)
       contentType(listResponse) must beSome.which(_ == "text/html")
       contentAsString(listResponse) must contain ("some text")
@@ -62,7 +64,7 @@ class SmsSpec extends Specification {
     }
 
     "render the index page" in new WithApplication {
-      val home = controllers.Application.index()(FakeRequest())
+      val home = ems.controllers.Application.index()(FakeRequest())
 
       status(home) must equalTo(OK)
       contentType(home) must beSome.which(_ == "text/html")
