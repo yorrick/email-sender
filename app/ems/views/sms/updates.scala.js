@@ -10,6 +10,20 @@ $(function() {
     var chatSocket = new WS("@ems.controllers.routes.SmsService.updatesSocket().webSocketURL()")
     var elementTemplate = '@ems.views.html.sms.listElement(SmsDisplay(IdMapping.templateTag, FromMapping.templateTag, ToMapping.templateTag, ContentMapping.templateTag, CreationMapping.templateTag, StatusCodeMapping.templateTag, StatusMapping.templateTag, SpinMapping.templateTag))'
 
+    // given smsData, updates the spinners
+    var updateSpinner = function(smsData) {
+        var existingElement = $('#' + smsData.@IdMapping.jsonName);
+
+        // spinning classes
+        var statusButton = existingElement.find("button.status");
+        var spinner = statusButton.find("i");
+        spinner.removeClass();
+
+        if (smsData.@SpinMapping.jsonName == "true") {
+            spinner.addClass("fa fa-spinner fa-spin");
+        }
+    }
+
     var receiveEvent = function(event) {
         var data = JSON.parse(event.data)
 
@@ -47,18 +61,7 @@ $(function() {
             smsElement.fadeIn("slow");
         }
 
-        var existingElement = $('#' + data.@IdMapping.jsonName);
-
-        // spinning classes
-        var statusButton = existingElement.find("button.status");
-        var spinner = statusButton.find("i");
-        spinner.removeClass();
-
-        if (data.@SpinMapping.jsonName == "true") {
-            spinner.addClass("fa fa-spinner fa-spin");
-        }
-
-
+        updateSpinner(data);
     }
 
     chatSocket.onmessage = receiveEvent
