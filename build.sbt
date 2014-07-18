@@ -1,6 +1,5 @@
 import CoverallsPlugin.CoverallsKeys._
 
-
 name := """email-sender"""
 
 version := "1.0-SNAPSHOT"
@@ -29,7 +28,7 @@ libraryDependencies ++= Seq(
 libraryDependencies += ws
 
 
-/// Scoverage plugin
+// Scoverage plugin
 instrumentSettings
 
 ScoverageKeys.minimumCoverage := 70

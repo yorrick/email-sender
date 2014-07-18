@@ -16,17 +16,26 @@ $(function() {
             return
         }
 
-        var replaced = elementTemplate.replace("@IdMapping.templateTag", data.@IdMapping.jsonName);
-        var replaced = replaced.replace("@FromMapping.templateTag", data.@FromMapping.jsonName);
-        var replaced = replaced.replace("@ToMapping.templateTag", data.@ToMapping.jsonName);
-        var replaced = replaced.replace("@ContentMapping.templateTag", data.@ContentMapping.jsonName);
-        var replaced = replaced.replace("@CreationMapping.templateTag", data.@CreationMapping.jsonName);
-        var replaced = replaced.replace("@StatusMapping.templateTag", data.@StatusMapping.jsonName);
+        var existingElement = $('#' + data.@IdMapping.jsonName);
 
-        var smsElement = $(replaced).hide().prependTo('#smsList')
+        if (existingElement.length > 0) {
+            var statusSpan = existingElement.find("[data-status=yes]")
+            statusSpan.removeClass();
+            statusSpan.addClass(data.@StatusMapping.jsonName)
+        } else {
+            var replaced = elementTemplate.replace("@IdMapping.templateTag", data.@IdMapping.jsonName);
+            var replaced = replaced.replace("@FromMapping.templateTag", data.@FromMapping.jsonName);
+            var replaced = replaced.replace("@ToMapping.templateTag", data.@ToMapping.jsonName);
+            var replaced = replaced.replace("@ContentMapping.templateTag", data.@ContentMapping.jsonName);
+            var replaced = replaced.replace("@CreationMapping.templateTag", data.@CreationMapping.jsonName);
+            var replaced = replaced.replace("@StatusMapping.templateTag", data.@StatusMapping.jsonName);
 
-        $(".empty-sms").fadeOut("slow").remove();
-        smsElement.fadeIn("slow");
+            var smsElement = $(replaced).hide().prependTo('#smsList')
+
+            $(".empty-sms").fadeOut("slow").remove();
+            smsElement.fadeIn("slow");
+        }
+
     }
 
 

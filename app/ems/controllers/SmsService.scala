@@ -8,6 +8,7 @@ import scala.concurrent.Future
 
 import akka.actor._
 import akka.util.Timeout
+import akka.pattern
 import com.github.nscala_time.time.Imports.DateTime
 import reactivemongo.api._
 
@@ -22,6 +23,7 @@ import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.collection.JSONCollection
 import play.api.libs.ws.{WSResponse, WSAuthScheme, WS, WSRequestHolder}
 import play.api.mvc.Result
+import play.api.libs.concurrent.Akka
 import play.modules.reactivemongo.json.BSONFormats._
 
 
@@ -40,10 +42,9 @@ object SmsStorage {
    */
   def storeSms(sms: Sms): Future[Sms] = {
     Logger.debug(s"Storing this sms: $sms")
+    val smsToInsert = sms.withStatus(SavedInMongo)
 
-    collection.insert(sms) map { lastError =>
-      sms.withStatus(SavedInMongo)
-    }
+    collection.insert(smsToInsert) map {lastError => smsToInsert}
   }
 
   /**
@@ -175,6 +176,7 @@ object SmsService extends Controller {
   def notifyWebsockets: PartialFunction[Try[Sms], Unit] = {
     case Success(sms) =>
       SmsUpdatesMaster.smsUpdatesMaster ! sms
+
   }
 
   private def handleFormValidated(sms: Sms): Future[Result] = {
@@ -182,7 +184,7 @@ object SmsService extends Controller {
 
     for {
       sms <- SmsStorage.storeSms(sms) andThen notifyWebsockets
-      sms <- Mailgun.toEmail(sms)
+      sms <- pattern.after(2.second, Akka.system.scheduler)(Mailgun.toEmail(sms))
       sms <- SmsStorage.updateSmsStatus(sms) andThen notifyWebsockets
     } yield Ok(emptyTwiMLResponse)
 

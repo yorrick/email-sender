@@ -1,0 +1,25 @@
+.circle(@color) {
+    -moz-border-radius: 30px/30px;
+    -webkit-border-radius: 30px 30px;
+    border-radius: 30px/30px;;
+    border: solid 21px @color;
+    width: 30px;
+    height: 30px;
+    margin-left: 10px;
+}
+
+span.NotSavedInMongo {
+    .circle(black)
+}
+span.SavedInMongo {
+    .circle(blue)
+}
+span.SentToMailgun {
+    .circle(yellow)
+}
+span.NotSentToMailgun {
+    .circle(red)
+}
+span.AckedByMailgun {
+    .circle(green)
+}
