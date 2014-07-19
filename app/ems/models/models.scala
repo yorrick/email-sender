@@ -23,10 +23,13 @@ object AckedByMailgun extends SmsStatus("AckedByMailgun")
  * @param content
  * @param creationDate
  */
-case class Sms(_id: BSONObjectID, from: String, to: String, content: String, creationDate: DateTime, status: SmsStatus) {
+case class Sms(_id: BSONObjectID, from: String, to: String, content: String,
+               creationDate: DateTime, status: SmsStatus, mailgunId: String) {
+
   val formattedCreationDate = creationDate.toString("yyyy-MM-dd' 'HH:mm:ss")
 
   def withStatus(status: SmsStatus) = copy(status = status)
+  def withMailgunId(mailgunId: String) = copy(mailgunId = mailgunId)
 }
 
 
@@ -68,8 +71,8 @@ object SmsDisplay {
   val statusLabels = Map(
     NotSavedInMongo -> ("Not received", "false"),
     SavedInMongo -> ("Received", "true"),
-    SentToMailgun -> ("Sent", "true"),
-    NotSentToMailgun -> ("Could not send", "false"),
+    SentToMailgun -> ("Sending", "true"),
+    NotSentToMailgun -> ("Failed", "false"),
     AckedByMailgun -> ("Delivered", "false")
   )
   

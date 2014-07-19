@@ -3,7 +3,8 @@
 # ~~~~
 
 GET     /                               ems.controllers.Application.index()
-POST    /sms/						    ems.controllers.SmsService.receive()
+POST    /sms/api/twilio				    ems.controllers.SmsService.twilioSms()
+POST    /sms/api/mailgun/success	    ems.controllers.SmsService.mailgunSuccess()
 GET     /sms/					        ems.controllers.SmsService.list()
 GET     /sms/updates.socket             ems.controllers.SmsService.updatesSocket()
 GET     /sms/updates.js                 ems.controllers.JavascriptController.updatesJs()

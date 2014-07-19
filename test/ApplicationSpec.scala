@@ -23,7 +23,7 @@ class SmsSpec extends Specification {
     Logger.info("Before class")
   }
 
-  val smsList = List(Sms(BSONObjectID.generate, "11111111", "222222222", "some text", DateTime.now, NotSavedInMongo))
+  val smsList = List(Sms(BSONObjectID.generate, "11111111", "222222222", "some text", DateTime.now, NotSavedInMongo, ""))
   val bsonList: List[JsValue] = smsList map {Sms.smsFormat.writes(_)}
   val data = ("smslist", bsonList)
 
@@ -44,7 +44,7 @@ class SmsSpec extends Specification {
         "Body" -> "hello toto"
       )
 
-      val postResponse = ems.controllers.SmsService.receive()(request)
+      val postResponse = ems.controllers.SmsService.twilioSms(request)
       status(postResponse) must equalTo(OK)
       contentAsString(postResponse) must contain("Message")
 

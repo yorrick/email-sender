@@ -1,8 +1,5 @@
 package ems.controllers
 
-import reactivemongo.bson.{BSONDateTime, BSONDocument, BSONObjectID}
-
-import scala.util.{Failure, Try, Success}
 import scala.concurrent.duration._
 import scala.concurrent.Future
 
@@ -10,7 +7,6 @@ import akka.actor._
 import akka.util.Timeout
 import akka.pattern
 import com.github.nscala_time.time.Imports.DateTime
-import reactivemongo.api._
 
 import play.api.mvc.{WebSocket, Action, Controller}
 import play.api.Logger
@@ -19,21 +15,27 @@ import play.api.data.Forms._
 import play.api.Play.current
 import play.api.libs.json._
 import play.api.libs.concurrent.Execution.Implicits._
-import play.modules.reactivemongo.ReactiveMongoPlugin
-import play.modules.reactivemongo.json.collection.JSONCollection
 import play.api.libs.ws.{WSResponse, WSAuthScheme, WS, WSRequestHolder}
 import play.api.mvc.Result
 import play.api.libs.concurrent.Akka
-import play.modules.reactivemongo.json.BSONFormats._
-
+import play.api.http.Status
 
 import ems.models._
 
 
+/**
+ * Handles all interactions with mongodb
+ */
 object SmsStorage {
+  import reactivemongo.api._
+  import reactivemongo.bson.{BSONDocument, BSONObjectID}
+  import play.modules.reactivemongo.json.BSONFormats._
+  import play.modules.reactivemongo.ReactiveMongoPlugin
+  import play.modules.reactivemongo.json.collection.JSONCollection
 
   def db: reactivemongo.api.DB = ReactiveMongoPlugin.db
   def collection: JSONCollection = db.collection[JSONCollection]("smslist")
+  def generateId = BSONObjectID.generate
 
   /**
    * Save an sms
@@ -41,9 +43,7 @@ object SmsStorage {
    * @return
    */
   def storeSms(sms: Sms): Future[Sms] = {
-    Logger.debug(s"Storing this sms: $sms")
     val smsToInsert = sms.withStatus(SavedInMongo)
-
     collection.insert(smsToInsert) map {lastError => smsToInsert}
   }
 
@@ -52,11 +52,21 @@ object SmsStorage {
    * @param sms
    */
   def updateSmsStatus(sms: Sms): Future[Sms] = {
-    Logger.debug(s"Updating status of this sms: $sms")
-
     val modifier = BSONDocument("$set" -> BSONDocument("status.status" -> sms.status.status))
-    collection.update(BSONDocument("_id" -> sms._id), modifier) map {lastError => sms}
+    update(sms, modifier)
   }
+
+  /**
+   * Set the mailgun id for an sms
+   * @param sms
+   */
+  def setSmsMailgunId(sms: Sms): Future[Sms] = {
+    val modifier = BSONDocument("$set" -> BSONDocument("mailgunId" -> sms.mailgunId))
+    update(sms, modifier)
+  }
+
+  private def update(sms: Sms, modifier: BSONDocument) =
+    collection.update(BSONDocument("_id" -> sms._id), modifier) map {lastError => sms}
 
   def listSms(): Future[List[Sms]] = {
     // let's do our query
@@ -110,17 +120,44 @@ object Mailgun {
       requestHolder.post(postData)
     } getOrElse Future.failed(missingCredentials)
 
-    responseFuture map { response =>
-      Logger.debug(s"Mailgun response: $response")
-      sms.withStatus(SentToMailgun)
-    } recover {
+    val okResponse = responseFuture filter { _.status == Status.OK }
+    val smsResponse = okResponse flatMap { response => handleMailgunResponse(sms, response.json)}
+
+    // in case something went wrong
+    smsResponse recover {
       case _ => sms.withStatus(NotSentToMailgun)
     }
+  }
+
+  /**
+   * Returns the given sms with updated status if everything went fine
+   * @param sms
+   * @param json
+   * @return
+   */
+  private def handleMailgunResponse(sms: Sms, json: JsValue): Future[Sms] = {
+    // Maigun response looks like this
+    //      {
+    //        "message": "Queued. Thank you.",
+    //        "id": "<20140719141813.41030.12232@emsdev.mailgun.org>"
+    //      }
+
+    (json \ "id").validate[String] match {
+      case JsSuccess(id, _) =>
+        Logger.debug(s"Mailgun response id: $id")
+        SmsStorage.setSmsMailgunId(sms.withMailgunId(id))
+        Future.successful(sms.withStatus(SentToMailgun))
+      case error @ JsError(_) =>
+        Future.failed(new Exception(error.toString))
+    }
+
   }
 }
 
 
-
+/**
+ * Handles all http requests from Twilio, Mailgun and browsers
+ */
 object SmsService extends Controller {
 
 
@@ -145,15 +182,16 @@ object SmsService extends Controller {
   }
 
   // POST for twilio when we receive an SMS
-  def receive = Action.async { implicit request =>
+  def twilioSms = Action.async { implicit request =>
     val smsForm = Form(
       mapping(
-        "_id" -> ignored(BSONObjectID.generate),
+        "_id" -> ignored(SmsStorage.generateId),
         "From" -> text,
         "To" -> text,
         "Body" -> text,
         "creationDate" -> ignored(DateTime.now),
-        "status" -> ignored(NotSavedInMongo.asInstanceOf[SmsStatus])
+        "status" -> ignored(NotSavedInMongo.asInstanceOf[SmsStatus]),
+        "mailgunId" -> ignored("")
       )(Sms.apply)(Sms.unapply))
 
     smsForm.bindFromRequest.fold(
@@ -171,22 +209,31 @@ object SmsService extends Controller {
   }
 
   /**
-   * Helper function that can be used in futures
+   * Hook for mailgun delivery
+   * TODO secure this hook to check that mailgun is behind the request
    * @return
    */
-  def notifyWebsockets: PartialFunction[Try[Sms], Unit] = {
-    case Success(sms) =>
-      SmsUpdatesMaster.smsUpdatesMaster ! sms
-
+  def mailgunSuccess = Action.async { implicit request =>
+    Logger.debug(s"Request from mailgun: $request")
+    Logger.debug(s"Request from mailgun headers: ${request.headers}")
+    Logger.debug(s"Request from mailgun body: ${request.body}")
+    Future.successful(Ok)
   }
 
+  /**
+   * Runs all the logic after receiving a sms:
+   *  - saves the sms, notify users
+   *  - give he message to mailgun, notify users
+   * @param sms
+   * @return
+   */
   private def handleFormValidated(sms: Sms): Future[Result] = {
     Logger.debug(s"Built sms object $sms")
 
     for {
-      sms <- SmsStorage.storeSms(sms) andThen notifyWebsockets
+      sms <- SmsStorage.storeSms(sms) andThen SmsUpdatesMaster.notifyWebsockets
       sms <- pattern.after(2.second, Akka.system.scheduler)(Mailgun.toEmail(sms))
-      sms <- SmsStorage.updateSmsStatus(sms) andThen notifyWebsockets
+      sms <- SmsStorage.updateSmsStatus(sms) andThen SmsUpdatesMaster.notifyWebsockets
     } yield Ok(emptyTwiMLResponse)
 
   }
