@@ -39,7 +39,7 @@ $(function() {
             var statusSpan = statusButton.find("span");
 
             // change button text
-            statusSpan.text(data.@StatusCodeMapping.jsonName);
+            statusSpan.text(data.@StatusMapping.jsonName);
 
             // change button classes
             statusButton.removeClass();
