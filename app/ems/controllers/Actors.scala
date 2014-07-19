@@ -4,7 +4,7 @@ import java.net.InetSocketAddress
 import ems.controllers.SmsUpdatesMaster.{Connect, Disconnect}
 
 import scala.collection.mutable
-import scala.util.{Failure, Success}
+import scala.util.{Try, Failure, Success}
 import scala.concurrent.duration._
 
 import akka.actor.{Actor, Props, ActorRef}
@@ -46,31 +46,21 @@ object SmsUpdatesMaster {
 
   // we periodically ping the client so the websocket connections do not close
   Akka.system.scheduler.schedule(30.second, 30.second, smsUpdatesMaster, Ping)
-}
 
+  /**
+   * Helper function that can be used in futures
+   * @return
+   */
+  def notifyWebsockets: PartialFunction[Try[Sms], Unit] = {
+    case Success(sms) =>
+      smsUpdatesMaster ! sms
 
-/**
- * Consumes messages from redis
- * @param master
- * @param channels
- */
-class SubscribeActor(val master: ActorRef, address: InetSocketAddress,
-                     channels: Seq[String], patterns: Seq[String], authPassword: Option[String])
-  extends RedisSubscriberActor(address, channels, patterns, authPassword) {
-
-  def onMessage(message: Message) {
-    Logger.debug(s"message received: $message")
-    val smsDisplay = SmsDisplay.smsDisplayByteStringFormatter.deserialize(ByteString(message.data))
-    master ! smsDisplay
-  }
-
-  def onPMessage(pmessage: PMessage) {
-    Logger.debug(s"pmessage received: $pmessage")
   }
 }
 
 
 class SmsUpdatesMaster extends Actor {
+  /** List of output websocket actors that are connected to the node */
   private val webSocketOutActors = mutable.ListBuffer[ActorRef]()
 
   def receive = {
@@ -84,7 +74,7 @@ class SmsUpdatesMaster extends Actor {
       webSocketOutActors -= actor
       Logger.debug(s"webSocketOutActors: $webSocketOutActors")
 
-    case sms @ Sms(_, _, _, _, _, _) =>
+    case sms @ Sms(_, _, _, _, _, _, _) =>
       Logger.debug(s"ReceivedSms sms $sms")
 
       // send notification to redis
@@ -119,3 +109,26 @@ class SmsUpdatesWebSocketActor(val outActor: ActorRef, val master: ActorRef) ext
     master ! SmsUpdatesMaster.Disconnect(outActor)
   }
 }
+
+
+/**
+ * Consumes messages from redis
+ * @param master
+ * @param channels
+ */
+class SubscribeActor(val master: ActorRef, address: InetSocketAddress,
+                     channels: Seq[String], patterns: Seq[String], authPassword: Option[String])
+  extends RedisSubscriberActor(address, channels, patterns, authPassword) {
+
+  def onMessage(message: Message) {
+    Logger.debug(s"message received: $message")
+    val smsDisplay = SmsDisplay.smsDisplayByteStringFormatter.deserialize(ByteString(message.data))
+    master ! smsDisplay
+  }
+
+  def onPMessage(pmessage: PMessage) {
+    Logger.debug(s"pmessage received: $pmessage")
+  }
+}
+
+
