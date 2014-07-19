@@ -66,11 +66,11 @@ object SmsDisplay {
   )
 
   val statusLabels = Map(
-    NotSavedInMongo -> ("Not saved in mongo", "false"),
-    SavedInMongo -> ("Saved in mongo", "true"),
-    SentToMailgun -> ("Sent to mailgun", "true"),
-    NotSentToMailgun -> ("Not sent to mailgun", "false"),
-    AckedByMailgun -> ("Acked by mailgun", "false")
+    NotSavedInMongo -> ("Not received", "false"),
+    SavedInMongo -> ("Received", "true"),
+    SentToMailgun -> ("Sent", "true"),
+    NotSentToMailgun -> ("Could not send", "false"),
+    AckedByMailgun -> ("Delivered", "false")
   )
   
   val empty = SmsDisplay("", "", "", "", "", "", "false", "")

@@ -7,3 +7,6 @@ redis {
     uri: "redis://192.168.59.103:49174/"
   }
 }
+
+mailgun.api.key=<API_KEY>
+mailgun.smtp.login=<postmaster@xxxxx.mailgun.org>

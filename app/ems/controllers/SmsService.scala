@@ -111,6 +111,7 @@ object Mailgun {
     } getOrElse Future.failed(missingCredentials)
 
     responseFuture map { response =>
+      Logger.debug(s"Mailgun response: $response")
       sms.withStatus(SentToMailgun)
     } recover {
       case _ => sms.withStatus(NotSentToMailgun)
