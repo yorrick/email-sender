@@ -24,6 +24,7 @@ import play.modules.reactivemongo.json.collection.JSONCollection
 import play.api.libs.ws.{WSResponse, WSAuthScheme, WS, WSRequestHolder}
 import play.api.mvc.Result
 import play.api.libs.concurrent.Akka
+import play.api.http.Status
 import play.modules.reactivemongo.json.BSONFormats._
 
 
@@ -110,12 +111,37 @@ object Mailgun {
       requestHolder.post(postData)
     } getOrElse Future.failed(missingCredentials)
 
-    responseFuture map { response =>
-      Logger.debug(s"Mailgun response: $response")
-      sms.withStatus(SentToMailgun)
-    } recover {
+    val okResponse = responseFuture filter { _.status == Status.OK }
+    val smsResponse = okResponse flatMap { response => handleMailgunResponse(sms, response.json)}
+
+    // in case something went wrong
+    smsResponse recover {
       case _ => sms.withStatus(NotSentToMailgun)
     }
+  }
+
+  /**
+   * Returns the given sms with updated status if everything went fine
+   * @param sms
+   * @param json
+   * @return
+   */
+  private def handleMailgunResponse(sms: Sms, json: JsValue): Future[Sms] = {
+    // Maigun response looks like this
+    //      {
+    //        "message": "Queued. Thank you.",
+    //        "id": "<20140719141813.41030.12232@emsdev.mailgun.org>"
+    //      }
+
+    (json \ "id").validate[String] match {
+      case JsSuccess(id, _) =>
+        Logger.debug(s"Mailgun response id: $id")
+        // TODO save mailgun correlation id in database
+        Future.successful(sms.withStatus(SentToMailgun))
+      case error @ JsError(_) =>
+        Future.failed(new Exception(error.toString))
+    }
+
   }
 }
 
