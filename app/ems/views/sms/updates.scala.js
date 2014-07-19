@@ -36,9 +36,10 @@ $(function() {
 
         if (existingElement.length > 0) {
             var statusButton = existingElement.find("button.status");
+            var statusSpan = statusButton.find("span");
 
             // change button text
-            statusButton.text(data.@StatusCodeMapping.jsonName);
+            statusSpan.text(data.@StatusCodeMapping.jsonName);
 
             // change button classes
             statusButton.removeClass();
