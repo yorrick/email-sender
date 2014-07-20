@@ -7,7 +7,7 @@
 $(function() {
 
     var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket
-    var chatSocket = new WS("@ems.controllers.routes.SmsService.updatesSocket().webSocketURL()")
+    var chatSocket = new WS("@ems.controllers.routes.SmsController.updatesSocket().webSocketURL()")
     var elementTemplate = '@ems.views.html.sms.listElement(SmsDisplay(IdMapping.templateTag, FromMapping.templateTag, ToMapping.templateTag, ContentMapping.templateTag, CreationMapping.templateTag, StatusCodeMapping.templateTag, StatusMapping.templateTag, SpinMapping.templateTag))'
 
     // given smsData, updates the spinners

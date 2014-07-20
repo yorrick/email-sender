@@ -30,7 +30,7 @@ class SmsSpec extends Specification {
   "Sms module" should {
 
     "render the sms list page" in new InitDB(data) {
-      val response = ems.controllers.SmsService.list()(FakeRequest())
+      val response = ems.controllers.SmsController.list()(FakeRequest())
 
       status(response) must equalTo(OK)
       contentType(response) must beSome.which(_ == "text/html")
@@ -44,11 +44,11 @@ class SmsSpec extends Specification {
         "Body" -> "hello toto"
       )
 
-      val postResponse = ems.controllers.SmsService.twilioSms(request)
+      val postResponse = ems.controllers.TwilioController.sms(request)
       status(postResponse) must equalTo(OK)
       contentAsString(postResponse) must contain("Message")
 
-      val listResponse = ems.controllers.SmsService.list()(FakeRequest())
+      val listResponse = ems.controllers.SmsController.list()(FakeRequest())
       status(listResponse) must equalTo(OK)
       contentType(listResponse) must beSome.which(_ == "text/html")
       contentAsString(listResponse) must contain ("some text")
