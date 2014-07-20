@@ -28,7 +28,7 @@ import ems.models._
  */
 object SmsStorage {
   import reactivemongo.api._
-  import reactivemongo.bson.{BSONDocument, BSONObjectID}
+  import reactivemongo.bson.BSONObjectID
   import play.modules.reactivemongo.json.BSONFormats._
   import play.modules.reactivemongo.ReactiveMongoPlugin
   import play.modules.reactivemongo.json.collection.JSONCollection
@@ -52,7 +52,7 @@ object SmsStorage {
    * @param sms
    */
   def updateSmsStatus(sms: Sms): Future[Sms] = {
-    val modifier = BSONDocument("$set" -> BSONDocument("status.status" -> sms.status.status))
+    val modifier = Json.obj("$set" -> Json.obj("status.status" -> sms.status.status))
     update(sms, modifier)
   }
 
@@ -61,12 +61,12 @@ object SmsStorage {
    * @param sms
    */
   def setSmsMailgunId(sms: Sms): Future[Sms] = {
-    val modifier = BSONDocument("$set" -> BSONDocument("mailgunId" -> sms.mailgunId))
+    val modifier = Json.obj("$set" -> Json.obj("mailgunId" -> sms.mailgunId))
     update(sms, modifier)
   }
 
-  private def update(sms: Sms, modifier: BSONDocument) =
-    collection.update(BSONDocument("_id" -> sms._id), modifier) map {lastError => sms}
+  private def update(sms: Sms, modifier: JsObject) =
+    collection.update(Json.obj("_id" -> sms._id), modifier) map {lastError => sms}
 
   def listSms(): Future[List[Sms]] = {
     // let's do our query
@@ -217,6 +217,11 @@ object SmsService extends Controller {
     Logger.debug(s"Request from mailgun: $request")
     Logger.debug(s"Request from mailgun headers: ${request.headers}")
     Logger.debug(s"Request from mailgun body: ${request.body}")
+
+//    2014-07-19T23:39:01.678134+00:00 app[web.1]: [debug] application - Request from mailgun: POST /sms/api/mailgun/success
+//    2014-07-19T23:39:01.678972+00:00 app[web.1]: [debug] application - Request from mailgun body: AnyContentAsFormUrlEncoded(Map(X-Mailgun-Sid -> ArrayBuffer(WyI0OTljZiIsICJ5b3JyaWNrLmphbnNlbkBnbWFpbC5jb20iLCAiNTM1MGUiXQ==), domain -> ArrayBuffer(app25130478.mailgun.org), message-headers -> ArrayBuffer([["Received", "by luna.mailgun.net with HTTP; Sat, 19 Jul 2014 23:28:41 +0000"], ["Mime-Version", "1.0"], ["Content-Type", ["text/html", {"charset": "ascii"}]], ["Subject", "Sms forwarding"], ["From", "yorrick.jansen@gmail.com"], ["To", "yorrick.jansen@gmail.com"], ["Message-Id", "<20140719232841.6901.69937@app25130478.mailgun.org>"], ["Content-Transfer-Encoding", ["7bit", {}]], ["X-Mailgun-Sid", "WyI0OTljZiIsICJ5b3JyaWNrLmphbnNlbkBnbWFpbC5jb20iLCAiNTM1MGUiXQ=="], ["Date", "Sat, 19 Jul 2014 23:39:01 +0000"], ["Sender", "yorrick.jansen=gmail.com@mailgun.org"]]), Message-Id -> ArrayBuffer(<20140719232841.6901.69937@app25130478.mailgun.org>), recipient -> ArrayBuffer(yorrick.jansen@gmail.com), event -> ArrayBuffer(delivered), timestamp -> ArrayBuffer(1405813141), token -> ArrayBuffer(2hpjqvfwui2o6hsubsdvx1p2gbgbnldsa2odrrxr9rde44fu87), signature -> ArrayBuffer(7d15038989d5af7c0ef994366c2c1c55ca1e67b5a8fed18034c6255ae15a7eb8)))
+//    2014-07-19T23:39:01.678538+00:00 app[web.1]: [debug] application - Request from mailgun headers: ArrayBuffer((X-Forwarded-For,ArrayBuffer(173.203.37.53)), (Connection,ArrayBuffer(close)), (Content-Length,ArrayBuffer(1216)), (X-Request-Start,ArrayBuffer(1405813141650)), (X-Forwarded-Port,ArrayBuffer(80)), (Via,ArrayBuffer(1.1 vegur)), (Total-Route-Time,ArrayBuffer(0)), (Connect-Time,ArrayBuffer(1)), (Content-Type,ArrayBuffer(application/x-www-form-urlencoded)), (X-Forwarded-Proto,ArrayBuffer(http)), (X-Request-Id,ArrayBuffer(d922ff99-9049-4b18-9940-8ec0ae705dff)), (Accept-Encoding,ArrayBuffer(gzip)), (User-Agent,ArrayBuffer(mailgun/treq-0.2.1)), (Host,ArrayBuffer(yorrick-email-sender-staging.herokuapp.com)))
+
     Future.successful(Ok)
   }
 
