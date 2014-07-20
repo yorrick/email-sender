@@ -1,7 +1,8 @@
 email-sender
 ============
 
-Send emails using sms - scala / play 2 application
+Send emails using sms - scala / play 2 application.
+This application is developped for learning purposes only.
 
 
 [![Build Status](https://travis-ci.org/yorrick/email-sender.svg?branch=master)](https://travis-ci.org/yorrick/email-sender)
@@ -12,3 +13,5 @@ This app is deployed on heroku using [a custom scala buildpack](https://github.c
 To run this app locally, you'll need [docker](http://www.docker.com/).
 
 Project documentation is [here](https://github.com/yorrick/email-sender/wiki).
+
+
