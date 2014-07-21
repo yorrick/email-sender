@@ -1,17 +1,12 @@
-package ems.controllers
+package ems.backend
 
 import java.net.InetSocketAddress
-
-import akka.pattern
 
 import scala.collection.mutable
 import scala.util.{Try, Failure, Success}
 import scala.concurrent.duration._
 
 import akka.actor.{Actor, Props, ActorRef}
-import akka.util.ByteString
-import redis.api.pubsub.{PMessage, Message}
-import redis.actors.RedisSubscriberActor
 import play.api.Logger
 import play.api.libs.concurrent.Akka
 import play.modules.rediscala.RedisPlugin
@@ -19,39 +14,6 @@ import play.api.Play.current
 import play.api.libs.concurrent.Execution.Implicits._
 
 import ems.models._
-
-
-/**
- * Instance of the actor that handle sms forwarding
- */
-object SmsForwarder {
-  val smsForwarder = Akka.system.actorOf(Props[SmsForwarder], name="smsForwarder")
-}
-
-
-/**
- * Handles sms forwarding logic
- */
-class SmsForwarder extends Actor {
-  import ems.controllers.WebsocketUpdatesMaster.notifyWebsockets
-  import ems.controllers.MongoDB._
-  import ems.controllers.Mailgun._
-
-  def receive = {
-    case sms: Sms =>
-      for {
-        sms <- save(sms) andThen notifyWebsockets
-        sms <- pattern.after(2.second, Akka.system.scheduler)(sendEmail(sms))
-        sms <- updateStatusById(sms) andThen notifyWebsockets
-      } yield sms
-
-    case MailgunEvent(messageId, DELIVERED) =>
-      setStatusByMailgunId(messageId, AckedByMailgun) andThen notifyWebsockets
-
-    case MailgunEvent(messageId, _) =>
-      setStatusByMailgunId(messageId, FailedByMailgun) andThen notifyWebsockets
-  }
-}
 
 
 /**
@@ -132,61 +94,3 @@ class WebsocketUpdatesMaster extends Actor {
 
   }
 }
-
-
-/**
- * Allows easy Props creation
- */
-object WebsocketInputActor {
-  def apply(outActor: ActorRef) = Props(classOf[WebsocketInputActor], outActor)
-}
-
-
-/**
- * Actor given to play to handle websocket input
- * @param outActor
- */
-class WebsocketInputActor(val outActor: ActorRef) extends Actor {
-
-  import WebsocketUpdatesMaster._
-
-  /**
-   * For now we do not expect anything from the browsers
-   * @return
-   */
-  def receive = {
-    case _ =>
-  }
-
-  override def preStart() = {
-    websocketUpdatesMaster ! Connect(outActor)
-  }
-
-  override def postStop() = {
-    websocketUpdatesMaster ! Disconnect(outActor)
-  }
-}
-
-
-/**
- * This listener consumes messages from redis, and give them to the websocketUpdatesMaster
- * @param master
- * @param channels
- */
-class RedisActor(address: InetSocketAddress, channels: Seq[String], patterns: Seq[String], authPassword: Option[String])
-  extends RedisSubscriberActor(address, channels, patterns, authPassword) {
-
-  import WebsocketUpdatesMaster._
-
-  def onMessage(message: Message) {
-    Logger.debug(s"message received: $message")
-    val smsDisplay = SmsDisplay.smsDisplayByteStringFormatter.deserialize(ByteString(message.data))
-    websocketUpdatesMaster ! smsDisplay
-  }
-
-  def onPMessage(pmessage: PMessage) {
-    Logger.debug(s"pmessage received: $pmessage")
-  }
-}
-
-
