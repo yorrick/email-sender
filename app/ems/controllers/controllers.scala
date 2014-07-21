@@ -226,9 +226,9 @@ object TwilioController extends Controller {
     Logger.debug(s"Built sms object $sms")
 
     for {
-      sms <- MongoDB.storeSms(sms) andThen SmsUpdatesMaster.notifyWebsockets
+      sms <- MongoDB.storeSms(sms) andThen WebsocketUpdatesMaster.notifyWebsockets
       sms <- pattern.after(2.second, Akka.system.scheduler)(Mailgun.sendEmail(sms))
-      sms <- MongoDB.updateSmsStatusById(sms) andThen SmsUpdatesMaster.notifyWebsockets
+      sms <- MongoDB.updateSmsStatusById(sms) andThen WebsocketUpdatesMaster.notifyWebsockets
     } yield Ok(emptyTwiMLResponse)
   }
 
@@ -293,7 +293,7 @@ object MailgunController extends Controller {
    */
   private def handleFormValidated(success: MailgunEvent): Future[Result] = {
     if (success.event == SUCCESS_EVENT) {
-      MongoDB.setSmsStatueAsAckedByMailgun(success.messageId) andThen SmsUpdatesMaster.notifyWebsockets
+      MongoDB.setSmsStatueAsAckedByMailgun(success.messageId) andThen WebsocketUpdatesMaster.notifyWebsockets
     }
 
     Future.successful(Ok)
@@ -333,13 +333,10 @@ object SmsController extends Controller {
   }
 
   /**
-   * Handles the sms updates websocket.
+   * Initiate the websocket connection
    */
   def updatesSocket = WebSocket.acceptWithActor[JsValue, JsValue] { request => outActor =>
-    val inActor = SmsUpdatesWebSocketActor.props(outActor, SmsUpdatesMaster.smsUpdatesMaster)
-    SmsUpdatesMaster.smsUpdatesMaster ! SmsUpdatesMaster.Connect(outActor)
-
-    inActor
+    WebsocketInputActor(outActor)
   }
 
 }

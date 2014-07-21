@@ -1,7 +1,6 @@
 package ems.controllers
 
 import java.net.InetSocketAddress
-import ems.controllers.SmsUpdatesMaster.{Connect, Disconnect}
 
 import scala.collection.mutable
 import scala.util.{Try, Failure, Success}
@@ -20,17 +19,16 @@ import play.api.libs.concurrent.Execution.Implicits._
 import ems.models.{Signal, Sms, SmsDisplay, Ping}
 
 
-object SmsUpdatesMaster {
+/**
+ * Instance of the actor used to push messages to browsers
+ */
+object WebsocketUpdatesMaster {
 
-  /**
-   * Message that must be sent to web browsers clients.
-   */
   case class Connect(val outActor: ActorRef)
   case class Disconnect(val outActor: ActorRef)
 
   // create the master actor once
-  val smsUpdatesMaster = Akka.system.actorOf(Props[SmsUpdatesMaster], name="smsUpdatesMaster")
-
+  val websocketUpdatesMaster = Akka.system.actorOf(Props[WebsocketUpdatesMaster], name="websocketUpdatesMaster")
 
   implicit val system = Akka.system
   val redisClient = RedisPlugin.client()
@@ -40,12 +38,13 @@ object SmsUpdatesMaster {
   val redisConfig = RedisPlugin.parseConf(current.configuration)
   val address = new InetSocketAddress(redisConfig._1, redisConfig._2)
   val authPassword = redisConfig._3 map {userPasswordTuple => userPasswordTuple._2}
-  // create SubscribeActor instance
-  Akka.system.actorOf(Props(classOf[SubscribeActor], smsUpdatesMaster, address, Seq(redisChannel), Seq(), authPassword)
+
+  // create redis subscriber instance
+  Akka.system.actorOf(Props(classOf[RedisActor], websocketUpdatesMaster, address, Seq(redisChannel), Seq(), authPassword)
     .withDispatcher("rediscala.rediscala-client-worker-dispatcher"))
 
   // we periodically ping the client so the websocket connections do not close
-  Akka.system.scheduler.schedule(30.second, 30.second, smsUpdatesMaster, Ping)
+  Akka.system.scheduler.schedule(30.second, 30.second, websocketUpdatesMaster, Ping)
 
   /**
    * Helper function that can be used in futures
@@ -53,13 +52,17 @@ object SmsUpdatesMaster {
    */
   def notifyWebsockets: PartialFunction[Try[Sms], Unit] = {
     case Success(sms) =>
-      smsUpdatesMaster ! sms
-
+      websocketUpdatesMaster ! sms
   }
 }
 
 
-class SmsUpdatesMaster extends Actor {
+/**
+ * This actor stores all websocket connections to browsers
+ */
+class WebsocketUpdatesMaster extends Actor {
+  import WebsocketUpdatesMaster._
+
   /** List of output websocket actors that are connected to the node */
   private val webSocketOutActors = mutable.ListBuffer[ActorRef]()
 
@@ -78,7 +81,7 @@ class SmsUpdatesMaster extends Actor {
       Logger.debug(s"ReceivedSms sms $sms")
 
       // send notification to redis
-      SmsUpdatesMaster.redisClient.publish(SmsUpdatesMaster.redisChannel, SmsDisplay.fromSms(sms)) onComplete {
+      WebsocketUpdatesMaster.redisClient.publish(WebsocketUpdatesMaster.redisChannel, SmsDisplay.fromSms(sms)) onComplete {
         case Success(message) => Logger.info(s"Successfuly published message ($message)")
         case Failure(t) => Logger.warn("An error has occured: " + t.getMessage)
       }
@@ -95,28 +98,46 @@ class SmsUpdatesMaster extends Actor {
 }
 
 
-object SmsUpdatesWebSocketActor {
-  def props(out: ActorRef, master: ActorRef) = Props(new SmsUpdatesWebSocketActor(out, master))
+/**
+ * Allows easy Props creation
+ */
+object WebsocketInputActor {
+  def apply(outActor: ActorRef) = Props(classOf[WebsocketInputActor], outActor)
 }
 
 
-class SmsUpdatesWebSocketActor(val outActor: ActorRef, val master: ActorRef) extends Actor {
+/**
+ * Actor given to play to handle websocket input
+ * @param outActor
+ */
+class WebsocketInputActor(val outActor: ActorRef) extends Actor {
+
+  import WebsocketUpdatesMaster._
+
+  /**
+   * For now we do not expect anything from the browsers
+   * @return
+   */
   def receive = {
     case _ =>
   }
 
+  override def preStart() = {
+    websocketUpdatesMaster ! Connect(outActor)
+  }
+
   override def postStop() = {
-    master ! SmsUpdatesMaster.Disconnect(outActor)
+    websocketUpdatesMaster ! Disconnect(outActor)
   }
 }
 
 
 /**
- * Consumes messages from redis
+ * This listener consumes messages from redis
  * @param master
  * @param channels
  */
-class SubscribeActor(val master: ActorRef, address: InetSocketAddress,
+class RedisActor(val master: ActorRef, address: InetSocketAddress,
                      channels: Seq[String], patterns: Seq[String], authPassword: Option[String])
   extends RedisSubscriberActor(address, channels, patterns, authPassword) {
 
