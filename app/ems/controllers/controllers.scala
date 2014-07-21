@@ -5,7 +5,6 @@ import scala.concurrent.Future
 
 import akka.actor._
 import akka.util.Timeout
-import akka.pattern
 import com.github.nscala_time.time.Imports.DateTime
 
 import play.api.mvc.{WebSocket, Action, Controller}
@@ -17,7 +16,6 @@ import play.api.libs.json._
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.ws.{WSResponse, WSAuthScheme, WS, WSRequestHolder}
 import play.api.mvc.Result
-import play.api.libs.concurrent.Akka
 import play.api.http.Status
 
 import ems.models._
@@ -42,7 +40,7 @@ object MongoDB {
    * @param sms
    * @return
    */
-  def storeSms(sms: Sms): Future[Sms] = {
+  def save(sms: Sms): Future[Sms] = {
     val smsToInsert = sms.withStatus(SavedInMongo)
     collection.insert(smsToInsert) map {lastError => smsToInsert}
   }
@@ -51,7 +49,7 @@ object MongoDB {
    * Updates the status of an sms using the id
    * @param sms
    */
-  def updateSmsStatusById(sms: Sms): Future[Sms] = {
+  def updateStatusById(sms: Sms): Future[Sms] = {
     val modifier = Json.obj("$set" -> Json.obj("status.status" -> sms.status.status))
     updateById(sms, modifier)
   }
@@ -61,8 +59,8 @@ object MongoDB {
    * Returns the acked sms
    * @param mailgunId
    */
-  def setSmsStatueAsAckedByMailgun(mailgunId: String): Future[Sms] = {
-    val modifier = Json.obj("$set" -> Json.obj("status.status" -> AckedByMailgun.status))
+  def setStatusByMailgunId(mailgunId: String, status: SmsStatus): Future[Sms] = {
+    val modifier = Json.obj("$set" -> Json.obj("status.status" -> status.status))
     val findId = Json.obj("mailgunId" -> mailgunId)
 
     collection.update(findId, modifier) flatMap { lastError =>
@@ -115,6 +113,8 @@ object Mailgun {
   val domain = current.configuration.getString("mailgun.smtp.login").map(_.split("@").last)
   val apiUrl = domain map {domain => s"https://api.mailgun.net/v2/${domain}/messages"}
   lazy val missingCredentials = new Exception(s"Missing credentials: key ($key) or domain ($domain)")
+
+  val DELIVERED = "delivered"
 
   def requestHolderOption: Option[WSRequestHolder] = for {
     key <- key
@@ -179,9 +179,10 @@ object Mailgun {
 /**
  * Handles all requests comming from twilio
  * TODO secure this controller to ensure Twilio is making the calls!
- * TODO separate twilio and routing concerns
+ * TODO create a special case class for post, and a conversion to create Sms objects
  */
 object TwilioController extends Controller {
+  import ems.controllers.SmsForwarder.smsForwarder
 
   val emptyTwiMLResponse = """<?xml version="1.0" encoding="UTF-8"?>""" +
 	<Response>
@@ -197,7 +198,7 @@ object TwilioController extends Controller {
    * POST for twilio when we receive an SMS
    * @return
    */
-  def sms = Action.async { implicit request =>
+  def sms = Action { implicit request =>
     val smsForm = Form(
       mapping(
         "_id" -> ignored(MongoDB.generateId),
@@ -216,26 +217,25 @@ object TwilioController extends Controller {
   }
 
   /**
-   * Runs all the logic after receiving a sms:
-   *  - saves the sms, notify users
-   *  - give he message to mailgun, notify users
+   * Notifies the forwarder that a sms has arrived
+   * Replies with Ok as fast as possible
    * @param sms
    * @return
    */
-  private def handleFormValidated(sms: Sms): Future[Result] = {
-    Logger.debug(s"Built sms object $sms")
-
-    for {
-      sms <- MongoDB.storeSms(sms) andThen WebsocketUpdatesMaster.notifyWebsockets
-      sms <- pattern.after(2.second, Akka.system.scheduler)(Mailgun.sendEmail(sms))
-      sms <- MongoDB.updateSmsStatusById(sms) andThen WebsocketUpdatesMaster.notifyWebsockets
-    } yield Ok(emptyTwiMLResponse)
+  private def handleFormValidated(sms: Sms): Result = {
+    smsForwarder ! sms
+    Ok(emptyTwiMLResponse)
   }
 
-  private def handleFormError(formWithErrors: Form[Sms]): Future[Result] = {
+  /**
+   * Just return a BadRequest with a message
+   * @param formWithErrors
+   * @return
+   */
+  private def handleFormError(formWithErrors: Form[Sms]): Result = {
     val message = s"Could not bind the form: ${formWithErrors}"
     Logger.warn(message)
-    Future.successful(BadRequest(message))
+    BadRequest(message)
   }
 
 }
@@ -247,13 +247,8 @@ object TwilioController extends Controller {
  * TODO separate mailgun and routing concerns
  */
 object MailgunController extends Controller {
-
-  private val SUCCESS_EVENT = "delivered"
-
-  /**
-   * Object used to build forms to validate Mailgun POST requests for success deliveries
-   */
-  case class MailgunEvent(messageId: String, event: String)
+  import ems.models.MailgunEvent
+  import ems.controllers.SmsForwarder.smsForwarder
 
   /**
    * Validation form
@@ -279,7 +274,7 @@ object MailgunController extends Controller {
    *
    * @return
    */
-  def success = Action.async { implicit request =>
+  def success = Action { implicit request =>
     eventForm.bindFromRequest.fold(
       formWithErrors => handleFormError(formWithErrors),
       sms => handleFormValidated(sms)
@@ -287,22 +282,25 @@ object MailgunController extends Controller {
   }
 
   /**
-   * Updates sms status after receiving a delivery success from mailgun
-   * @param success
+   * Notifies the forwarder that a MailgunEvent has arrived
+   * Replies with Ok as fast as possible
+   * @param event
    * @return
    */
-  private def handleFormValidated(success: MailgunEvent): Future[Result] = {
-    if (success.event == SUCCESS_EVENT) {
-      MongoDB.setSmsStatueAsAckedByMailgun(success.messageId) andThen WebsocketUpdatesMaster.notifyWebsockets
-    }
-
-    Future.successful(Ok)
+  private def handleFormValidated(event: MailgunEvent): Result = {
+    smsForwarder ! event
+    Ok
   }
 
-  private def handleFormError(formWithErrors: Form[MailgunEvent]): Future[Result] = {
+  /**
+   * Just return a BadRequest
+   * @param formWithErrors
+   * @return
+   */
+  private def handleFormError(formWithErrors: Form[MailgunEvent]): Result = {
     val message = s"Could not bind the form: ${formWithErrors}"
     Logger.warn(message)
-    Future.successful(BadRequest(message))
+    BadRequest(message)
   }
 
 

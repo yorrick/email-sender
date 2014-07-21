@@ -8,12 +8,23 @@ import play.api.libs.json.Json
 import play.modules.reactivemongo.json.BSONFormats._
 
 
+/**
+ * Object used to build forms to validate Mailgun POST requests for success deliveries
+ */
+case class MailgunEvent(messageId: String, event: String)
+
+
+/**
+ * All status for an sms
+ * @param status
+ */
 sealed case class SmsStatus(status: String)
 object NotSavedInMongo extends SmsStatus("NotSavedInMongo")
 object SavedInMongo extends SmsStatus("SavedInMongo")
 object SentToMailgun extends SmsStatus("SentToMailgun")
 object NotSentToMailgun extends SmsStatus("NotSentToMailgun")
 object AckedByMailgun extends SmsStatus("AckedByMailgun")
+object FailedByMailgun extends SmsStatus("FailedByMailgun")
 
 
 /**
