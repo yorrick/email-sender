@@ -29,8 +29,7 @@ object MongoDB {
    * @return
    */
   def save(sms: Sms): Future[Sms] = {
-    val smsToInsert = sms.withStatus(SavedInMongo)
-    collection.insert(smsToInsert) map {lastError => smsToInsert}
+    collection.insert(sms) map {lastError => sms}
   }
 
   /**

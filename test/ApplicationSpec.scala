@@ -1,4 +1,4 @@
-import ems.models.{SmsDisplay, Sms, NotSavedInMongo}
+import ems.models.{SmsDisplay, Sms, SavedInMongo}
 
 import com.github.nscala_time.time.Imports.DateTime
 
@@ -23,7 +23,7 @@ class SmsSpec extends Specification {
     Logger.info("Before class")
   }
 
-  val smsList = List(Sms(BSONObjectID.generate, "11111111", "222222222", "some text", DateTime.now, NotSavedInMongo, ""))
+  val smsList = List(Sms(BSONObjectID.generate, "11111111", "222222222", "some text", DateTime.now, SavedInMongo, ""))
   val bsonList: List[JsValue] = smsList map {Sms.smsFormat.writes(_)}
   val data = ("smslist", bsonList)
 

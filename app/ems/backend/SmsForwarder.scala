@@ -4,7 +4,7 @@ import scala.concurrent.duration._
 
 import akka.pattern
 import akka.actor.{Actor, Props}
-
+import com.github.nscala_time.time.Imports.DateTime
 import play.api.libs.concurrent.Akka
 import play.api.Play.current
 import play.api.libs.concurrent.Execution.Implicits._
@@ -29,7 +29,9 @@ object SmsForwarder {
 class SmsForwarder extends Actor {
 
   def receive = {
-    case sms: Sms =>
+    case post: TwilioPost =>
+      val sms = Sms(MongoDB.generateId, post.from, post.to, post.content, DateTime.now, SavedInMongo, "")
+
       for {
         sms <- save(sms) andThen notifyWebsockets
         sms <- pattern.after(2.second, Akka.system.scheduler)(sendEmail(sms))
