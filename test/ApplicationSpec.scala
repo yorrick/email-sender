@@ -74,7 +74,6 @@ class SmsSpec extends Specification {
 
       val postResponse = ems.controllers.MailgunController.success(request)
       status(postResponse) must equalTo(OK)
-      println(s"X==============================> ${contentAsString(postResponse)}")
       contentAsString(postResponse) must equalTo("")
     }
 
