@@ -1,5 +1,3 @@
-import ems.models.{SmsDisplay, Sms, SavedInMongo}
-
 import com.github.nscala_time.time.Imports.DateTime
 
 import org.junit.runner.RunWith
@@ -13,6 +11,9 @@ import play.api.test.Helpers._
 
 import reactivemongo.bson.BSONObjectID
 
+import ems.models.{Sms, SavedInMongo}
+import ems.backend.Mailgun._
+
 
 @RunWith(classOf[JUnitRunner])
 class SmsSpec extends Specification {
@@ -23,11 +24,12 @@ class SmsSpec extends Specification {
     Logger.info("Before class")
   }
 
-  val smsList = List(Sms(BSONObjectID.generate, "11111111", "222222222", "some text", DateTime.now, SavedInMongo, ""))
+  val smsId = "53cd93ce93d970b47bea76fd"
+  val smsList = List(Sms(BSONObjectID.parse(smsId).get, "11111111", "222222222", "some text", DateTime.now, SavedInMongo, ""))
   val bsonList: List[JsValue] = smsList map {Sms.smsFormat.writes(_)}
   val data = ("smslist", bsonList)
 
-  "Sms module" should {
+  "Sms controller" should {
 
     "render the sms list page" in new InitDB(data) {
       val response = ems.controllers.SmsController.list()(FakeRequest())
@@ -37,8 +39,12 @@ class SmsSpec extends Specification {
       contentAsString(response) must contain ("some text")
     }
 
+  }
+
+  "Twilio controller" should {
+
     "Accept post data for sms" in new InitDB(data) {
-      val request = FakeRequest(POST, "/sms/").withFormUrlEncodedBody(
+      val request = FakeRequest(POST, "").withFormUrlEncodedBody(
         "To" -> "666666666",
         "From" -> "77777777",
         "Body" -> "hello toto"
@@ -46,6 +52,7 @@ class SmsSpec extends Specification {
 
       val postResponse = ems.controllers.TwilioController.sms(request)
       status(postResponse) must equalTo(OK)
+      println(contentAsString(postResponse))
       contentAsString(postResponse) must contain("Message")
 
       val listResponse = ems.controllers.SmsController.list()(FakeRequest())
@@ -53,6 +60,22 @@ class SmsSpec extends Specification {
       contentType(listResponse) must beSome.which(_ == "text/html")
       contentAsString(listResponse) must contain ("some text")
       contentAsString(listResponse) must contain ("hello toto")
+    }
+
+  }
+
+  "Mailgun controller" should {
+
+    "Accept post data for delivery ack" in new InitDB(data) {
+      val request = FakeRequest(POST, "").withFormUrlEncodedBody(
+        "Message-Id" -> smsId,
+        "event" -> DELIVERED
+      )
+
+      val postResponse = ems.controllers.MailgunController.success(request)
+      status(postResponse) must equalTo(OK)
+      println(s"X==============================> ${contentAsString(postResponse)}")
+      contentAsString(postResponse) must equalTo("")
     }
 
   }
