@@ -2,7 +2,6 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-GET     /                               ems.controllers.Application.index()
 POST    /sms/api/twilio				    ems.controllers.TwilioController.sms()
 POST    /sms/api/mailgun/success	    ems.controllers.MailgunController.success()
 GET     /sms/					        ems.controllers.SmsController.list()
@@ -11,5 +10,16 @@ GET     /sms/updates.js                 ems.controllers.JavascriptController.upd
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                   controllers.Assets.at(path="/public", file)
-# GET     /webjars/*file                controllers.WebJarAssets.at(file)
 
+
+
+
+# Home page
+GET        /                    @ems.controllers.Application.index
+GET        /only-twitter        @ems.controllers.Application.onlyTwitter
+GET        /link-result         @ems.controllers.Application.linkResult
+GET        /current-user        @ems.controllers.Application.currentUser
+GET        /custom/login        @ems.controllers.CustomLoginController.login
+GET        /custom/logout       @ems.controllers.CustomLoginController.logout
+
+->         /auth                securesocial.Routes
