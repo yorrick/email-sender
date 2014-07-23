@@ -1,9 +1,8 @@
 @import securesocial.core.RuntimeEnvironment
+@import ems.views.html.main
+
 
 @(loginForm: Form[(String,String)], errorMsg: Option[String] = None)(implicit request: RequestHeader, lang: Lang, env: RuntimeEnvironment[_])
-
-@import securesocial.core.providers.UsernamePasswordProvider.UsernamePassword
-@import ems.views.html.main
 
 
 @main("Login"){
@@ -30,11 +29,14 @@
     }
 
     <div class="clearfix">
-        <p>@Messages("securesocial.login.instructions")</p>
+        <p>Use one of the following services to login</p>
         <p>
             @for(provider <- env.providers.values) {
                 @defining( "images/auth/%s.png".format(provider.id) ) { imageUrl =>
-                    <a href="@env.routes.authenticationUrl(provider.id)"> <img src="@routes.Assets.at(imageUrl)"/></a>
+                    <a href="@env.routes.authenticationUrl(provider.id)" class="btn btn-default btn-sm" role="button">
+                        <span>@provider.id.capitalize</span>
+                        <img src="@routes.Assets.at(imageUrl)"/>
+                    </a>
                 }
             }
         </p>

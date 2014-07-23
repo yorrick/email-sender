@@ -1,0 +1,31 @@
+@import ems.backend.DemoUser
+
+
+@(user: Option[DemoUser])
+
+
+@user match {
+    case Some(user) => {
+        <ul class="nav navbar-nav navbar-right">
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Signed in as @user.main.fullName.get<span class="caret"></span></a>
+                <ul class="dropdown-menu" role="menu">
+                    <li><a href="#">Account</a></li>
+                    <li class="divider"></li>
+                    <li><a href="@securesocial.controllers.routes.LoginPage.logout()">Logout</a></li>
+                </ul>
+            </li>
+        </ul>
+    }
+    case None => {
+        <ul class="nav navbar-nav navbar-right">
+            <li class="active">
+                <p class="navbar-text">Not signed in
+                    <a href="@securesocial.controllers.routes.LoginPage.login()" class="btn btn-primary btn-sm" role="button">
+                        Login
+                    </a>
+                </p>
+            </li>
+        </ul>
+    }
+}

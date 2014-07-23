@@ -29,7 +29,7 @@ class SmsController(override implicit val env: RuntimeEnvironment[DemoUser]) ext
   def list = SecuredAction.async { implicit request =>
     import scala.language.postfixOps
     implicit val timeout = Timeout(1 second)
-    implicit val user = request.user.main
+    implicit val user = Some(request.user)
 
     val futureSmsList = MongoDB.listSms().mapTo[List[Sms]]
 
@@ -45,7 +45,7 @@ class SmsController(override implicit val env: RuntimeEnvironment[DemoUser]) ext
 
   /**
    * Initiate the websocket connection
-   * TODO authenticate the socket as well
+   * TODO authenticate the socket as well!
    */
   def updatesSocket = WebSocket.acceptWithActor[JsValue, JsValue] { request => outActor =>
     WebsocketInputActor(outActor)
