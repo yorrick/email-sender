@@ -1,13 +1,17 @@
 import java.io.File
 import java.lang.reflect.Constructor
+import securesocial.core.providers.GoogleProvider
+
+import scala.collection.immutable.ListMap
 
 import com.typesafe.config.ConfigFactory
 import securesocial.core.RuntimeEnvironment
+import securesocial.controllers.ViewTemplates
 
 import play.api._
 
-import ems.controllers.CustomRoutesService
 import ems.backend.{DemoUser, MyEventListener, InMemoryUserService}
+import ems.controllers.EMSViewTemplates
 
 
 object Global extends GlobalSettings {
@@ -28,10 +32,16 @@ object Global extends GlobalSettings {
   /**
    * The runtime environment for this sample app.
    */
-  object MyRuntimeEnvironment extends RuntimeEnvironment.Default[DemoUser] {
-    override lazy val routes = new CustomRoutesService()
+  object EMSRuntimeEnvironment extends RuntimeEnvironment.Default[DemoUser] {
     override lazy val userService: InMemoryUserService = new InMemoryUserService()
     override lazy val eventListeners = List(new MyEventListener())
+
+    // override authentication views
+    override lazy val viewTemplates: ViewTemplates = new EMSViewTemplates(this)
+
+    override lazy val providers = ListMap(
+      include(new GoogleProvider(routes, cacheService, oauth2ClientFor(GoogleProvider.Google)))
+    )
   }
 
   /**
@@ -49,7 +59,7 @@ object Global extends GlobalSettings {
       val params = c.getParameterTypes
       params.length == 1 && params(0) == classOf[RuntimeEnvironment[DemoUser]]
     }.map {
-      _.asInstanceOf[Constructor[A]].newInstance(MyRuntimeEnvironment)
+      _.asInstanceOf[Constructor[A]].newInstance(EMSRuntimeEnvironment)
     }
     instance.getOrElse(super.getControllerInstance(controllerClass))
   }

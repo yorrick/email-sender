@@ -1,14 +1,18 @@
 @import ems.views.html.main
+@import ems.views.html.auth.userInfo
 @import org.joda.time.DateTime
 @import ems.models.SmsDisplay
+@import securesocial.core.{BasicProfile, RuntimeEnvironment}
+@import ems.backend.DemoUser
 
-@(smsList: List[SmsDisplay])
+
+@(smsList: List[SmsDisplay])(implicit user: BasicProfile, request: RequestHeader, env: RuntimeEnvironment[DemoUser])
 
 
-@main("SMS sender") {
+@main("Sms forwardings"){
 
     <div class="page-header">
-    <h1>Message list</h1>
+        <h1>Message list</h1>
     </div>
 
     <div id="smsList" class="list-group">
@@ -23,4 +27,4 @@
 
     <script type="text/javascript" charset="utf-8" src="@ems.controllers.routes.JavascriptController.updatesJs()"></script>
 
-}
+}(userInfo(user))

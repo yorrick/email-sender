@@ -1,5 +1,7 @@
-@(user: securesocial.core.BasicProfile)(implicit request: RequestHeader, env: securesocial.core.RuntimeEnvironment[ems.backend.DemoUser])
-@import securesocial.core.IdentityProvider
+@import securesocial.core.RuntimeEnvironment
+@import ems.backend.DemoUser
+
+@(user: securesocial.core.BasicProfile)(implicit request: RequestHeader, env: RuntimeEnvironment[DemoUser])
 
 @import securesocial.core.IdentityProvider
 @import securesocial.core.providers.UsernamePasswordProvider
@@ -7,8 +9,9 @@
 @import play.api.{Logger, Play}
 @import helper._
 @import play.api.Play
+@import ems.views.html.mainSecure
 
-@main("SecureSocial - Sample Protected Page") {
+@mainSecure("SecureSocial - Sample Protected Page")(user) {
 <div class="page-header">
     <h2><img src="@user.avatarUrl.getOrElse("")" alt="@user.firstName.getOrElse("")" width="40px" height="40px"/> Welcome @user.firstName.getOrElse("")</h2>
 </div>
@@ -27,38 +30,42 @@
     </ul>
 
     @user.oAuth1Info.map { info =>
-    <h2>OAuth1 Info</h2>
+        <h2>OAuth1 Info</h2>
 
-    <ul>
-        <li>Token: @info.token</li>
-        <li>Secret: @info.secret</li>
-    </ul>
+        <ul>
+            <li>Token: @info.token</li>
+            <li>Secret: @info.secret</li>
+        </ul>
     }
 
     @user.oAuth2Info.map { info =>
-    <h2>OAuth2 Info</h2>
+        <h2>OAuth2 Info</h2>
 
-    <ul>
-        <li>Access Token: @info.accessToken</li>
-        @info.tokenType.map { t => <li>Token Type: @t</li> }
-        @info.expiresIn.map { exp => <li>Expires in: @exp seconds</li>}
-        @info.refreshToken.map { rt => <li>Refresh Token: @rt</li>}
-    </ul>
+        <ul>
+            <li>Access Token: @info.accessToken</li>
+            @info.tokenType.map { t => <li>Token Type: @t</li> }
+            @info.expiresIn.map { exp => <li>Expires in: @exp seconds</li>}
+            @info.refreshToken.map { rt => <li>Refresh Token: @rt</li>}
+        </ul>
     }
     <hr>
+    @*********************
     @user.passwordInfo.map { info =>
-    <a class="btn" href="@securesocial.controllers.routes.PasswordChange.page.absoluteURL(IdentityProvider.sslEnabled)">Change Password</a>
+        <a class="btn" href="@securesocial.controllers.routes.PasswordChange.page.absoluteURL(IdentityProvider.sslEnabled)">Change Password</a>
     }
+    *********************@
 
     <span>Link this account to
 
+    @*********************
     @env.providers.values.map { provider =>
         @if( provider.authMethod == OAuth1 || provider.authMethod == OAuth2 ) {
             @defining( "images/providers/%s.png".format(provider.id) ) { imageUrl =>
-            <a href="@env.routes.authenticationUrl(provider.id, Some("/link-result"))"> <img src="@securesocial.controllers.routes.Assets.at(imageUrl)"/></a>
-        }
+                <a href="@env.routes.authenticationUrl(provider.id, Some("/link-result"))"> <img src="@securesocial.controllers.routes.Assets.at(imageUrl)"/></a>
+            }
         }
     }
+    *********************@
     </span>
     <hr>
     <a class="btn" href="@securesocial.controllers.routes.LoginPage.logout()">Logout</a>
