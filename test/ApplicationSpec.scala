@@ -3,23 +3,44 @@ import com.github.nscala_time.time.Imports.DateTime
 import org.junit.runner.RunWith
 import org.specs2.mutable._
 import org.specs2.runner._
+import reactivemongo.bson.BSONObjectID
+import org.specs2.matcher.ShouldMatchers
 
-import play.api.libs.json.{JsValue}
+import play.api.libs.json.JsValue
 import play.api.Logger
 import play.api.test._
 import play.api.test.Helpers._
-
-import reactivemongo.bson.BSONObjectID
+import play.api.mvc.{Request, AnyContent}
 
 import ems.models.{Sms, SavedInMongo}
 import ems.backend.Mailgun._
-import ems.controllers.SmsController
+import ems.controllers.{SmsController, Application}
+
+
+//class ApplicationSpec extends PlaySpecification with ShouldMatchers {
+//  import WithLoggedUser._
+//  def minimalApp = FakeApplication(withoutPlugins=excludedPlugins,additionalPlugins = includedPlugins)
+//  "Access secured index " in new WithLoggedUser(minimalApp) {
+//
+//    val req: Request[AnyContent] = FakeRequest().
+//      withHeaders((HeaderNames.CONTENT_TYPE, "application/x-www-form-urlencoded")).
+//      withCookies(cookie) // Fake cookie from the WithloggedUser trait
+//
+//    val result = Application.index.apply(req)
+//
+//    val actual: Int= status(result)
+//    actual must be equalTo OK
+//  }
+//}
 
 
 @RunWith(classOf[JUnitRunner])
-class SmsSpec extends Specification {
+class SmsSpec extends PlaySpecification {
   sequential
 //  isolated
+
+  val smsController = Global.getControllerInstance(classOf[SmsController])
+  val applicationController = Global.getControllerInstance(classOf[Application])
 
   step {
     Logger.info("Before class")
@@ -33,8 +54,7 @@ class SmsSpec extends Specification {
   "Sms controller" should {
 
     "render the sms list page" in new InitDB(data) {
-      val response = SmsController.list.apply(FakeRequest())
-//      val response = ems.controllers.SmsController.list()(FakeRequest())
+      val response = smsController.list(FakeRequest())
 
       status(response) must equalTo(OK)
       contentType(response) must beSome.which(_ == "text/html")
@@ -57,7 +77,7 @@ class SmsSpec extends Specification {
       println(contentAsString(postResponse))
       contentAsString(postResponse) must contain("Message")
 
-      val listResponse = ems.controllers.SmsController.list()(FakeRequest())
+      val listResponse = smsController.list(FakeRequest())
       status(listResponse) must equalTo(OK)
       contentType(listResponse) must beSome.which(_ == "text/html")
       contentAsString(listResponse) must contain ("some text")
@@ -88,7 +108,7 @@ class SmsSpec extends Specification {
     }
 
     "render the index page" in new WithApplication {
-      val home = ems.controllers.Application.index()(FakeRequest())
+      val home = applicationController.index(FakeRequest())
 
       status(home) must equalTo(OK)
       contentType(home) must beSome.which(_ == "text/html")
