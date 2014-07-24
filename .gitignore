@@ -15,4 +15,5 @@ dist
 /.settings
 activator-sbt-*-shim.sbt
 conf/application.dev.conf
-conf/securesocial.conf
+conf/securesocial/securesocial-dev.conf
+

@@ -10,3 +10,5 @@ redis {
 
 mailgun.api.key=<API_KEY>
 mailgun.smtp.login=<postmaster@xxxxx.mailgun.org>
+
+include "securesocial/securesocial-dev.conf"
