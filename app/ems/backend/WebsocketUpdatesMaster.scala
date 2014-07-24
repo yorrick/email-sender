@@ -31,13 +31,12 @@ object WebsocketUpdatesMaster {
   val redisClient = RedisPlugin.client()
   val redisChannel = "smsList"
 
-  // use application configuration
+  // we have to parse application config to create the subscriber
   val redisConfig = RedisPlugin.parseConf(current.configuration)
   val address = new InetSocketAddress(redisConfig._1, redisConfig._2)
   val authPassword = redisConfig._3 map {userPasswordTuple => userPasswordTuple._2}
 
-  // create redis subscriber instance
-  // TODO configure dispatcher
+  // create redis subscriber instance (the dispatcher is provided by the rediscala lib)
   Akka.system.actorOf(Props(classOf[RedisActor], address, Seq(redisChannel), Seq(), authPassword)
     .withDispatcher("rediscala.rediscala-client-worker-dispatcher"))
 
@@ -76,8 +75,6 @@ class WebsocketUpdatesMaster extends Actor {
       Logger.debug(s"webSocketOutActors: $webSocketOutActors")
 
     case sms: Sms =>
-      Logger.debug(s"ReceivedSms sms $sms")
-
       // send notification to redis
       WebsocketUpdatesMaster.redisClient.publish(WebsocketUpdatesMaster.redisChannel, SmsDisplay.fromSms(sms)) onComplete {
         case Success(message) => Logger.info(s"Successfuly published message ($message)")

@@ -1,14 +1,17 @@
-@import ems.views.html.main
+@import ems.views.html.mainAuth
 @import org.joda.time.DateTime
 @import ems.models.SmsDisplay
+@import securesocial.core.{BasicProfile, RuntimeEnvironment}
+@import ems.models.User
 
-@(smsList: List[SmsDisplay])
+
+@(smsList: List[SmsDisplay])(implicit user: Option[User], request: RequestHeader, env: RuntimeEnvironment[User])
 
 
-@main("SMS sender") {
+@mainAuth("Sms forwardings"){
 
     <div class="page-header">
-    <h1>Message list</h1>
+        <h1>Message list</h1>
     </div>
 
     <div id="smsList" class="list-group">

@@ -1,0 +1,7 @@
+@import ems.models.User
+@import ems.views.html.auth.loginNav
+
+
+@(title: String)(content: Html)(implicit user: Option[User])
+
+@main("Sms forwardings")(content)(loginNav(user))

@@ -1,12 +1,15 @@
 package ems.controllers
 
-import play.api.mvc.{Action, Controller}
+import ems.models.User
+import securesocial.core._
+import securesocial.core.SecureSocial
 
 
-object Application extends Controller {
+class Application(override implicit val env: RuntimeEnvironment[User]) extends SecureSocial[User] {
 
-  def index = Action {
-    Ok(ems.views.html.index("Send emails using SMS"))
+  def index = UserAwareAction { implicit request =>
+    implicit val user = request.user
+    Ok(ems.views.html.index())
   }
 
 }

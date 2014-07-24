@@ -13,6 +13,7 @@ import reactivemongo.bson.BSONObjectID
 
 import ems.models.{Sms, SavedInMongo}
 import ems.backend.Mailgun._
+import ems.controllers.SmsController
 
 
 @RunWith(classOf[JUnitRunner])
@@ -32,7 +33,8 @@ class SmsSpec extends Specification {
   "Sms controller" should {
 
     "render the sms list page" in new InitDB(data) {
-      val response = ems.controllers.SmsController.list()(FakeRequest())
+      val response = SmsController.list.apply(FakeRequest())
+//      val response = ems.controllers.SmsController.list()(FakeRequest())
 
       status(response) must equalTo(OK)
       contentType(response) must beSome.which(_ == "text/html")

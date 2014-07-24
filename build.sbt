@@ -21,12 +21,17 @@ libraryDependencies ++= Seq(
   "org.webjars" % "bootstrap" % "3.1.1",
   "org.webjars" % "jquery" % "2.1.1",
   "com.newrelic.agent.java" % "newrelic-agent" % "3.6.0",
+  // TODO do not depend on SNAPSHOT!
   "org.reactivemongo" %% "play2-reactivemongo" % "0.10.5.akka23-SNAPSHOT",
   "com.github.nscala-time" %% "nscala-time" % "1.2.0",
-  "fr.njin" %% "play2-rediscala" % "1.0.2" exclude("org.scala-stm", "scala-stm_2.10.0")
+  "fr.njin" %% "play2-rediscala" % "1.0.2" exclude("org.scala-stm", "scala-stm_2.10.0"),
+  // TODO do not depend on SNAPSHOT!
+  "ws.securesocial" %% "securesocial" % "master-SNAPSHOT"
 )
 
 libraryDependencies += ws
+
+libraryDependencies += cache
 
 
 // Scoverage plugin
@@ -48,3 +53,8 @@ CoverallsPlugin.coverallsSettings
 coverallsToken := "fTcPVrhbSaPBVjGYlhRkGX8DqU8lQHrFf"
 
 net.virtualvoid.sbt.graph.Plugin.graphSettings
+
+scalacOptions ++= Seq(
+  "-feature", // Shows warnings in detail in the stdout
+  "-language:reflectiveCalls"
+)

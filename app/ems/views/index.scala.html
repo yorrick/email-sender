@@ -1,14 +1,32 @@
-@(message: String)
+@import ems.models.User
 
-@main("SMS sender") {
 
-    <div class="well">
-        <h1>@message</h1>
+@()(implicit user: Option[User])
+
+
+@mainAuth("Welcome"){
+    <h2></h2>
+    <p></p>
+
+    <div class="jumbotron">
+        <h1>Welcome</h1>
+        <p>This tool transforms sms into emails</p>
     </div>
 
-	<button type="button" class="btn btn-lg btn-default">
-		<!--a href="@routes.Assets.at("static-pages/listing.html")">Historique des SMS</a-->
-		<a href="@ems.controllers.routes.SmsController.list()">Historique des SMS</a>
-	</button>
-
+    @user match {
+        case Some(user) => {
+            <p>
+                <a href="@ems.controllers.routes.SmsController.list()" class="btn btn-primary btn-lg" role="button">
+                    See your sms
+                </a>
+            </p>
+        }
+        case None => {
+            <p>
+                <a href="@securesocial.controllers.routes.LoginPage.login()" class="btn btn-primary btn-lg" role="button">
+                    Login
+                </a>
+            </p>
+        }
+    }
 }
