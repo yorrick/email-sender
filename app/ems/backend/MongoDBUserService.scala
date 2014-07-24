@@ -87,10 +87,8 @@ class MongoDBUserService extends ExternalUserService[User] {
 
     cursor.collect[List]() map {
       case user :: Nil =>
-        Logger.debug(s"======================found $user")
         Some(user)
       case _ =>
-        Logger.debug(s"======================did not find any user")
         None
     }
 
@@ -114,8 +112,6 @@ class MongoDBUserService extends ExternalUserService[User] {
   }
 
   def save(user: BasicProfile, mode: SaveMode): Future[User] = {
-    Logger.debug(s"Save mode: $mode")
-
     // first see if there is a user with this BasicProfile already.
     findUser(user.providerId, user.userId) flatMap { userOption =>
       userOption match {
@@ -130,6 +126,12 @@ class MongoDBUserService extends ExternalUserService[User] {
     }
   }
 
+  /**
+   * We do not support multiple identities
+   * @param current
+   * @param to
+   * @return
+   */
   def link(current: User, to: BasicProfile): Future[User] = {
     Future.failed(new Exception("not implemented"))
   }

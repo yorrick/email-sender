@@ -37,8 +37,8 @@ abstract class RedisAuthenticatorStore[A <: Authenticator[_]](cacheService: Cach
    * @return
    */
   def logResult(msg: String): PartialFunction[Try[_], Unit] = {
-    case Success(result) => println(s"$msg: SUCCESS $result")
-    case Failure(e) => println(s"$msg: ERROR $e")
+    case Success(result) => logger.debug(s"$msg: SUCCESS $result")
+    case Failure(e) => logger.debug(s"$msg: ERROR $e")
   }
 
   /**
@@ -49,7 +49,7 @@ abstract class RedisAuthenticatorStore[A <: Authenticator[_]](cacheService: Cach
    * @return an optional future Authenticator
    */
   override def find(id: String)(implicit ct: ClassTag[A]): Future[Option[A]] = {
-    Logger.debug(s"Find authenticator with id $id")
+    logger.debug(s"Find authenticator with id $id")
 
     redisClient.get[A](id) andThen logResult(s"REDIS: find for id $id")
   }
@@ -62,7 +62,7 @@ abstract class RedisAuthenticatorStore[A <: Authenticator[_]](cacheService: Cach
    * @return the saved authenticator
    */
   override def save(authenticator: A, timeoutInSeconds: Int): Future[A] = {
-    Logger.debug(s"Save authenticator $authenticator")
+    logger.debug(s"Save authenticator $authenticator")
 
     redisClient.set(authenticator.id, authenticator) andThen logResult(s"REDIS: save authenticator $authenticator") map { _ => authenticator}
   }
@@ -74,7 +74,7 @@ abstract class RedisAuthenticatorStore[A <: Authenticator[_]](cacheService: Cach
    * @return a future of Unit
    */
   override def delete(id: String): Future[Unit] ={
-    Logger.debug(s"Delete authenticator with id $id")
+    logger.debug(s"Delete authenticator with id $id")
 
     redisClient.del(id) andThen logResult(s"REDIS: del for id $id") map { _ => Unit}
   }
@@ -136,6 +136,5 @@ class CookieAuthenticatorFormatter(val store: AuthenticatorStore[CookieAuthentic
     }
 
     jsResult.get
-
   }
 }
