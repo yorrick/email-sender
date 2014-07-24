@@ -1,9 +1,9 @@
 @import securesocial.core.RuntimeEnvironment
 @import ems.views.html.mainAuth
-@import ems.backend.DemoUser
+@import ems.models.User
 
 
-@()(implicit user: DemoUser, request: RequestHeader, env: RuntimeEnvironment[DemoUser])
+@()(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User])
 
 
 @mainAuth("Login"){

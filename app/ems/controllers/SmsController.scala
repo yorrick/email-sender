@@ -1,26 +1,24 @@
 package ems.controllers
 
-
 import scala.concurrent.duration._
 
 import akka.util.Timeout
-import securesocial.core.{BasicProfile, RuntimeEnvironment, SecureSocial}
+import securesocial.core.{RuntimeEnvironment, SecureSocial}
 
-import play.api.mvc.{WebSocket, Action, Controller}
+import play.api.mvc.WebSocket
 import play.api.Logger
 import play.api.libs.json._
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.Play.current
-import play.mvc.Http.RequestHeader
 
-import ems.backend.{DemoUser, MongoDB, WebsocketInputActor}
+import ems.backend.{MongoDB, WebsocketInputActor}
 import ems.models._
 
 
 /**
  * Handles all http requests from browsers
  */
-class SmsController(override implicit val env: RuntimeEnvironment[DemoUser]) extends SecureSocial[DemoUser] {
+class SmsController(override implicit val env: RuntimeEnvironment[User]) extends SecureSocial[User] {
 
   /**
    * GET for browser
@@ -45,10 +43,14 @@ class SmsController(override implicit val env: RuntimeEnvironment[DemoUser]) ext
 
   /**
    * Initiate the websocket connection
-   * TODO authenticate the socket as well!
    */
-  def updatesSocket = WebSocket.acceptWithActor[JsValue, JsValue] { request => outActor =>
-    WebsocketInputActor(outActor)
+  def updatesSocket = WebSocket.tryAcceptWithActor[JsValue, JsValue] { implicit request =>
+    SecureSocial.currentUser[User] map {
+      case Some(user) => Right { outActor =>
+        WebsocketInputActor(outActor)
+      }
+      case None => Left(Forbidden)
+    }
   }
 
 }

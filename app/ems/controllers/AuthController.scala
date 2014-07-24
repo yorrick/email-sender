@@ -1,14 +1,13 @@
 package ems.controllers
 
+import ems.models.User
 import securesocial.core.{RuntimeEnvironment, SecureSocial}
-
-import ems.backend.DemoUser
 
 
 /**
  * Handles authentication custom views
  */
-class AuthController(override implicit val env: RuntimeEnvironment[DemoUser]) extends SecureSocial[DemoUser] {
+class AuthController(override implicit val env: RuntimeEnvironment[User]) extends SecureSocial[User] {
 
   /**
    * Account view

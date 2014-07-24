@@ -1,12 +1,11 @@
 package ems.controllers
 
+import ems.models.User
 import securesocial.core._
 import securesocial.core.SecureSocial
 
-import ems.backend.DemoUser
 
-
-class Application(override implicit val env: RuntimeEnvironment[DemoUser]) extends SecureSocial[DemoUser] {
+class Application(override implicit val env: RuntimeEnvironment[User]) extends SecureSocial[User] {
 
   def index = UserAwareAction { implicit request =>
     implicit val user = request.user

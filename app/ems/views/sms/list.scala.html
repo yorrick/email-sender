@@ -2,10 +2,10 @@
 @import org.joda.time.DateTime
 @import ems.models.SmsDisplay
 @import securesocial.core.{BasicProfile, RuntimeEnvironment}
-@import ems.backend.DemoUser
+@import ems.models.User
 
 
-@(smsList: List[SmsDisplay])(implicit user: Option[DemoUser], request: RequestHeader, env: RuntimeEnvironment[DemoUser])
+@(smsList: List[SmsDisplay])(implicit user: Option[User], request: RequestHeader, env: RuntimeEnvironment[User])
 
 
 @mainAuth("Sms forwardings"){

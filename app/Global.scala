@@ -1,17 +1,18 @@
 import java.io.File
 import java.lang.reflect.Constructor
-import securesocial.core.providers.GoogleProvider
 
 import scala.collection.immutable.ListMap
 
 import com.typesafe.config.ConfigFactory
 import securesocial.core.RuntimeEnvironment
+import securesocial.core.providers.GoogleProvider
 import securesocial.controllers.ViewTemplates
 
 import play.api._
 
-import ems.backend.{DemoUser, MyEventListener, InMemoryUserService}
+import ems.backend.{MyEventListener, MongoDBUserService}
 import ems.controllers.EMSViewTemplates
+import ems.models.User
 
 
 object Global extends GlobalSettings {
@@ -32,8 +33,8 @@ object Global extends GlobalSettings {
   /**
    * The runtime environment for this sample app.
    */
-  object EMSRuntimeEnvironment extends RuntimeEnvironment.Default[DemoUser] {
-    override lazy val userService: InMemoryUserService = new InMemoryUserService()
+  object EMSRuntimeEnvironment extends RuntimeEnvironment.Default[User] {
+    override lazy val userService: MongoDBUserService = new MongoDBUserService()
     override lazy val eventListeners = List(new MyEventListener())
 
     // override authentication views
@@ -57,7 +58,7 @@ object Global extends GlobalSettings {
   override def getControllerInstance[A](controllerClass: Class[A]): A = {
     val instance  = controllerClass.getConstructors.find { c =>
       val params = c.getParameterTypes
-      params.length == 1 && params(0) == classOf[RuntimeEnvironment[DemoUser]]
+      params.length == 1 && params(0) == classOf[RuntimeEnvironment[User]]
     }.map {
       _.asInstanceOf[Constructor[A]].newInstance(EMSRuntimeEnvironment)
     }

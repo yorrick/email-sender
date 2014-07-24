@@ -1,5 +1,6 @@
 package ems.backend
 
+import ems.models.User
 import securesocial.core._
 import play.api.mvc.{Session, RequestHeader}
 import play.api.Logger
@@ -8,8 +9,8 @@ import play.api.Logger
 /**
  * A sample event listener
  */
-class MyEventListener extends EventListener[DemoUser] {
-  def onEvent(event: Event[DemoUser], request: RequestHeader, session: Session): Option[Session] = {
+class MyEventListener extends EventListener[User] {
+  def onEvent(event: Event[User], request: RequestHeader, session: Session): Option[Session] = {
     val eventName = event match {
       case LoginEvent(u) => "login"
       case LogoutEvent(u) => "logout"
