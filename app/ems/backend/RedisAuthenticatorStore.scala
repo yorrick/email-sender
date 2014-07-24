@@ -1,11 +1,10 @@
 package ems.backend
 
 import scala.util.{Try, Failure, Success}
-import scala.concurrent.{Future, ExecutionContext}
+import scala.concurrent.Future
 import scala.reflect.ClassTag
 
 import org.joda.time.DateTime
-import securesocial.core.{AuthenticationMethod, BasicProfile}
 import akka.util.ByteString
 import redis.ByteStringFormatter
 import securesocial.core.services.CacheService
@@ -17,7 +16,6 @@ import play.api.Logger
 import play.api.libs.concurrent.Akka
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json._
-import play.api.libs.functional.syntax._
 
 import ems.models.User
 
@@ -26,6 +24,7 @@ import ems.models.User
  * An distributed AuthenticationStore based on rediscala async client (using play2-rediscala plugin)
  */
 abstract class RedisAuthenticatorStore[A <: Authenticator[_]](cacheService: CacheService) extends AuthenticatorStore[A] {
+  val logger = Logger("application.RedisAuthenticatorStore")
 
   implicit val system = Akka.system
   val redisClient = RedisPlugin.client()
@@ -53,23 +52,19 @@ abstract class RedisAuthenticatorStore[A <: Authenticator[_]](cacheService: Cach
     Logger.debug(s"Find authenticator with id $id")
 
     redisClient.get[A](id) andThen logResult(s"REDIS: find for id $id")
-    cacheService.getAs[A](id)(ct) andThen logResult(s"EHCACHE: find for id $id")
   }
 
   /**
    * Saves/updates an authenticator into the cache
    *
-   * @param authenticator the istance to save
+   * @param authenticator the instance to save
    * @param timeoutInSeconds the timeout.
    * @return the saved authenticator
    */
   override def save(authenticator: A, timeoutInSeconds: Int): Future[A] = {
     Logger.debug(s"Save authenticator $authenticator")
 
-    redisClient.set(authenticator.id, authenticator) andThen logResult(s"REDIS: save authenticator $authenticator")
-
-    import ExecutionContext.Implicits.global
-    cacheService.set(authenticator.id, authenticator, timeoutInSeconds).map { _ => authenticator }  andThen logResult(s"EHCACHE: save authenticator $authenticator")
+    redisClient.set(authenticator.id, authenticator) andThen logResult(s"REDIS: save authenticator $authenticator") map { _ => authenticator}
   }
 
   /**
@@ -81,8 +76,7 @@ abstract class RedisAuthenticatorStore[A <: Authenticator[_]](cacheService: Cach
   override def delete(id: String): Future[Unit] ={
     Logger.debug(s"Delete authenticator with id $id")
 
-    redisClient.del(id) andThen logResult(s"REDIS: del for id $id")
-    cacheService.remove(id) andThen logResult(s"EHCACHE: del for id $id")
+    redisClient.del(id) andThen logResult(s"REDIS: del for id $id") map { _ => Unit}
   }
 }
 
@@ -97,6 +91,10 @@ class RedisCookieAuthenticatorStore(cacheService: CacheService)
 }
 
 
+/**
+ * ByteStringFormatter that allows to serialize and deserialize CookieAuthenticator[User] objects
+ * @param store
+ */
 class CookieAuthenticatorFormatter(val store: AuthenticatorStore[CookieAuthenticator[User]])
     extends ByteStringFormatter[CookieAuthenticator[User]] {
 
@@ -139,35 +137,5 @@ class CookieAuthenticatorFormatter(val store: AuthenticatorStore[CookieAuthentic
 
     jsResult.get
 
-//    val result = bs.utf8String.split('|').toList
-//    val emptyProfile = BasicProfile("", "", None, None, None, None, None, AuthenticationMethod.OAuth2, None, None, None)
-//    new CookieAuthenticator("", User(emptyProfile), DateTime.now(), DateTime.now(), DateTime.now(), store)
   }
 }
-
-
-///**
-// * Implementation for HttpHeaderAuthenticator
-// * @param cacheService
-// */
-//class RedisHttpHeaderAuthenticatorStore(cacheService: CacheService) extends RedisAuthenticatorStore[HttpHeaderAuthenticator[User]](cacheService) {
-//
-//  override val byteStringFormatter = new ByteStringFormatter[HttpHeaderAuthenticator[User]] {
-//    def serialize(smsDisplay: HttpHeaderAuthenticator[User]): ByteString = {
-//      ByteString()
-//    }
-//
-//    def deserialize(bs: ByteString): HttpHeaderAuthenticator[User] = {
-//      val result = bs.utf8String.split('|').toList
-//
-//      //      id: String, user: U, expirationDate: DateTime,
-//      //      lastUsed: DateTime,
-//      //      creationDate: DateTime,
-//      //      @transient
-//      //      store: AuthenticatorStore[CookieAuthenticator[U]]
-//
-//      new HttpHeaderAuthenticator()
-//    }
-//  }
-//
-//}
