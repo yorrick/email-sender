@@ -1,6 +1,9 @@
 import java.io.File
 import java.lang.reflect.Constructor
 
+import securesocial.core.authenticator.{HttpHeaderAuthenticatorBuilder, AuthenticatorStore, CookieAuthenticatorBuilder}
+import securesocial.core.services.{AuthenticatorService, CacheService}
+
 import scala.collection.immutable.ListMap
 
 import com.typesafe.config.ConfigFactory
@@ -10,7 +13,7 @@ import securesocial.controllers.ViewTemplates
 
 import play.api._
 
-import ems.backend.{MyEventListener, MongoDBUserService}
+import ems.backend.{RedisAuthenticatorStore, MyEventListener, MongoDBUserService}
 import ems.controllers.EMSViewTemplates
 import ems.models.User
 
@@ -35,6 +38,15 @@ object Global extends GlobalSettings {
    */
   object EMSRuntimeEnvironment extends RuntimeEnvironment.Default[User] {
     override lazy val userService: MongoDBUserService = new MongoDBUserService()
+
+    // use AuthenticationStore based on redis (distributed)
+    override lazy val authenticatorService = new AuthenticatorService(
+//      new CookieAuthenticatorBuilder[User](new RedisAuthenticatorStore(), idGenerator),
+//      new HttpHeaderAuthenticatorBuilder[User](new RedisAuthenticatorStore(), idGenerator)
+      new CookieAuthenticatorBuilder[User](new RedisAuthenticatorStore(cacheService), idGenerator),
+      new HttpHeaderAuthenticatorBuilder[User](new RedisAuthenticatorStore(cacheService), idGenerator)
+    )
+
     override lazy val eventListeners = List(new MyEventListener())
 
     // override authentication views

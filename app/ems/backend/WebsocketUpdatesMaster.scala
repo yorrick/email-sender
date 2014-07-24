@@ -31,7 +31,7 @@ object WebsocketUpdatesMaster {
   val redisClient = RedisPlugin.client()
   val redisChannel = "smsList"
 
-  // use application configuration
+  // we have to parse application config to create the subscriber
   val redisConfig = RedisPlugin.parseConf(current.configuration)
   val address = new InetSocketAddress(redisConfig._1, redisConfig._2)
   val authPassword = redisConfig._3 map {userPasswordTuple => userPasswordTuple._2}

@@ -31,6 +31,8 @@ libraryDependencies ++= Seq(
 
 libraryDependencies += ws
 
+libraryDependencies += cache
+
 
 // Scoverage plugin
 instrumentSettings
