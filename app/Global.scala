@@ -1,8 +1,8 @@
 import java.io.File
 import java.lang.reflect.Constructor
 
-import securesocial.core.authenticator.{HttpHeaderAuthenticatorBuilder, AuthenticatorStore, CookieAuthenticatorBuilder}
-import securesocial.core.services.{AuthenticatorService, CacheService}
+import securesocial.core.authenticator.{HttpHeaderAuthenticatorBuilder, CookieAuthenticatorBuilder}
+import securesocial.core.services.AuthenticatorService
 
 import scala.collection.immutable.ListMap
 
@@ -13,7 +13,7 @@ import securesocial.controllers.ViewTemplates
 
 import play.api._
 
-import ems.backend.{RedisAuthenticatorStore, MyEventListener, MongoDBUserService}
+import ems.backend.{RedisCookieAuthenticatorStore, MyEventListener, MongoDBUserService}
 import ems.controllers.EMSViewTemplates
 import ems.models.User
 
@@ -43,8 +43,8 @@ object Global extends GlobalSettings {
     override lazy val authenticatorService = new AuthenticatorService(
 //      new CookieAuthenticatorBuilder[User](new RedisAuthenticatorStore(), idGenerator),
 //      new HttpHeaderAuthenticatorBuilder[User](new RedisAuthenticatorStore(), idGenerator)
-      new CookieAuthenticatorBuilder[User](new RedisAuthenticatorStore(cacheService), idGenerator),
-      new HttpHeaderAuthenticatorBuilder[User](new RedisAuthenticatorStore(cacheService), idGenerator)
+      new CookieAuthenticatorBuilder[User](new RedisCookieAuthenticatorStore(cacheService), idGenerator)
+//      new HttpHeaderAuthenticatorBuilder[User](new RedisHttpHeaderAuthenticatorStore(cacheService), idGenerator)
     )
 
     override lazy val eventListeners = List(new MyEventListener())

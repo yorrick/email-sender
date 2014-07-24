@@ -56,6 +56,9 @@ object SmsDisplay {
 
   implicit val smsDisplayFormat = Json.format[SmsDisplay]
 
+  /**
+   * This formatter is used to serialize / deserialize SmsDisplay object in redis
+   */
   implicit val smsDisplayByteStringFormatter = new ByteStringFormatter[SmsDisplay] {
     def serialize(smsDisplay: SmsDisplay): ByteString = {
       ByteString(
