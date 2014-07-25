@@ -3,7 +3,8 @@ language: scala
 scala:
    - "2.10.4"
 
-script: sbt test
+# specific configuration for continuous integration
+script: sbt '; set javaOptions += "-Dconfig.file=conf/application.test-ci.conf" ; test'
 
 after_script:
   - "sbt coveralls"
