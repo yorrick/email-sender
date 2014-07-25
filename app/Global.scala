@@ -5,6 +5,7 @@ import securesocial.core.authenticator.{HttpHeaderAuthenticatorBuilder, CookieAu
 import securesocial.core.services.AuthenticatorService
 
 import scala.collection.immutable.ListMap
+import scala.sys.SystemProperties
 
 import com.typesafe.config.ConfigFactory
 import securesocial.core.RuntimeEnvironment
@@ -20,9 +21,33 @@ import ems.models.User
 
 object Global extends GlobalSettings with WithControllerUtils {
 
+  val CONFIG_FILE = "config.file"
+
+  /**
+   * Overrides default configuration
+   * @param config
+   * @param path
+   * @param classloader
+   * @param mode
+   * @return
+   */
   override def onLoadConfig(config: Configuration, path: File, classloader: ClassLoader, mode: Mode.Mode): Configuration = {
-    val modeSpecificConfig = config ++ Configuration(ConfigFactory.load(s"application.${mode.toString.toLowerCase}.conf"))
-    super.onLoadConfig(modeSpecificConfig, path, classloader, mode)
+    // check if we have to override config file
+    val systemProperties = new SystemProperties()
+
+    val configuration = systemProperties.get(CONFIG_FILE) match {
+      case Some(configFile) =>
+        // system property specific
+        Logger.info(s"Using configuration file $configFile based on $CONFIG_FILE jvm property")
+        config ++ Configuration(ConfigFactory.load(configFile))
+      case None =>
+        // mode specific
+        val configFile = s"application.${mode.toString.toLowerCase}.conf"
+        Logger.info(s"Using configuration file $configFile based on $mode mode")
+        config ++ Configuration(ConfigFactory.load())
+    }
+
+    super.onLoadConfig(configuration, path, classloader, mode)
   }
 
   override def onStart(app: Application) {
