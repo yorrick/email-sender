@@ -9,13 +9,17 @@ import play.api.test.{WithApplication, FakeApplication}
 import play.api.mvc.Cookie
 
 
-abstract class WithLoggedUser[T](override val app: FakeApplication = FakeApplication(),
+abstract class WithLoggedUser[Usr](override val app: FakeApplication = FakeApplication(),
                               val identity: Option[BasicProfile] = None) extends WithApplication(app) with Mockito {
 
   // vals must be lazy due to arround implementation
   // TODO implement default basic profile if none is given
   lazy val basicProfile = identity.get
-  lazy val mockUserService = mock[UserService[T]]
+  lazy val mockUserService = mock[UserService[Usr]]
+
+  // TODO create a user
+  //  - in AuthenticatorStore using save(authenticator: A, timeoutInSeconds: Int): Future[A]
+  //  - in UserService using def save(profile: BasicProfile, mode: SaveMode): Future[U]
 
 //  def cookie = Authenticator.create(basicProfile) match {
 //    case Right(authenticator) => authenticator.toCookie

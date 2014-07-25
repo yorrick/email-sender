@@ -78,7 +78,7 @@ abstract class RedisAuthenticatorStore[A <: Authenticator[_]] extends Authentica
 /**
  * Implementation for CookieAuthenticator
  */
-class RedisCookieAuthenticatorStore()
+class RedisCookieAuthenticatorStore
     extends RedisAuthenticatorStore[CookieAuthenticator[User]] {
   override val byteStringFormatter = new CookieAuthenticatorFormatter(this)
 }
