@@ -1,48 +1,101 @@
-import com.github.nscala_time.time.Imports.DateTime
-import ems.backend.utils.WithControllerUtils
+import scala.concurrent.Future
+import scala.reflect.ClassTag
 
+import com.github.nscala_time.time.Imports.DateTime
 import org.junit.runner.RunWith
+import org.specs2.mock.Mockito
 import org.specs2.mutable._
 import org.specs2.runner._
-import org.specs2.matcher.ShouldMatchers
 import reactivemongo.bson.BSONObjectID
+import securesocial.core.{AuthenticationMethod, BasicProfile}
+import securesocial.core.authenticator._
+import securesocial.core.services.{SaveMode, AuthenticatorService}
 
 import play.api.libs.json.JsValue
 import play.api.Logger
 import play.api.test._
-import play.api.test.Helpers._
-import play.api.mvc.{Request, AnyContent}
+import play.api.mvc.Cookie
 
 import ems.models.{Sms, SavedInMongo, User}
-import ems.backend.Mailgun._
 import ems.controllers.{SmsController, Application}
-import utils.securesocial.WithLoggedUser
+import ems.backend.utils.WithControllerUtils
+import ems.backend.Mailgun._
 
 
-//class ApplicationSpec extends PlaySpecification with ShouldMatchers {
+/**
+ * A store that always returns the same User
+ */
+class MockAuthenticatorStore(val user: User) extends AuthenticatorStore[CookieAuthenticator[User]] {
+
+  val authenticator: CookieAuthenticator[User] = new CookieAuthenticator(
+    "emailsenderid", user, DateTime.nextDay, DateTime.now, DateTime.lastDay, this)
+
+  def find(id: String)(implicit ct: ClassTag[CookieAuthenticator[User]]): Future[Option[CookieAuthenticator[User]]] = {
+    Future.successful(Some(authenticator))
+  }
+
+  def save(authenticator: CookieAuthenticator[User], timeoutInSeconds: Int): Future[CookieAuthenticator[User]] = {
+    Future.successful(authenticator)
+  }
+
+  def delete(id: String): Future[Unit] = Future.successful(Unit)
+}
+
+
+///**
+// * A user service that always returns the same User
+// */
+//class MockUserService extends ExternalUserService[User] {
+//  def find(providerId: String, userId: String): Future[Option[BasicProfile]] = {
 //
-//  def minimalApp = FakeApplication(withoutPlugins=excludedPlugins, additionalPlugins = includedPlugins)
-//
-//  "Access secured index " in new WithLoggedUser(minimalApp) {
-//
-//    val req: Request[AnyContent] = FakeRequest().
-//      withHeaders((HeaderNames.CONTENT_TYPE, "application/x-www-form-urlencoded")).
-//      withCookies(cookie) // Fake cookie from the WithloggedUser trait
-//
-//    val result = Application.index.apply(req)
-//
-//    val actual: Int= status(result)
-//    actual must be equalTo OK
 //  }
+//
+//  def findUser(providerId: String, userId: String): Future[Option[User]] = {
+//
+//  }
+//
+//  def findByEmailAndProvider(email: String, providerId: String): Future[Option[BasicProfile]] = {
+//
+//  }
+//
+//  def save(user: BasicProfile, mode: SaveMode): Future[User] = {
+//
+//  }
+//
+//  def link(current: User, to: BasicProfile): Future[User] = {
+//    Future.failed(new Exception("not implemented"))
+//  }
+//
 //}
 
 
 @RunWith(classOf[JUnitRunner])
-class SmsSpec extends PlaySpecification with WithControllerUtils {
+class SmsSpec extends PlaySpecification with WithControllerUtils with Mockito {
   sequential
 //  isolated
 
-  def createController[A] = getControllerInstance[A, User](Global.EMSRuntimeEnvironment)_
+  val user = User(BasicProfile(
+    "providerId",
+    "userid-12345",
+    Some("Paul"),
+    Some("Watson"),
+    Some("Paul Watson"),
+    Some("paul.watson@foobar.com"),
+    None,
+    AuthenticationMethod.OAuth2,
+    None,
+    None,
+    None
+  ))
+
+  val runtimeEnv = new Global.EMSRuntimeEnvironment {
+    override lazy val authenticatorService = new AuthenticatorService(
+      // TODO mock fromRequest?
+      new CookieAuthenticatorBuilder[User](new MockAuthenticatorStore(user), idGenerator)
+    )
+  }
+
+  def createController[A] = getControllerInstance[A, User](runtimeEnv)_
   val smsController = createController(classOf[SmsController]).get
   val applicationController = createController(classOf[Application]).get
 
@@ -58,7 +111,8 @@ class SmsSpec extends PlaySpecification with WithControllerUtils {
   "Sms controller" should {
 
     "render the sms list page" in new InitDB(data) {
-      val response = smsController.list(FakeRequest())
+      // TODO fetch cookie name in config?
+      val response = smsController.list(FakeRequest().withCookies(Cookie("emailsenderid", "we dont care")))
 
       status(response) must equalTo(OK)
       contentType(response) must beSome.which(_ == "text/html")
@@ -81,7 +135,7 @@ class SmsSpec extends PlaySpecification with WithControllerUtils {
       println(contentAsString(postResponse))
       contentAsString(postResponse) must contain("Message")
 
-      val listResponse = smsController.list(FakeRequest())
+      val listResponse = smsController.list(FakeRequest().withCookies(Cookie("emailsenderid", "we dont care")))
       status(listResponse) must equalTo(OK)
       contentType(listResponse) must beSome.which(_ == "text/html")
       contentAsString(listResponse) must contain ("some text")
@@ -112,11 +166,11 @@ class SmsSpec extends PlaySpecification with WithControllerUtils {
     }
 
     "render the index page" in new WithApplication {
-      val home = applicationController.index(FakeRequest())
+      val home = applicationController.index(FakeRequest().withCookies(Cookie("emailsenderid", "we dont care")))
 
       status(home) must equalTo(OK)
       contentType(home) must beSome.which(_ == "text/html")
-      contentAsString(home) must contain("Send emails")
+      contentAsString(home) must contain("Sms forwardings")
     }
   }
 

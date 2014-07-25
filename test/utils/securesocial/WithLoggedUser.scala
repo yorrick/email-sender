@@ -1,21 +1,44 @@
 package utils.securesocial
 
-import securesocial.core.BasicProfile
-import securesocial.core.services.UserService
+import scala.reflect.ClassTag
+
+import securesocial.core.{RuntimeEnvironment, BasicProfile}
+import securesocial.core.services.{AuthenticatorService, UserService}
+import securesocial.core.authenticator.{Authenticator, AuthenticatorBuilder}
 import org.specs2.execute.{Result, AsResult}
 import org.specs2.mock.Mockito
+import org.apache.commons.lang3.reflect.TypeUtils
 
 import play.api.test.{WithApplication, FakeApplication}
 import play.api.mvc.Cookie
 
 
 abstract class WithLoggedUser[Usr](override val app: FakeApplication = FakeApplication(),
-                              val identity: Option[BasicProfile] = None) extends WithApplication(app) with Mockito {
+                              val defaultUser: Option[Usr] = None) extends WithApplication(app) with Mockito {
+
+  def withUser(env: RuntimeEnvironment[Usr]): RuntimeEnvironment[Usr] = {
+    val envSPy = spy(env)
+
+    envSPy.authenticatorService returns new AuthenticatorService[Usr]() {
+      override def find(id: String): Option[AuthenticatorBuilder[Usr]] = {
+        println("=============================== NONE")
+        None
+      }
+
+      override def findAs[T <: AuthenticatorBuilder[Usr]](id: String)(implicit ct: ClassTag[T]): Option[T] = {
+        println("=============================== NONE")
+        None
+      }
+    }
+
+    envSPy
+  }
+
 
   // vals must be lazy due to arround implementation
   // TODO implement default basic profile if none is given
-  lazy val basicProfile = identity.get
-  lazy val mockUserService = mock[UserService[Usr]]
+//  lazy val basicProfile = identity.get
+//  lazy val mockUserService = mock[UserService[Usr]]
 
   // TODO create a user
   //  - in AuthenticatorStore using save(authenticator: A, timeoutInSeconds: Int): Future[A]
@@ -33,10 +56,10 @@ abstract class WithLoggedUser[Usr](override val app: FakeApplication = FakeAppli
 //  }
 }
 
-object WithLoggedUser{
-  val excludedPlugins = List( "securesocial.core.DefaultAuthenticatorStore" )
-  val includedPlugins = List( "securesocial.testkit.FakeAuthenticatorStore" )
-  def minimalApp = FakeApplication(withoutPlugins = excludedPlugins, additionalPlugins = includedPlugins)
-}
+//object WithLoggedUser{
+//  val excludedPlugins = List( "securesocial.core.DefaultAuthenticatorStore" )
+//  val includedPlugins = List( "securesocial.testkit.FakeAuthenticatorStore" )
+//  def minimalApp = FakeApplication(withoutPlugins = excludedPlugins, additionalPlugins = includedPlugins)
+//}
 
 

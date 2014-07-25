@@ -61,7 +61,7 @@ object Global extends GlobalSettings with WithControllerUtils {
   /**
    * The runtime environment for this sample app.
    */
-  object EMSRuntimeEnvironment extends RuntimeEnvironment.Default[User] {
+  class EMSRuntimeEnvironment extends RuntimeEnvironment.Default[User] {
     override lazy val userService: MongoDBUserService = new MongoDBUserService()
 
     // use AuthenticationStore based on redis (distributed)
@@ -79,6 +79,10 @@ object Global extends GlobalSettings with WithControllerUtils {
     )
   }
 
+  object EMSRuntimeEnvironment {
+    val instance = new EMSRuntimeEnvironment()
+  }
+
   /**
    * An implementation that checks if the controller expects a RuntimeEnvironment and
    * passes the instance to it if required.
@@ -90,7 +94,7 @@ object Global extends GlobalSettings with WithControllerUtils {
    * @return
    */
   override def getControllerInstance[A](controllerClass: Class[A]): A =
-    getControllerInstance[A, User](EMSRuntimeEnvironment)(controllerClass)
+    getControllerInstance[A, User](EMSRuntimeEnvironment.instance)(controllerClass)
       .getOrElse(super.getControllerInstance(controllerClass))
 
 }
