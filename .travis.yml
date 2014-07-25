@@ -13,6 +13,7 @@ services:
   - mongodb
   - redis-server
 
+# works only for private repositories
 cache:
   directories:
   - $HOME/.ivy2/cache
