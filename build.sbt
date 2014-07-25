@@ -46,7 +46,7 @@ ScoverageKeys.highlighting := {
   else false
 }
 
-ScoverageKeys.excludedPackages in ScoverageCompile := "<empty>;Reverse.*;"
+ScoverageKeys.excludedPackages in ScoverageCompile := "<empty>;Reverse.*;.*\.template\.scala"
 
 CoverallsPlugin.coverallsSettings
 
