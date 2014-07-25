@@ -7,7 +7,7 @@ scala:
 script: sbt '; set javaOptions += "-Dconfig.file=conf/application.test-ci.conf" ; test'
 
 after_script:
-  - "sbt coveralls"
+  - sbt '; set javaOptions += "-Dconfig.file=conf/application.test-ci.conf" ; coveralls'
 
 services:
   - mongodb
