@@ -25,29 +25,29 @@ object Global extends GlobalSettings with WithControllerUtils {
 
   /**
    * Overrides default configuration
-   * @param config
+   * @param loadedConfig
    * @param path
    * @param classloader
    * @param mode
    * @return
    */
-  override def onLoadConfig(config: Configuration, path: File, classloader: ClassLoader, mode: Mode.Mode): Configuration = {
+  override def onLoadConfig(loadedConfig: Configuration, path: File, classloader: ClassLoader, mode: Mode.Mode): Configuration = {
     // check if we have to override config file
     val systemProperties = new SystemProperties()
 
-    val configuration = systemProperties.get(CONFIG_FILE) match {
+    val overrideConfig = systemProperties.get(CONFIG_FILE) match {
       case Some(configFile) =>
         // system property specific
         Logger.info(s"Using configuration file $configFile based on $CONFIG_FILE jvm property")
-        config ++ Configuration(ConfigFactory.load(configFile))
+        Configuration(ConfigFactory.load(configFile))
       case None =>
         // mode specific
         val configFile = s"application.${mode.toString.toLowerCase}.conf"
         Logger.info(s"Using configuration file $configFile based on $mode mode")
-        config ++ Configuration(ConfigFactory.load())
+        Configuration(ConfigFactory.load(configFile))
     }
 
-    super.onLoadConfig(configuration, path, classloader, mode)
+    super.onLoadConfig(loadedConfig ++ overrideConfig, path, classloader, mode)
   }
 
   override def onStart(app: Application) {
