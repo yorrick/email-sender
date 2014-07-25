@@ -1,10 +1,11 @@
 import com.github.nscala_time.time.Imports.DateTime
+import ems.backend.utils.WithControllerUtils
 
 import org.junit.runner.RunWith
 import org.specs2.mutable._
 import org.specs2.runner._
-import reactivemongo.bson.BSONObjectID
 import org.specs2.matcher.ShouldMatchers
+import reactivemongo.bson.BSONObjectID
 
 import play.api.libs.json.JsValue
 import play.api.Logger
@@ -12,14 +13,16 @@ import play.api.test._
 import play.api.test.Helpers._
 import play.api.mvc.{Request, AnyContent}
 
-import ems.models.{Sms, SavedInMongo}
+import ems.models.{Sms, SavedInMongo, User}
 import ems.backend.Mailgun._
 import ems.controllers.{SmsController, Application}
+import utils.securesocial.WithLoggedUser
 
 
 //class ApplicationSpec extends PlaySpecification with ShouldMatchers {
-//  import WithLoggedUser._
-//  def minimalApp = FakeApplication(withoutPlugins=excludedPlugins,additionalPlugins = includedPlugins)
+//
+//  def minimalApp = FakeApplication(withoutPlugins=excludedPlugins, additionalPlugins = includedPlugins)
+//
 //  "Access secured index " in new WithLoggedUser(minimalApp) {
 //
 //    val req: Request[AnyContent] = FakeRequest().
@@ -35,12 +38,13 @@ import ems.controllers.{SmsController, Application}
 
 
 @RunWith(classOf[JUnitRunner])
-class SmsSpec extends PlaySpecification {
+class SmsSpec extends PlaySpecification with WithControllerUtils {
   sequential
 //  isolated
 
-  val smsController = Global.getControllerInstance(classOf[SmsController])
-  val applicationController = Global.getControllerInstance(classOf[Application])
+  def createController[A] = getControllerInstance[A, User](Global.EMSRuntimeEnvironment)_
+  val smsController = createController(classOf[SmsController]).get
+  val applicationController = createController(classOf[Application]).get
 
   step {
     Logger.info("Before class")

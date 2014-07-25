@@ -1,6 +1,6 @@
 import java.io.File
-import java.lang.reflect.Constructor
 
+import ems.backend.utils.WithControllerUtils
 import securesocial.core.authenticator.{HttpHeaderAuthenticatorBuilder, CookieAuthenticatorBuilder}
 import securesocial.core.services.AuthenticatorService
 
@@ -18,7 +18,7 @@ import ems.controllers.EMSViewTemplates
 import ems.models.User
 
 
-object Global extends GlobalSettings {
+object Global extends GlobalSettings with WithControllerUtils {
 
   override def onLoadConfig(config: Configuration, path: File, classloader: ClassLoader, mode: Mode.Mode): Configuration = {
     val modeSpecificConfig = config ++ Configuration(ConfigFactory.load(s"application.${mode.toString.toLowerCase}.conf"))
@@ -41,10 +41,7 @@ object Global extends GlobalSettings {
 
     // use AuthenticationStore based on redis (distributed)
     override lazy val authenticatorService = new AuthenticatorService(
-//      new CookieAuthenticatorBuilder[User](new RedisAuthenticatorStore(), idGenerator),
-//      new HttpHeaderAuthenticatorBuilder[User](new RedisAuthenticatorStore(), idGenerator)
-      new CookieAuthenticatorBuilder[User](new RedisCookieAuthenticatorStore(cacheService), idGenerator)
-//      new HttpHeaderAuthenticatorBuilder[User](new RedisHttpHeaderAuthenticatorStore(cacheService), idGenerator)
+      new CookieAuthenticatorBuilder[User](new RedisCookieAuthenticatorStore(), idGenerator)
     )
 
     override lazy val eventListeners = List(new MyEventListener())
@@ -67,14 +64,8 @@ object Global extends GlobalSettings {
    * @tparam A
    * @return
    */
-  override def getControllerInstance[A](controllerClass: Class[A]): A = {
-    val instance  = controllerClass.getConstructors.find { c =>
-      val params = c.getParameterTypes
-      params.length == 1 && params(0) == classOf[RuntimeEnvironment[User]]
-    }.map {
-      _.asInstanceOf[Constructor[A]].newInstance(EMSRuntimeEnvironment)
-    }
-    instance.getOrElse(super.getControllerInstance(controllerClass))
-  }
+  override def getControllerInstance[A](controllerClass: Class[A]): A =
+    getControllerInstance[A, User](EMSRuntimeEnvironment)(controllerClass)
+      .getOrElse(super.getControllerInstance(controllerClass))
 
 }

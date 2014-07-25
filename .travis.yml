@@ -1,7 +1,7 @@
 language: scala
 
 scala:
-   - 2.10.4
+   - "2.10.4"
 
 script: sbt test
 
@@ -11,3 +11,7 @@ after_script:
 services:
   - mongodb
   - redis-server
+
+cache:
+  directories:
+  - $HOME/.ivy2/cache

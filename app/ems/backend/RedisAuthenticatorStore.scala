@@ -23,7 +23,7 @@ import ems.models.User
 /**
  * An distributed AuthenticationStore based on rediscala async client (using play2-rediscala plugin)
  */
-abstract class RedisAuthenticatorStore[A <: Authenticator[_]](cacheService: CacheService) extends AuthenticatorStore[A] {
+abstract class RedisAuthenticatorStore[A <: Authenticator[_]] extends AuthenticatorStore[A] {
   val logger = Logger("application.RedisAuthenticatorStore")
 
   implicit val system = Akka.system
@@ -49,8 +49,6 @@ abstract class RedisAuthenticatorStore[A <: Authenticator[_]](cacheService: Cach
    * @return an optional future Authenticator
    */
   override def find(id: String)(implicit ct: ClassTag[A]): Future[Option[A]] = {
-    logger.debug(s"Find authenticator with id $id")
-
     redisClient.get[A](id) andThen logResult(s"REDIS: find for id $id")
   }
 
@@ -62,8 +60,6 @@ abstract class RedisAuthenticatorStore[A <: Authenticator[_]](cacheService: Cach
    * @return the saved authenticator
    */
   override def save(authenticator: A, timeoutInSeconds: Int): Future[A] = {
-    logger.debug(s"Save authenticator $authenticator")
-
     redisClient.set(authenticator.id, authenticator) andThen logResult(s"REDIS: save authenticator $authenticator") map { _ => authenticator}
   }
 
@@ -74,8 +70,6 @@ abstract class RedisAuthenticatorStore[A <: Authenticator[_]](cacheService: Cach
    * @return a future of Unit
    */
   override def delete(id: String): Future[Unit] ={
-    logger.debug(s"Delete authenticator with id $id")
-
     redisClient.del(id) andThen logResult(s"REDIS: del for id $id") map { _ => Unit}
   }
 }
@@ -83,10 +77,9 @@ abstract class RedisAuthenticatorStore[A <: Authenticator[_]](cacheService: Cach
 
 /**
  * Implementation for CookieAuthenticator
- * @param cacheService
  */
-class RedisCookieAuthenticatorStore(cacheService: CacheService)
-    extends RedisAuthenticatorStore[CookieAuthenticator[User]](cacheService) {
+class RedisCookieAuthenticatorStore()
+    extends RedisAuthenticatorStore[CookieAuthenticator[User]] {
   override val byteStringFormatter = new CookieAuthenticatorFormatter(this)
 }
 
