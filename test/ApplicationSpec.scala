@@ -134,12 +134,6 @@ class SmsSpec extends PlaySpecification with WithControllerUtils with Mockito {
       status(postResponse) must equalTo(OK)
       println(contentAsString(postResponse))
       contentAsString(postResponse) must contain("Message")
-
-      val listResponse = smsController.list(FakeRequest().withCookies(Cookie("emailsenderid", "we dont care")))
-      status(listResponse) must equalTo(OK)
-      contentType(listResponse) must beSome.which(_ == "text/html")
-      contentAsString(listResponse) must contain ("some text")
-      contentAsString(listResponse) must contain ("hello toto")
     }
 
   }
