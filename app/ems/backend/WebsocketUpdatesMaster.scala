@@ -27,8 +27,6 @@ object WebsocketUpdatesMaster {
   // create the master actor once
   val websocketUpdatesMaster = Akka.system.actorOf(Props[WebsocketUpdatesMaster], name="websocketUpdatesMaster")
 
-  implicit val system = Akka.system
-  val redisClient = RedisPlugin.client()
   val redisChannel = "smsList"
 
   // we have to parse application config to create the subscriber
@@ -76,7 +74,7 @@ class WebsocketUpdatesMaster extends Actor {
 
     case sms: Sms =>
       // send notification to redis
-      WebsocketUpdatesMaster.redisClient.publish(WebsocketUpdatesMaster.redisChannel, SmsDisplay.fromSms(sms)) onComplete {
+      Redis.redisClient.publish(WebsocketUpdatesMaster.redisChannel, SmsDisplay.fromSms(sms)) onComplete {
         case Success(message) => Logger.info(s"Successfuly published message ($message)")
         case Failure(t) => Logger.warn("An error has occured: " + t.getMessage)
       }

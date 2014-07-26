@@ -7,13 +7,9 @@ import scala.reflect.ClassTag
 import org.joda.time.DateTime
 import akka.util.ByteString
 import redis.ByteStringFormatter
-import securesocial.core.services.CacheService
 import securesocial.core.authenticator.{CookieAuthenticator, Authenticator, AuthenticatorStore}
 
-import play.modules.rediscala.RedisPlugin
-import play.api.Play.current
 import play.api.Logger
-import play.api.libs.concurrent.Akka
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json._
 
@@ -25,9 +21,6 @@ import ems.models.User
  */
 abstract class RedisAuthenticatorStore[A <: Authenticator[_]] extends AuthenticatorStore[A] {
   val logger = Logger("application.RedisAuthenticatorStore")
-
-  implicit val system = Akka.system
-  val redisClient = RedisPlugin.client()
 
   implicit def byteStringFormatter: ByteStringFormatter[A]
 
@@ -49,7 +42,7 @@ abstract class RedisAuthenticatorStore[A <: Authenticator[_]] extends Authentica
    * @return an optional future Authenticator
    */
   override def find(id: String)(implicit ct: ClassTag[A]): Future[Option[A]] = {
-    redisClient.get[A](id) andThen logResult(s"REDIS: find for id $id")
+    Redis.redisClient.get[A](id) andThen logResult(s"REDIS: find for id $id")
   }
 
   /**
@@ -60,7 +53,7 @@ abstract class RedisAuthenticatorStore[A <: Authenticator[_]] extends Authentica
    * @return the saved authenticator
    */
   override def save(authenticator: A, timeoutInSeconds: Int): Future[A] = {
-    redisClient.set(authenticator.id, authenticator) andThen logResult(s"REDIS: save authenticator $authenticator") map { _ => authenticator}
+    Redis.redisClient.set(authenticator.id, authenticator) andThen logResult(s"REDIS: save authenticator $authenticator") map { _ => authenticator}
   }
 
   /**
@@ -70,7 +63,7 @@ abstract class RedisAuthenticatorStore[A <: Authenticator[_]] extends Authentica
    * @return a future of Unit
    */
   override def delete(id: String): Future[Unit] ={
-    redisClient.del(id) andThen logResult(s"REDIS: del for id $id") map { _ => Unit}
+    Redis.redisClient.del(id) andThen logResult(s"REDIS: del for id $id") map { _ => Unit}
   }
 }
 

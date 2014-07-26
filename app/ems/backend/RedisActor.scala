@@ -13,8 +13,7 @@ import ems.backend.WebsocketUpdatesMaster._
 
 /**
  * This listener consumes messages from redis, and give them to the websocketUpdatesMaster
- * @param master
- * @param channels
+ * TODO use RedisPubSub instead! and integrate it to play2-rediscala
  */
 class RedisActor(address: InetSocketAddress, channels: Seq[String], patterns: Seq[String], authPassword: Option[String])
   extends RedisSubscriberActor(address, channels, patterns, authPassword) {
