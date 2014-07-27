@@ -22,6 +22,6 @@ cache:
 deploy:
   provider: heroku
   api_key:
-    stable: AxT0aIhEKNjwTkQRWPyQLW8CH/p4g9nWqNzFX7r6K87IhbCOF4RzIEo099tzMR26lrqpBLAC1PJ8+Al78doOSpvHwFiZZbeMtC5X4KYpDcLgheB8wzZCi2Yt28wFqZuBtgarbs6dgBqtpChdW+XRTFM37BL5IsQ4q4fV4OMqQiQ=
+    secure: ZL5vozfDtimfeAG7Ku6kljtCRRp2VVoNMujiIh0hO9/gODTaHzRJzqwNm1pU6/fAsWnLqV/dEqQjmqHWVVpbjpGzouWTLIvtNEmRh1SgHxJtQKowmbT4RSpg43ggNyT0O5avWmH2UukwmSG1LV6rO2mF/jPT0Q7rlVvQjrUCtjo=
   app:
     staging: yorrick-email-sender-staging
