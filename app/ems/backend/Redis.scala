@@ -14,4 +14,6 @@ object Redis {
    * Single redis client for all application
    */
   val redisClient = RedisPlugin.client()
+  val redisPubsub = RedisPlugin.pubsub(channels = Seq(WebsocketUpdatesMaster.redisChannel),
+      patterns = Seq[String](), onMessage = WebsocketUpdatesMaster.onMessage)
 }

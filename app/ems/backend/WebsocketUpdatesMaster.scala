@@ -2,6 +2,9 @@ package ems.backend
 
 import java.net.InetSocketAddress
 
+import akka.util.ByteString
+import redis.api.pubsub.Message
+
 import scala.collection.mutable
 import scala.util.{Try, Failure, Success}
 import scala.concurrent.duration._
@@ -26,17 +29,7 @@ object WebsocketUpdatesMaster {
 
   // create the master actor once
   val websocketUpdatesMaster = Akka.system.actorOf(Props[WebsocketUpdatesMaster], name="websocketUpdatesMaster")
-
   val redisChannel = "smsList"
-
-  // we have to parse application config to create the subscriber
-  val redisConfig = RedisPlugin.parseConf(current.configuration)
-  val address = new InetSocketAddress(redisConfig._1, redisConfig._2)
-  val authPassword = redisConfig._3 map {userPasswordTuple => userPasswordTuple._2}
-
-  // create redis subscriber instance (the dispatcher is provided by the rediscala lib)
-  Akka.system.actorOf(Props(classOf[RedisActor], address, Seq(redisChannel), Seq(), authPassword)
-    .withDispatcher("rediscala.rediscala-client-worker-dispatcher"))
 
   // we periodically ping the client so the websocket connections do not close
   Akka.system.scheduler.schedule(30.second, 30.second, websocketUpdatesMaster, Ping)
@@ -48,6 +41,16 @@ object WebsocketUpdatesMaster {
   def notifyWebsockets: PartialFunction[Try[Sms], Unit] = {
     case Success(sms) =>
       websocketUpdatesMaster ! sms
+  }
+
+  /**
+   * Consumes messages from redis, and give them to the websocketUpdatesMaster
+   * @param message
+   */
+  def onMessage(message: Message) {
+    Logger.debug(s"message received: $message")
+    val smsDisplay = SmsDisplay.smsDisplayByteStringFormatter.deserialize(ByteString(message.data))
+    websocketUpdatesMaster ! smsDisplay
   }
 }
 

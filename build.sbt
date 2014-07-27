@@ -24,7 +24,7 @@ libraryDependencies ++= Seq(
   // TODO do not depend on SNAPSHOT!
   "org.reactivemongo" %% "play2-reactivemongo" % "0.10.5.akka23-SNAPSHOT",
   "com.github.nscala-time" %% "nscala-time" % "1.2.0",
-  "fr.njin" %% "play2-rediscala" % "1.0.2" exclude("org.scala-stm", "scala-stm_2.10.0"),
+  "fr.njin" %% "play2-rediscala" % "2.3.0.0" exclude("org.scala-stm", "scala-stm_2.10.0"),
   // TODO do not depend on SNAPSHOT!
   "ws.securesocial" %% "securesocial" % "master-SNAPSHOT"
 )
