@@ -23,5 +23,4 @@ deploy:
   provider: heroku
   api_key: ZL5vozfDtimfeAG7Ku6kljtCRRp2VVoNMujiIh0hO9/gODTaHzRJzqwNm1pU6/fAsWnLqV/dEqQjmqHWVVpbjpGzouWTLIvtNEmRh1SgHxJtQKowmbT4RSpg43ggNyT0O5avWmH2UukwmSG1LV6rO2mF/jPT0Q7rlVvQjrUCtjo=
   on: stable
-  app:
-    stable: yorrick-email-sender-staging
+  app: yorrick-email-sender-staging
