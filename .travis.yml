@@ -21,6 +21,7 @@ cache:
 # deploy stable branch on heroku in staging
 deploy:
   provider: heroku
-  api_key: ZL5vozfDtimfeAG7Ku6kljtCRRp2VVoNMujiIh0hO9/gODTaHzRJzqwNm1pU6/fAsWnLqV/dEqQjmqHWVVpbjpGzouWTLIvtNEmRh1SgHxJtQKowmbT4RSpg43ggNyT0O5avWmH2UukwmSG1LV6rO2mF/jPT0Q7rlVvQjrUCtjo=
-  on: stable
+  api_key:
+    secure: DySHNynWdkOZqhTuLnse9syxaXoDtnL9fkbaN7nC+4tlIBrwtYXUIUNYiXVJeSnbC3pJte9GDsF0BD3cfmfqFG2w+RtdGVXnJXtsqUG3OlWkPlb87C9wqds4fyOnCeKPdu6DbCYjVxuAdWejGyKriGEGD0YJVx4dBgboh9rEcTc=
   app: yorrick-email-sender-staging
+  on: stable
