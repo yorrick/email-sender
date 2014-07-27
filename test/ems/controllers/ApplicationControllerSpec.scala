@@ -38,7 +38,7 @@ class ApplicationControllerSpec extends PlaySpecification with WithSecureSocialU
     }
 
     "render the index page" in new WithApplication {
-      val home = applicationController.index(FakeRequest().withCookies(Cookie("emailsenderid", "we dont care")))
+      val home = applicationController.index(FakeRequest().withCookies(cookie))
 
       status(home) must equalTo(OK)
       contentType(home) must beSome.which(_ == "text/html")

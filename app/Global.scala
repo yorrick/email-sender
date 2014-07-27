@@ -1,8 +1,12 @@
 import java.io.File
+import ems.backend.Redis
+
+import scala.concurrent.{Await, Future}
 import scala.sys.SystemProperties
+import scala.concurrent.duration._
 
 import com.typesafe.config.ConfigFactory
-
+import akka.pattern.gracefulStop
 import play.api._
 
 import ems.models.User
@@ -49,9 +53,9 @@ object Global extends GlobalSettings with WithControllerUtils {
     Logger.info("Application shutdown...")
 
     // wait until redisconnection actor has shut down
-//    Redis.redisClient.stop()
-//    val stopped: Future[Boolean] = gracefulStop(Redis.redisClient.redisConnection, 5.second)
-//    Await.result(stopped, 5.seconds)
+    Redis.redisClient.stop()
+    val stopped: Future[Boolean] = gracefulStop(Redis.redisClient.redisConnection, 5.second)
+    Await.result(stopped, 5.seconds)
   }
 
   /**

@@ -1,7 +1,7 @@
 package ems.utils.securesocial
 
 
-import securesocial.core.{AuthenticationMethod, BasicProfile}
+import securesocial.core.{RuntimeEnvironment, AuthenticationMethod, BasicProfile}
 import securesocial.core.services.AuthenticatorService
 import securesocial.core.authenticator._
 import play.api.mvc.Cookie
@@ -52,6 +52,6 @@ trait WithSecureSocialUtils extends WithControllerUtils {
    * @tparam A
    * @return
    */
-  def createController[A](controllerClass: Class[A]) = getControllerInstance[A, User](runtimeEnvironment)(controllerClass).get
+  def createController[A](controllerClass: Class[A], env: RuntimeEnvironment[User] = runtimeEnvironment) = getControllerInstance[A, User](env)(controllerClass).get
 
 }
