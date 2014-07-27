@@ -17,3 +17,11 @@ services:
 cache:
   directories:
   - $HOME/.ivy2/cache
+
+# deploy stable branch on heroku in staging
+deploy:
+  provider: heroku
+  api_key:
+    stable: AxT0aIhEKNjwTkQRWPyQLW8CH/p4g9nWqNzFX7r6K87IhbCOF4RzIEo099tzMR26lrqpBLAC1PJ8+Al78doOSpvHwFiZZbeMtC5X4KYpDcLgheB8wzZCi2Yt28wFqZuBtgarbs6dgBqtpChdW+XRTFM37BL5IsQ4q4fV4OMqQiQ=
+  app:
+    staging: yorrick-email-sender-staging
