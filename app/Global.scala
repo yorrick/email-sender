@@ -1,25 +1,12 @@
 import java.io.File
-import scala.concurrent.{Await, Future}
-import scala.concurrent.duration._
-
-import scala.collection.immutable.ListMap
 import scala.sys.SystemProperties
 
-import securesocial.core.authenticator.{HttpHeaderAuthenticatorBuilder, CookieAuthenticatorBuilder}
-import securesocial.core.services.AuthenticatorService
 import com.typesafe.config.ConfigFactory
-import securesocial.core.RuntimeEnvironment
-import securesocial.core.providers.GoogleProvider
-import securesocial.controllers.ViewTemplates
 
 import play.api._
-import play.api.libs.concurrent.Akka
-import akka.pattern.gracefulStop
 
-import ems.backend.{Redis, RedisCookieAuthenticatorStore, MyEventListener, MongoDBUserService}
-import ems.controllers.EMSViewTemplates
 import ems.models.User
-import ems.backend.utils.WithControllerUtils
+import ems.backend.utils.{EMSRuntimeEnvironment, WithControllerUtils}
 
 
 object Global extends GlobalSettings with WithControllerUtils {
@@ -65,31 +52,6 @@ object Global extends GlobalSettings with WithControllerUtils {
 //    Redis.redisClient.stop()
 //    val stopped: Future[Boolean] = gracefulStop(Redis.redisClient.redisConnection, 5.second)
 //    Await.result(stopped, 5.seconds)
-  }
-
-  /**
-   * The runtime environment for this sample app.
-   */
-  class EMSRuntimeEnvironment extends RuntimeEnvironment.Default[User] {
-    override lazy val userService: MongoDBUserService = new MongoDBUserService()
-
-    // use AuthenticationStore based on redis (distributed)
-    override lazy val authenticatorService = new AuthenticatorService(
-      new CookieAuthenticatorBuilder[User](new RedisCookieAuthenticatorStore(), idGenerator)
-    )
-
-    override lazy val eventListeners = List(new MyEventListener())
-
-    // override authentication views
-    override lazy val viewTemplates: ViewTemplates = new EMSViewTemplates(this)
-
-    override lazy val providers = ListMap(
-      include(new GoogleProvider(routes, cacheService, oauth2ClientFor(GoogleProvider.Google)))
-    )
-  }
-
-  object EMSRuntimeEnvironment {
-    val instance = new EMSRuntimeEnvironment()
   }
 
   /**

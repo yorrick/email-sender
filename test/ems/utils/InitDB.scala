@@ -1,3 +1,6 @@
+package ems.utils
+
+
 import org.specs2.execute.{Result, AsResult}
 import org.specs2.mutable.Around
 import org.specs2.specification.Scope
