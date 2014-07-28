@@ -4,6 +4,7 @@ package ems.controllers
 import com.github.nscala_time.time.Imports.DateTime
 import org.junit.runner.RunWith
 import org.specs2.runner._
+import play.api.http.{MimeTypes, HeaderNames}
 import reactivemongo.bson.BSONObjectID
 import play.api.Logger
 import play.api.libs.json.JsValue
@@ -41,9 +42,9 @@ class SmsControllerSpec extends PlaySpecification with WithSecureSocialUtils {
     }
 
     "block access to non logged users" in new InitDB(data) {
-      val response = smsController.list(FakeRequest())
+      val response = smsController.list(FakeRequest().withHeaders(HeaderNames.ACCEPT -> MimeTypes.HTML))
 
-      status(response) must equalTo(UNAUTHORIZED)
+      status(response) must equalTo(SEE_OTHER)
     }
 
   }

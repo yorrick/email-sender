@@ -4,6 +4,8 @@ package ems.controllers
 import com.github.nscala_time.time.Imports.DateTime
 import org.junit.runner.RunWith
 import org.specs2.runner._
+import play.api.http.{HeaderNames, MimeTypes}
+import play.api.http.Status._
 import reactivemongo.bson.BSONObjectID
 import play.api.Logger
 import play.api.libs.json.JsValue
@@ -40,6 +42,17 @@ class TwilioControllerSpec extends PlaySpecification {
       status(postResponse) must equalTo(OK)
       println(contentAsString(postResponse))
       contentAsString(postResponse) must contain("Message")
+    }
+
+    "Reply with bad request if request is malformed" in new InitDB(data) {
+      val request = FakeRequest(POST, "").withFormUrlEncodedBody(
+        "To" -> "666666666",
+        "From" -> "77777777",
+        "BodyXXX" -> "hello toto"
+      )
+
+      val postResponse = ems.controllers.TwilioController.sms(request)
+      status(postResponse) must equalTo(BAD_REQUEST)
     }
 
   }
