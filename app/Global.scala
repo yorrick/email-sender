@@ -1,4 +1,5 @@
 import java.io.File
+import akka.actor.ActorRef
 import ems.backend.Redis
 
 import scala.concurrent.{Await, Future}
@@ -8,6 +9,7 @@ import scala.concurrent.duration._
 import com.typesafe.config.ConfigFactory
 import akka.pattern.gracefulStop
 import play.api._
+import play.api.libs.concurrent.Execution.Implicits._
 
 import ems.models.User
 import ems.backend.utils.{EMSRuntimeEnvironment, WithControllerUtils}
@@ -46,16 +48,13 @@ object Global extends GlobalSettings with WithControllerUtils {
 
 
   override def onStart(app: Application) {
+    Redis.openConnections
     Logger.info("Application has started")
   }
 
   override def onStop(app: Application) {
+    Redis.closeConnections
     Logger.info("Application shutdown...")
-
-    // wait until redisconnection actor has shut down
-    Redis.redisClient.stop()
-    val stopped: Future[Boolean] = gracefulStop(Redis.redisClient.redisConnection, 5.second)
-    Await.result(stopped, 5.seconds)
   }
 
   /**

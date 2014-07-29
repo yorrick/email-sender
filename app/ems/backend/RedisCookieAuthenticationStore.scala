@@ -42,7 +42,7 @@ abstract class RedisAuthenticatorStore[A <: Authenticator[_]] extends Authentica
    * @return an optional future Authenticator
    */
   override def find(id: String)(implicit ct: ClassTag[A]): Future[Option[A]] = {
-    Redis.redisClient.get[A](id) andThen logResult(s"REDIS: find for id $id")
+    Redis.instance.redisClient.get[A](id) andThen logResult(s"REDIS: find for id $id")
   }
 
   /**
@@ -53,7 +53,7 @@ abstract class RedisAuthenticatorStore[A <: Authenticator[_]] extends Authentica
    * @return the saved authenticator
    */
   override def save(authenticator: A, timeoutInSeconds: Int): Future[A] = {
-    Redis.redisClient.set(authenticator.id, authenticator) andThen logResult(s"REDIS: save authenticator $authenticator") map { _ => authenticator}
+    Redis.instance.redisClient.set(authenticator.id, authenticator) andThen logResult(s"REDIS: save authenticator $authenticator") map { _ => authenticator}
   }
 
   /**
@@ -63,7 +63,7 @@ abstract class RedisAuthenticatorStore[A <: Authenticator[_]] extends Authentica
    * @return a future of Unit
    */
   override def delete(id: String): Future[Unit] ={
-    Redis.redisClient.del(id) andThen logResult(s"REDIS: del for id $id") map { _ => Unit}
+    Redis.instance.redisClient.del(id) andThen logResult(s"REDIS: del for id $id") map { _ => Unit}
   }
 }
 

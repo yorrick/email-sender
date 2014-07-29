@@ -13,6 +13,9 @@ import play.modules.reactivemongo.json.BSONFormats
 import reactivemongo.api.collections.default.BSONCollection
 
 import scala.concurrent.{Await, Future}
+import scala.concurrent.duration._
+
+import play.api.libs.concurrent.Execution.Implicits._
 
 
 /**
@@ -21,8 +24,6 @@ import scala.concurrent.{Await, Future}
  */
 class InitDB(val data: Tuple2[String, List[JsValue]]*) extends Around with Scope {
 
-  import scala.concurrent.duration._
-  import play.api.libs.concurrent.Execution.Implicits._
 
   implicit lazy val app = FakeApplication()
   lazy val db: reactivemongo.api.DB = ReactiveMongoPlugin.db
