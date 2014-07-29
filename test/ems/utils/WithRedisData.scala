@@ -23,7 +23,7 @@ abstract class WithRedisData(data: => Seq[(String, ByteString)] = Seq(),
                              override val app: FakeApplication = FakeApplication()) extends WithApplication(app) {
 
 
-  lazy val timeout = 13.second
+  lazy val timeout = 5.second
 
   override def around[T: AsResult](t: => T): Result = super.around {
     initRedis()
@@ -41,7 +41,7 @@ abstract class WithRedisData(data: => Seq[(String, ByteString)] = Seq(),
       Logger.debug("WithRedisData: initializing redis data")
 
       val resultsFuture: Future[Seq[Boolean]] = flushDB flatMap { _ => setAllData}
-      val results: Seq[Boolean] = Await.result(resultsFuture, 1.second)
+      val results: Seq[Boolean] = Await.result(resultsFuture, 2.second)
 
       if (results exists {_ == false}) {
         throw new Exception("Could not initialize all redis data")

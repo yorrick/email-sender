@@ -1,7 +1,5 @@
 package ems.backend
 
-import java.net.InetSocketAddress
-
 import akka.util.ByteString
 import redis.api.pubsub.Message
 
@@ -12,7 +10,6 @@ import scala.concurrent.duration._
 import akka.actor.{Actor, Props, ActorRef}
 import play.api.Logger
 import play.api.libs.concurrent.Akka
-import play.modules.rediscala.RedisPlugin
 import play.api.Play.current
 import play.api.libs.concurrent.Execution.Implicits._
 

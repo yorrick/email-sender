@@ -1,6 +1,5 @@
 package ems.backend
 
-import akka.util.Timeout
 
 import scala.concurrent.duration._
 
@@ -8,11 +7,9 @@ import com.github.nscala_time.time.Imports.DateTime
 import org.junit.runner.RunWith
 import org.specs2.runner._
 import akka.util.Timeout._
-import play.api.Logger
-import play.api.Play._
+import akka.util.Timeout
+import securesocial.core.authenticator.CookieAuthenticator
 import play.api.test._
-import play.modules.rediscala.RedisPlugin
-import securesocial.core.authenticator.{AuthenticatorStore, CookieAuthenticator}
 
 import ems.models.User
 import ems.utils.WithRedisData
@@ -28,18 +25,16 @@ class RedisCookieAuthenticationStoreSpec extends PlaySpecification with WithSecu
   lazy val store = new RedisCookieAuthenticatorStore()
 
   lazy val authenticator: CookieAuthenticator[User] = new CookieAuthenticator(
-    "emailsenderid", user, DateTime.nextDay, DateTime.now, DateTime.lastDay, store)
+    cookieValue, user, DateTime.nextDay, DateTime.now, DateTime.lastDay, store)
 
-  lazy val cookieValue = "12345"
+  lazy val cookieValue = "autenticatorId"
 
   lazy val redisData = Seq(
     (cookieValue, store.byteStringFormatter.serialize(authenticator))
   )
 
-//  def app = FakeApplication(additionalPlugins = Seq("play.modules.rediscala.RedisPlugin"))
-
   "Authentication store" should {
-    "Return Some when authenticator does not exist" in new WithRedisData(redisData) {
+    "Return Some when authenticator does exist" in new WithRedisData(redisData) {
       val result = await(store.find(cookieValue))
       result should beSome
     }
@@ -49,13 +44,15 @@ class RedisCookieAuthenticationStoreSpec extends PlaySpecification with WithSecu
       result should beNone
     }
 
-//    "Save authenticator" in new WithApplication() {
-//
-//    }
-//
-//    "Delete authenticator" in new WithApplication() {
-//
-//    }
+    "Save authenticator" in new WithApplication() {
+      val newId = "67890"
+      val result = await(store.save(authenticator.copy(id = newId), 1))
+      result.id must beEqualTo(newId)
+    }
+
+    "Delete authenticator" in new WithApplication() {
+      await(store.delete(cookieValue))
+    }
 
   }
 }
