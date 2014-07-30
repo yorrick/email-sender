@@ -23,10 +23,14 @@ trait WithMongoTestData {
 
   // user data
   lazy val userMongoId = "99cd93ce93d970b47bea76fd"
+  lazy val otherUserMongoId = "33cd93ce93d970b47bea76fd"
   lazy val userId = "userid-12345"
+  lazy val otherUserId = "other-userid-12345"
   lazy val providerId = "providerId"
   lazy val userEmail = "paul.watson@foobar.com"
+  lazy val otherUserEmail = "other.user@foobar.com"
   lazy val userPhoneNumber = "1-514-000-0000"
+  lazy val otherUserPhoneNumber = "2-514-000-0000"
 
   lazy val profile = BasicProfile(
     providerId,
@@ -42,8 +46,23 @@ trait WithMongoTestData {
     None
   )
 
+  lazy val otherProfile = BasicProfile(
+    providerId,
+    otherUserId,
+    Some("Other"),
+    Some("User"),
+    Some("Other User"),
+    Some(otherUserEmail),
+    None,
+    AuthenticationMethod.OAuth2,
+    None,
+    None,
+    None
+  )
+
   lazy val user = User(BSONObjectID.parse(userMongoId).get, profile, Some(userPhoneNumber))
-  lazy val userList = List(user)
+  lazy val otherUser = User(BSONObjectID.parse(otherUserMongoId).get, otherProfile, Some(otherUserPhoneNumber))
+  lazy val userList = List(user, otherUser)
   lazy val userJson: List[JsValue] = userList map {User.userFormat.writes(_)}
 
   lazy val data = Seq(("smslist", smsJson), ("users", userJson))

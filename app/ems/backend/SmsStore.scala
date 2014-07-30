@@ -90,11 +90,4 @@ object SmsStore {
     cursor.collect[List]()
   }
 
-  /**
-   * Find a user using incoming phone number
-   * @param incomingNumber
-   */
-  def findUser(incomingNumber: String) = {
-    
-  }
 }
