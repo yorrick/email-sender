@@ -10,7 +10,7 @@ Sms to email bridge application - developped with [scala](http://www.scala-lang.
 
 This app is based on a fully async stack
  * [play asynchronous](http://www.playframework.com/documentation/2.3.x/ScalaAsync)
- * async driver for redis [rediscala](https://github.com/etaty/rediscala)
+ * async driver for redis [rediscala](https://github.com/etaty/rediscala) and [play2-rediscala](https://github.com/yorrick/play2-rediscala)
  * async driver for mongodb [reactivemongo](http://reactivemongo.org/)
  * [akka](http://akka.io/)
 
