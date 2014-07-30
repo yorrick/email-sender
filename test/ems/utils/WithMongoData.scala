@@ -7,13 +7,11 @@ import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 
 import org.specs2.execute.{Result, AsResult}
-import org.specs2.mutable.Around
-import org.specs2.specification.Scope
 import reactivemongo.api.collections.default.BSONCollection
-import play.api.{Logger, Application}
+import play.api.Logger
 import play.api.libs.iteratee.Enumerator
 import play.api.libs.json.JsValue
-import play.api.test.{WithApplication, Helpers, FakeApplication}
+import play.api.test.{WithApplication, FakeApplication}
 import play.libs.Akka
 import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.BSONFormats
@@ -27,7 +25,7 @@ import play.api.libs.concurrent.Execution.Implicits._
  * @param data
  * @param app
  */
-abstract class WithMongoData(data: => Seq[(String, List[JsValue])] = Seq(),
+abstract class WithMongoData(data: Seq[(String, List[JsValue])] = Seq(),
                              override val app: FakeApplication = FakeApplication()) extends WithApplication(app)  {
 
   /**

@@ -12,26 +12,15 @@ import securesocial.core.authenticator.CookieAuthenticator
 import play.api.test._
 
 import ems.models.User
-import ems.utils.WithRedisData
+import ems.utils.{WithRedisTestData, WithRedisData}
 import ems.utils.securesocial.WithSecureSocialUtils
 
 
 @RunWith(classOf[JUnitRunner])
-class RedisCookieAuthenticationStoreSpec extends PlaySpecification with WithSecureSocialUtils {
+class RedisCookieAuthenticationStoreSpec extends PlaySpecification with WithSecureSocialUtils with WithRedisTestData {
   sequential
 
   implicit lazy val timeout: Timeout = 5.second
-
-  lazy val store = new RedisCookieAuthenticatorStore()
-
-  lazy val authenticator: CookieAuthenticator[User] = new CookieAuthenticator(
-    cookieValue, user, DateTime.nextDay, DateTime.now, DateTime.lastDay, store)
-
-  lazy val cookieValue = "autenticatorId"
-
-  lazy val redisData = Seq(
-    (cookieValue, store.byteStringFormatter.serialize(authenticator))
-  )
 
   "Authentication store" should {
     "Return Some when authenticator does exist" in new WithRedisData(redisData) {
