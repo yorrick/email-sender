@@ -8,13 +8,16 @@ import play.api.libs.json.Json
 
 /**
  * Represent a Sms, used to create objects with forms when receiving data over http
- * @param from
- * @param to
- * @param content
- * @param creationDate
  */
-case class Sms(_id: BSONObjectID, from: String, to: String, content: String,
-               creationDate: DateTime, status: SmsStatus, mailgunId: String) {
+case class Sms(
+  _id: BSONObjectID,
+  userId: BSONObjectID,
+  from: String,
+  to: String,
+  content: String,
+  creationDate: DateTime,
+  status: SmsStatus,
+  mailgunId: String) {
 
   val formattedCreationDate = creationDate.toString("yyyy-MM-dd' 'HH:mm:ss")
 

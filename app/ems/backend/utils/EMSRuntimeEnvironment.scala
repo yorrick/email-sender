@@ -18,7 +18,7 @@ import ems.models.User
  * The runtime environment for this sample app.
  */
 class EMSRuntimeEnvironment extends RuntimeEnvironment.Default[User] {
-  override lazy val userService: MongoDBUserService = new MongoDBUserService()
+  override lazy val userService = MongoDBUserService
 
   // use AuthenticationStore based on redis (distributed)
   override lazy val authenticatorService = new AuthenticatorService(

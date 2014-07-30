@@ -9,7 +9,7 @@ import ems.utils.securesocial.WithSecureSocialUtils
 /**
  * Provides data for redis based tests
  */
-trait WithRedisTestData { self: WithSecureSocialUtils=>
+trait WithRedisTestData { self: WithMongoTestData =>
 
   lazy val store = new RedisCookieAuthenticatorStore()
 

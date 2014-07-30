@@ -1,7 +1,10 @@
 package ems.backend
 
 
+import reactivemongo.api.Cursor
+
 import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
 import reactivemongo.bson.BSONObjectID
 import securesocial.core._
@@ -13,7 +16,7 @@ import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.collection.JSONCollection
 import play.api.Play.current
 import play.api.libs.concurrent.Execution.Implicits._
-import play.api.libs.json.Json
+import play.api.libs.json.{JsObject, Json}
 
 import ems.models.User
 
@@ -62,8 +65,9 @@ trait ExternalUserService[U] extends UserService[U] {
 
 /**
  * A service that stores users in mongodb
+ * TODO merge this with MongoDB
  */
-class MongoDBUserService extends ExternalUserService[User] {
+object MongoDBUserService extends ExternalUserService[User] {
 
   def db: reactivemongo.api.DB = ReactiveMongoPlugin.db
   def collection: JSONCollection = db.collection[JSONCollection]("users")
@@ -78,37 +82,27 @@ class MongoDBUserService extends ExternalUserService[User] {
   def findUser(providerId: String, userId: String): Future[Option[User]] = {
     Logger.debug(s"Trying to find a User by providerId $providerId and userId $userId")
 
-    val filter = Json.obj(
-      "main.providerId" -> providerId,
-      "main.userId" -> userId
-    )
+    val filter = Json.obj("main.providerId" -> providerId, "main.userId" -> userId)
+    findSingle(userCursor(filter))
+  }
 
-    val cursor = collection.find(filter).cursor[User]
+  def findUserByPhoneNumber(phoneNumber: String): Future[User] = {
+    Logger.debug(s"Trying to find a User by phone number $phoneNumber")
 
-    cursor.collect[List]() map {
-      case user :: Nil =>
-        Some(user)
-      case _ =>
-        None
+    val filter = Json.obj("phoneNumber" -> phoneNumber)
+    findSingle(userCursor(filter)) map { _.get } andThen {
+      case Success(user) =>
+        Logger.debug(s"Found user for incoming number $phoneNumber")
+      case Failure(t) =>
+        Logger.debug(s"Could not create any sms for incoming number $phoneNumber")
     }
-
   }
 
   def findByEmailAndProvider(email: String, providerId: String): Future[Option[BasicProfile]] = {
     Logger.debug(s"Trying to find a BasicProfile by providerId $providerId and email $email")
 
-    val filter = Json.obj(
-      "main.providerId" -> providerId,
-      "main.email" -> email  // TODO check that None is represented bu null in json
-    )
-
-    val cursor = collection.find(filter).cursor[User]
-
-    cursor.collect[List]() map {
-      case user :: Nil => Some(user.main)
-      case _ => None
-    }
-
+    val filter = Json.obj("main.providerId" -> providerId, "main.email" -> email)
+    findSingle(userCursor(filter)) map { basicProfileOption => basicProfileOption map { _.main} }
   }
 
   def save(profile: BasicProfile, mode: SaveMode): Future[User] = {
@@ -119,8 +113,9 @@ class MongoDBUserService extends ExternalUserService[User] {
           // TODO update the user?
           Future.successful(user)
         case None =>
-          // create the user
-          val userToInsert = User(profile)
+          // create the user, with no phone number for now
+          // TODO remove the test phone number once we can update phone number in app
+          val userToInsert = User(SmsStore.generateId, profile, Some("11111111"))
           collection.insert(userToInsert) map {lastError => userToInsert}
       }
     }
@@ -136,6 +131,23 @@ class MongoDBUserService extends ExternalUserService[User] {
     Future.failed(new Exception("not implemented yet"))
   }
 
+  /**
+   * Finds a single result if there is only one, or None
+   * @param cursor
+   * @tparam T
+   * @return
+   */
+  protected def findSingle[T](cursor: Cursor[T]): Future[Option[T]] = cursor.collect[List]() map {
+    case element :: Nil => Some(element)
+    case _ => None
+  }
+
+  /**
+   * Creates a User cursor
+   * @param filter
+   * @return
+   */
+  protected def userCursor(filter: JsObject): Cursor[User] = collection.find(filter).cursor[User]
 }
 
 

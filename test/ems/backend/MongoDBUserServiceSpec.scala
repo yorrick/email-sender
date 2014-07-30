@@ -10,7 +10,7 @@ import org.junit.runner.RunWith
 import org.specs2.runner._
 import play.api.test._
 
-import ems.utils.WithMongoData
+import ems.utils.{WithMongoTestData, WithMongoData}
 import ems.utils.securesocial.WithSecureSocialUtils
 import ems.models.User
 
@@ -19,10 +19,7 @@ import ems.models.User
 class MongoDBUserServiceSpec extends PlaySpecification with WithSecureSocialUtils {
   sequential
 
-  lazy val service = new MongoDBUserService()
-
-  lazy val json: List[JsValue] = List(user) map {User.userFormat.writes(_)}
-  lazy val data = Seq(("users", json))
+  lazy val service = MongoDBUserService
 
   "User service" should {
     "Throw exceptions for all username / password related operations" in {
@@ -50,6 +47,10 @@ class MongoDBUserServiceSpec extends PlaySpecification with WithSecureSocialUtil
 
     "Save a profile" in new WithMongoData(data) {
       await(service.save(profile, SaveMode.LoggedIn)).main.userId must beEqualTo(userId)
+    }
+
+    "Find user by phone number" in new WithMongoData(data) {
+      await(service.findUserByPhoneNumber(userPhoneNumber)).main.userId must beEqualTo(userId)
     }
 
   }

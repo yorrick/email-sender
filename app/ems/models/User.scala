@@ -1,13 +1,18 @@
 package ems.models
 
 
+import reactivemongo.bson.BSONObjectID
 import securesocial.core.{BasicProfile, AuthenticationMethod, OAuth1Info, OAuth2Info, PasswordInfo}
-
+import play.modules.reactivemongo.json.BSONFormats._
 import play.api.libs.json.Json
 
 
 // a simple User class that has one identity
-case class User(main: BasicProfile)
+case class User(
+  _id: BSONObjectID,
+  main: BasicProfile,
+  phoneNumber: Option[String]
+)
 
 
 /**

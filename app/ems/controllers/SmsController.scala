@@ -11,7 +11,7 @@ import play.api.libs.json._
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.Play.current
 
-import ems.backend.{MongoDB, WebsocketInputActor}
+import ems.backend.{SmsStore, WebsocketInputActor}
 import ems.models._
 
 
@@ -29,7 +29,7 @@ class SmsController(override implicit val env: RuntimeEnvironment[User]) extends
     implicit val timeout = Timeout(1 second)
     implicit val user = Some(request.user)
 
-    val futureSmsList = MongoDB.listSms().mapTo[List[Sms]]
+    val futureSmsList = SmsStore.listSms(request.user._id).mapTo[List[Sms]]
 
     futureSmsList map { smsList =>
       Ok(ems.views.html.sms.list(smsList map {SmsDisplay.fromSms(_)}))

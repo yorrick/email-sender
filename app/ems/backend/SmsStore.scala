@@ -19,7 +19,7 @@ import ems.models._
 /**
  * Handles all interactions with mongodb
  */
-object MongoDB {
+object SmsStore {
 
   def db: reactivemongo.api.DB = ReactiveMongoPlugin.db
   def collection: JSONCollection = db.collection[JSONCollection]("smslist")
@@ -72,14 +72,15 @@ object MongoDB {
     collection.update(Json.obj("_id" -> sms._id), modifier) map {lastError => sms}
 
   /**
-   * Returns the list of sms
+   * Returns the list of sms for the given user
+   * @param userId
    * @return
    */
-  def listSms(): Future[List[Sms]] = {
+  def listSms(userId: BSONObjectID): Future[List[Sms]] = {
     // let's do our query
     val cursor: Cursor[Sms] = collection.
       // find all sms
-      find(Json.obj()).
+      find(Json.obj("userId" -> userId)).
       // sort by creation date
       sort(Json.obj("creationDate" -> -1)).
       // perform the query and get a cursor of JsObject
@@ -89,4 +90,11 @@ object MongoDB {
     cursor.collect[List]()
   }
 
+  /**
+   * Find a user using incoming phone number
+   * @param incomingNumber
+   */
+  def findUser(incomingNumber: String) = {
+    
+  }
 }
