@@ -111,16 +111,16 @@ class MongoDBUserService extends ExternalUserService[User] {
 
   }
 
-  def save(user: BasicProfile, mode: SaveMode): Future[User] = {
+  def save(profile: BasicProfile, mode: SaveMode): Future[User] = {
     // first see if there is a user with this BasicProfile already.
-    findUser(user.providerId, user.userId) flatMap { userOption =>
+    findUser(profile.providerId, profile.userId) flatMap { userOption =>
       userOption match {
         case Some(user) =>
           // TODO update the user?
           Future.successful(user)
         case None =>
           // create the user
-          val userToInsert = User(user)
+          val userToInsert = User(profile)
           collection.insert(userToInsert) map {lastError => userToInsert}
       }
     }

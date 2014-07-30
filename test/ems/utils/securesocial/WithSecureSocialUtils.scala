@@ -23,11 +23,7 @@ trait WithSecureSocialUtils extends WithControllerUtils {
   lazy val userId = "userid-12345"
   lazy val userEmail = "paul.watson@foobar.com"
 
-  /**
-   * The user the tests will be based on
-   * @return
-   */
-  lazy val user: User = User(BasicProfile(
+  lazy val profile = BasicProfile(
     providerId,
     userId,
     Some("Paul"),
@@ -39,7 +35,13 @@ trait WithSecureSocialUtils extends WithControllerUtils {
     None,
     None,
     None
-  ))
+  )
+
+  /**
+   * The user the tests will be based on
+   * @return
+   */
+  lazy val user: User = User(profile)
 
   /**
    * The runtime environment that will be injected to the classes
