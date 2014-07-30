@@ -1,13 +1,13 @@
 package ems.utils
 
 
-import reactivemongo.bson.BSONDocument
-
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 
-import org.specs2.execute.{Result, AsResult}
+import reactivemongo.bson.BSONDocument
+import reactivemongo.core.commands.BSONCommandError
 import reactivemongo.api.collections.default.BSONCollection
+import org.specs2.execute.{Result, AsResult}
 import play.api.Logger
 import play.api.libs.iteratee.Enumerator
 import play.api.libs.json.JsValue
@@ -42,6 +42,8 @@ abstract class WithMongoData(data: Seq[(String, List[JsValue])] = Seq(),
     implicit val system = Akka.system
     implicit val db: reactivemongo.api.DB = ReactiveMongoPlugin.db
 
+    Logger.debug("WithMongoData: initializing mongo data")
+
     val collectionResults: Seq[Future[Boolean]] = data map {
       case (collectionName, jsonDocuments) =>
         implicit val collection: BSONCollection = db(collectionName)
@@ -51,7 +53,7 @@ abstract class WithMongoData(data: Seq[(String, List[JsValue])] = Seq(),
     val results: Seq[Boolean] = Await.result(Future.sequence(collectionResults), mongoStatementTimeout)
 
     if (results exists {_ == false}) {
-      throw new Exception("Could not initialize all mongo data")
+      throw new Exception("WithMongoData: Could not initialize all mongo data")
     } else {
       Logger.debug("WithMongoData: initialized mongo data")
     }
@@ -69,10 +71,11 @@ abstract class WithMongoData(data: Seq[(String, List[JsValue])] = Seq(),
 
   /**
    * Drop all collection content
+   * Since the collection may not exist, we ignore errors coming from drops
    * @param collection
    * @return
    */
-  def dropCollection(implicit collection: BSONCollection): Future[Boolean] = collection.drop() filter { _ == true}
+  def dropCollection(implicit collection: BSONCollection): Future[Boolean] = collection.drop() recover { case e: BSONCommandError => true}
 
   /**
    * Inserts all bsonDocuments in given collection

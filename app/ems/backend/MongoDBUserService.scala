@@ -26,17 +26,17 @@ trait ExternalUserService[U] extends UserService[U] {
 
   def saveToken(token: MailToken): Future[MailToken] = {
     // not implemented since we do not use UsernamePassword provider
-    Future.failed(new Exception("not implemented"))
+    Future.failed(new Exception("not implemented yet"))
   }
 
   def findToken(token: String): Future[Option[MailToken]] = {
     // not implemented since we do not use UsernamePassword provider
-    Future.failed(new Exception("not implemented"))
+    Future.failed(new Exception("not implemented yet"))
   }
 
   def deleteToken(uuid: String): Future[Option[MailToken]] = {
     // not implemented since we do not use UsernamePassword provider
-    Future.failed(new Exception("not implemented"))
+    Future.failed(new Exception("not implemented yet"))
   }
 
   //  def deleteTokens(): Future {
@@ -45,17 +45,17 @@ trait ExternalUserService[U] extends UserService[U] {
 
   def deleteExpiredTokens() {
     // not implemented since we do not use UsernamePassword provider
-    Future.failed(new Exception("not implemented"))
+    throw new Exception("not implemented yet")
   }
 
   def updatePasswordInfo(user: User, info: PasswordInfo): Future[Option[BasicProfile]] = {
     // not implemented since we do not use UsernamePassword provider
-    Future.failed(new Exception("not implemented"))
+    Future.failed(new Exception("not implemented yet"))
   }
 
   def passwordInfoFor(user: User): Future[Option[PasswordInfo]] = {
     // not implemented since we do not use UsernamePassword provider
-    Future.failed(new Exception("not implemented"))
+    Future.failed(new Exception("not implemented yet"))
   }
 }
 
@@ -133,7 +133,7 @@ class MongoDBUserService extends ExternalUserService[User] {
    * @return
    */
   def link(current: User, to: BasicProfile): Future[User] = {
-    Future.failed(new Exception("not implemented"))
+    Future.failed(new Exception("not implemented yet"))
   }
 
 }

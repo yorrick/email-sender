@@ -47,7 +47,7 @@ abstract class WithRedisData(data: Seq[(String, ByteString)] = Seq(),
       val results: Seq[Boolean] = Await.result(resultsFuture, flushDBTimeout)
 
       if (results exists {_ == false}) {
-        throw new Exception("Could not initialize all redis data")
+        throw new Exception("WithRedisData: Could not initialize all redis data")
       } else {
         Logger.debug("WithRedisData: initialized redis data")
       }

@@ -17,19 +17,23 @@ trait WithSecureSocialUtils extends WithControllerUtils {
    * The value is not used as the AuthenticationStore is mocked
    * TODO find a way to use configuration (we need an app in context to be able to use CookieAuthenticator.cookieName)
    */
-  val cookie = Cookie("emailsenderid", "")
+  lazy val cookie = Cookie("emailsenderid", "")
+
+  lazy val providerId = "providerId"
+  lazy val userId = "userid-12345"
+  lazy val userEmail = "paul.watson@foobar.com"
 
   /**
    * The user the tests will be based on
    * @return
    */
   lazy val user: User = User(BasicProfile(
-    "providerId",
-    "userid-12345",
+    providerId,
+    userId,
     Some("Paul"),
     Some("Watson"),
     Some("Paul Watson"),
-    Some("paul.watson@foobar.com"),
+    Some(userEmail),
     None,
     AuthenticationMethod.OAuth2,
     None,

@@ -3,15 +3,12 @@ package ems.backend
 
 import scala.concurrent.duration._
 
-import com.github.nscala_time.time.Imports.DateTime
 import org.junit.runner.RunWith
 import org.specs2.runner._
 import akka.util.Timeout._
 import akka.util.Timeout
-import securesocial.core.authenticator.CookieAuthenticator
 import play.api.test._
 
-import ems.models.User
 import ems.utils.{WithRedisTestData, WithRedisData}
 import ems.utils.securesocial.WithSecureSocialUtils
 
