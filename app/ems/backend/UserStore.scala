@@ -1,16 +1,13 @@
 package ems.backend
 
 
-import reactivemongo.api.Cursor
-
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
+import reactivemongo.api.Cursor
 import reactivemongo.bson.BSONObjectID
 import securesocial.core._
-import securesocial.core.providers.MailToken
-import securesocial.core.services.{UserService, SaveMode}
-
+import securesocial.core.services.SaveMode
 import play.api.Logger
 import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.collection.JSONCollection
@@ -22,56 +19,11 @@ import ems.models.User
 
 
 /**
- * Provides empty implementations for everything that is related to UsernamePassword authentication
- * @tparam U
+ * Handles user storage in mongodb
  */
-trait ExternalUserService[U] extends UserService[U] {
+object UserStore extends ExternalUserService[User] with MongoDBStore {
 
-  def saveToken(token: MailToken): Future[MailToken] = {
-    // not implemented since we do not use UsernamePassword provider
-    Future.failed(new Exception("not implemented yet"))
-  }
-
-  def findToken(token: String): Future[Option[MailToken]] = {
-    // not implemented since we do not use UsernamePassword provider
-    Future.failed(new Exception("not implemented yet"))
-  }
-
-  def deleteToken(uuid: String): Future[Option[MailToken]] = {
-    // not implemented since we do not use UsernamePassword provider
-    Future.failed(new Exception("not implemented yet"))
-  }
-
-  //  def deleteTokens(): Future {
-  //    tokens = Map()
-  //  }
-
-  def deleteExpiredTokens() {
-    // not implemented since we do not use UsernamePassword provider
-    throw new Exception("not implemented yet")
-  }
-
-  def updatePasswordInfo(user: User, info: PasswordInfo): Future[Option[BasicProfile]] = {
-    // not implemented since we do not use UsernamePassword provider
-    Future.failed(new Exception("not implemented yet"))
-  }
-
-  def passwordInfoFor(user: User): Future[Option[PasswordInfo]] = {
-    // not implemented since we do not use UsernamePassword provider
-    Future.failed(new Exception("not implemented yet"))
-  }
-}
-
-
-/**
- * A service that stores users in mongodb
- * TODO merge this with MongoDB
- */
-object MongoDBUserService extends ExternalUserService[User] {
-
-  def db: reactivemongo.api.DB = ReactiveMongoPlugin.db
-  def collection: JSONCollection = db.collection[JSONCollection]("users")
-  def generateId = BSONObjectID.generate
+  override val collectionName = "users"
 
   def find(providerId: String, userId: String): Future[Option[BasicProfile]] = {
     Logger.debug(s"Trying to find a BasicProfile by providerId $providerId and userId $userId")
@@ -129,17 +81,6 @@ object MongoDBUserService extends ExternalUserService[User] {
    */
   def link(current: User, to: BasicProfile): Future[User] = {
     Future.failed(new Exception("not implemented yet"))
-  }
-
-  /**
-   * Finds a single result if there is only one, or None
-   * @param cursor
-   * @tparam T
-   * @return
-   */
-  protected def findSingle[T](cursor: Cursor[T]): Future[Option[T]] = cursor.collect[List]() map {
-    case element :: Nil => Some(element)
-    case _ => None
   }
 
   /**

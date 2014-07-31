@@ -17,13 +17,11 @@ import ems.models._
 
 
 /**
- * Handles all interactions with mongodb
+ * Handles sms storage in mongodb
  */
-object SmsStore {
+object SmsStore extends MongoDBStore {
 
-  def db: reactivemongo.api.DB = ReactiveMongoPlugin.db
-  def collection: JSONCollection = db.collection[JSONCollection]("smslist")
-  def generateId = BSONObjectID.generate
+  override val collectionName = "smslist"
 
   /**
    * Save an sms
@@ -55,7 +53,7 @@ object SmsStore {
     collection.update(findId, modifier) flatMap { lastError =>
       val cursor = collection.find(findId).cursor[Sms]
       // return the first result
-      cursor.collect[List]() map { _.head }
+      findSingle(cursor) map { _.get }
     }
   }
 
@@ -77,7 +75,6 @@ object SmsStore {
    * @return
    */
   def listSms(userId: BSONObjectID): Future[List[Sms]] = {
-    // let's do our query
     val cursor: Cursor[Sms] = collection.
       // find all sms
       find(Json.obj("userId" -> userId)).

@@ -35,7 +35,7 @@ class SmsForwarder extends Actor {
    * @return
    */
   def createSms(post: TwilioPost): Future[Sms] = {
-    MongoDBUserService.findUserByPhoneNumber(post.from) map { user =>
+    UserStore.findUserByPhoneNumber(post.from) map { user =>
       Sms(SmsStore.generateId, user._id, post.from, post.to, post.content, DateTime.now, SavedInMongo, "")
     }
   }

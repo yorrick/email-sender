@@ -16,12 +16,12 @@ import ems.models.User
 
 
 @RunWith(classOf[JUnitRunner])
-class MongoDBUserServiceSpec extends PlaySpecification with WithSecureSocialUtils {
+class UserStoreSpec extends PlaySpecification with WithSecureSocialUtils {
   sequential
 
-  lazy val service = MongoDBUserService
+  lazy val service = UserStore
 
-  "User service" should {
+  "User store" should {
     "Throw exceptions for all username / password related operations" in {
       await(service.saveToken(MailToken("uuid", "email", DateTime.yesterday, DateTime.tomorrow, true))) must throwA[Exception]
       await(service.findToken("token")) must throwA[Exception]
