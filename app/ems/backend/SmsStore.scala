@@ -48,7 +48,7 @@ object SmsStore {
    * Returns the acked sms
    * @param mailgunId
    */
-  def setStatusByMailgunId(mailgunId: String, status: SmsStatus): Future[Sms] = {
+  def updateStatusByMailgunId(mailgunId: String, status: SmsStatus): Future[Sms] = {
     val modifier = Json.obj("$set" -> Json.obj("status.status" -> status.status))
     val findId = Json.obj("mailgunId" -> mailgunId)
 
@@ -63,7 +63,7 @@ object SmsStore {
    * Set the mailgun id for an sms
    * @param sms
    */
-  def setSmsMailgunId(sms: Sms): Future[Sms] = {
+  def updateSmsMailgunId(sms: Sms): Future[Sms] = {
     val modifier = Json.obj("$set" -> Json.obj("mailgunId" -> sms.mailgunId))
     updateById(sms, modifier)
   }

@@ -75,7 +75,7 @@ object Mailgun {
     (json \ "id").validate[String] match {
       case JsSuccess(id, _) =>
         Logger.debug(s"Mailgun response id: $id")
-        SmsStore.setSmsMailgunId(sms.withMailgunId(id))
+        SmsStore.updateSmsMailgunId(sms.withMailgunId(id))
         Future.successful(sms.withStatus(SentToMailgun))
       case error @ JsError(_) =>
         Future.failed(new Exception(error.toString))

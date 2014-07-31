@@ -51,9 +51,9 @@ class SmsForwarder extends Actor {
       } yield sms
 
     case MailgunEvent(messageId, DELIVERED) =>
-      setStatusByMailgunId(messageId, AckedByMailgun) andThen notifyWebsockets
+      updateStatusByMailgunId(messageId, AckedByMailgun) andThen notifyWebsockets
 
     case MailgunEvent(messageId, _) =>
-      setStatusByMailgunId(messageId, FailedByMailgun) andThen notifyWebsockets
+      updateStatusByMailgunId(messageId, FailedByMailgun) andThen notifyWebsockets
   }
 }

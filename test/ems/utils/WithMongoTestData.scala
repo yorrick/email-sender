@@ -17,7 +17,17 @@ trait WithMongoTestData {
 
   // sms data
   lazy val smsId = "53cd93ce93d970b47bea76fd"
-  lazy val smsList = List(Sms(BSONObjectID.parse(smsId).get, BSONObjectID.parse(userMongoId).get, "11111111", "222222222", "some text", DateTime.now, SavedInMongo, ""))
+  lazy val mailgunId = "mailgunId"
+  lazy val sms = Sms(
+    BSONObjectID.parse(smsId).get,
+    BSONObjectID.parse(userMongoId).get,
+    "11111111",
+    "222222222",
+    "some text",
+    DateTime.now,
+    SavedInMongo,
+    mailgunId)
+  lazy val smsList = List(sms)
   lazy val smsJson: List[JsValue] = smsList map {Sms.smsFormat.writes(_)}
 
 
