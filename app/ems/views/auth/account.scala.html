@@ -6,12 +6,16 @@
 @()(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User])
 
 
-@mainAuth("Login"){
+@scripts = {
+    <script type="text/javascript" charset="utf-8" src="@ems.controllers.routes.JavascriptController.javascriptRoutes()"></script>
+}
+
+@mainAuth("Account", scripts, Some(user)){
 
     <ul>
         <li>User Id: @user.main.userId</li>
         <li>Fist name: @user.main.firstName.getOrElse("")</li>
-        <li>Last name: @user.main.lastName.</li>
+        <li>Last name: @user.main.lastName</li>
         <li>Full name: @user.main.fullName.getOrElse("")</li>
         <li>Logged in from: @user.main.providerId</li>
         <li>Email: @user.main.email.map { email => @email }.getOrElse("Not Available")</li>
@@ -38,4 +42,5 @@
     </ul>
     }
 
-}(Some(user))
+}
+
