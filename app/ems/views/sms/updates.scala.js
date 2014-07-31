@@ -8,7 +8,7 @@ $(function() {
     var r = jsRoutes.ems.controllers.SmsController.updatesSocket();
     var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket
     var chatSocket = new WS(r.webSocketURL())
-    var elementTemplate = '@ems.views.html.sms.listElement(SmsDisplay(IdMapping.templateTag, FromMapping.templateTag, ToMapping.templateTag, ContentMapping.templateTag, CreationMapping.templateTag, StatusCodeMapping.templateTag, StatusMapping.templateTag, SpinMapping.templateTag))'
+    var elementTemplate = '@ems.views.html.sms.listElement(SmsDisplay(IdMapping.templateTag, UserIdMapping.templateTag, FromMapping.templateTag, ToMapping.templateTag, ContentMapping.templateTag, CreationMapping.templateTag, StatusCodeMapping.templateTag, StatusMapping.templateTag, SpinMapping.templateTag))'
 
     // given smsData, updates the spinners
     var updateSpinner = function(smsData) {
@@ -48,6 +48,7 @@ $(function() {
 
         } else {
             var replaced = elementTemplate.replace("@IdMapping.templateTag", data.@IdMapping.jsonName);
+            var replaced = replaced.replace("@UserIdMapping.templateTag", data.@UserIdMapping.jsonName);
             var replaced = replaced.replace("@FromMapping.templateTag", data.@FromMapping.jsonName);
             var replaced = replaced.replace("@ToMapping.templateTag", data.@ToMapping.jsonName);
             var replaced = replaced.replace("@ContentMapping.templateTag", data.@ContentMapping.jsonName);

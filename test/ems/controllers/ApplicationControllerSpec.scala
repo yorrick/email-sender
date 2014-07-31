@@ -30,7 +30,7 @@ class ApplicationControllerSpec extends PlaySpecification with WithSecureSocialU
 
       status(home) must equalTo(OK)
       contentType(home) must beSome.which(_ == "text/html")
-      contentAsString(home) must contain("Sms forwardings")
+      contentAsString(home) must contain("Welcome")
     }
   }
 

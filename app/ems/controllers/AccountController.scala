@@ -1,6 +1,8 @@
 package ems.controllers
 
 import ems.models.User
+import play.api.data.Form
+import play.api.data.Forms._
 import securesocial.core.{RuntimeEnvironment, SecureSocial}
 
 
@@ -18,7 +20,10 @@ class AccountController(override implicit val env: RuntimeEnvironment[User]) ext
     Ok(ems.views.html.auth.account())
   }
 
+//  val eventForm = Form(mapping("Message-Id" -> text, "event" -> text)(MailgunEvent.apply)(MailgunEvent.unapply))
+
   def phoneNumber = SecuredAction { implicit request =>
+
     Ok
   }
 

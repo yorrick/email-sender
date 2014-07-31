@@ -12,7 +12,7 @@ import play.api.libs.json.Json
  * @param content
  * @param creationDate
  */
-case class SmsDisplay(id: String, from: String, to: String, content: String,
+case class SmsDisplay(id: String, userId: String, from: String, to: String, content: String,
                       creationDate: String, statusCode: String, status: String, spin: String)
 
 
@@ -25,6 +25,7 @@ object SmsDisplay {
    */
   def fromSms(sms: Sms) = SmsDisplay(
     sms._id.stringify,
+    sms.userId.stringify,
     sms.from,
     sms.to,
     sms.content,
@@ -42,10 +43,11 @@ object SmsDisplay {
     FailedByMailgun -> ("Failed", "false")
   )
 
-  val empty = SmsDisplay("", "", "", "", "", "", "false", "")
+  val empty = SmsDisplay("", "", "", "", "", "", "", "false", "")
 
   case class Mapping(val templateTag: String, val jsonName: String)
   object IdMapping extends Mapping("##Id", "id")
+  object UserIdMapping extends Mapping("##UserId", "userId")
   object FromMapping extends Mapping("##From", "from")
   object ToMapping extends Mapping("##To", "to")
   object ContentMapping extends Mapping("##Content", "content")
@@ -63,19 +65,20 @@ object SmsDisplay {
     def serialize(smsDisplay: SmsDisplay): ByteString = {
       ByteString(
         smsDisplay.id + "|" +
-          smsDisplay.from + "|" +
-          smsDisplay.to + "|" +
-          smsDisplay.content + "|" +
-          smsDisplay.creationDate + "|" +
-          smsDisplay.statusCode + "|" +
-          smsDisplay.status + "|" +
-          smsDisplay.spin
+        smsDisplay.userId + "|" +
+        smsDisplay.from + "|" +
+        smsDisplay.to + "|" +
+        smsDisplay.content + "|" +
+        smsDisplay.creationDate + "|" +
+        smsDisplay.statusCode + "|" +
+        smsDisplay.status + "|" +
+        smsDisplay.spin
       )
     }
 
     def deserialize(bs: ByteString): SmsDisplay = {
       val result = bs.utf8String.split('|').toList
-      SmsDisplay(result(0), result(1), result(2), result(3), result(4), result(5), result(6), result(7))
+      SmsDisplay(result(0), result(1), result(2), result(3), result(4), result(5), result(6), result(7), result(8))
     }
   }
 

@@ -21,8 +21,8 @@ import ems.models._
  */
 object WebsocketUpdatesMaster {
 
-  case class Connect(val outActor: ActorRef)
-  case class Disconnect(val outActor: ActorRef)
+  case class Connect(user: User, outActor: ActorRef)
+  case class Disconnect(user: User, outActor: ActorRef)
 
   // create the master actor once
   val websocketUpdatesMaster = Akka.system.actorOf(Props[WebsocketUpdatesMaster], name="websocketUpdatesMaster")
@@ -59,17 +59,20 @@ class WebsocketUpdatesMaster extends Actor {
   import WebsocketUpdatesMaster._
 
   /** List of output websocket actors that are connected to the node */
-  private val webSocketOutActors = mutable.ListBuffer[ActorRef]()
+  private val webSocketOutActors = mutable.Map[String, ActorRef]()
+
+  def userOutActors(lookupUserId: String) =
+    (webSocketOutActors filter { case (userId, outActor) => lookupUserId == userId }).values
 
   def receive = {
-    case Connect(actor) =>
+    case Connect(user, actor) =>
       Logger.debug("Opened a websocket connection")
-      webSocketOutActors += actor
+      webSocketOutActors(user._id.stringify) = actor
       Logger.debug(s"webSocketOutActors: $webSocketOutActors")
 
-    case Disconnect(actor) =>
+    case Disconnect(user, actor) =>
       Logger.debug("Websocket connection has closed")
-      webSocketOutActors -= actor
+      webSocketOutActors.remove(user._id.stringify)
       Logger.debug(s"webSocketOutActors: $webSocketOutActors")
 
     case sms: Sms =>
@@ -80,12 +83,10 @@ class WebsocketUpdatesMaster extends Actor {
       }
 
     case signal: Signal =>
-      //      Logger.debug(s"Broadcast signal $signal")
-      webSocketOutActors foreach {outActor => outActor ! Signal.signalFormat.writes(signal)}
+      webSocketOutActors.values foreach {outActor => outActor ! Signal.signalFormat.writes(signal)}
 
     case smsDisplay: SmsDisplay =>
       Logger.debug(s"Broadcast smsDisplay $smsDisplay")
-      webSocketOutActors foreach {outActor => outActor ! SmsDisplay.smsDisplayFormat.writes(smsDisplay)}
-
+      userOutActors(smsDisplay.userId) foreach {outActor => outActor ! SmsDisplay.smsDisplayFormat.writes(smsDisplay)}
   }
 }

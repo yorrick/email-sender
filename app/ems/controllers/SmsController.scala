@@ -47,7 +47,7 @@ class SmsController(override implicit val env: RuntimeEnvironment[User]) extends
   def updatesSocket = WebSocket.tryAcceptWithActor[JsValue, JsValue] { implicit request =>
     SecureSocial.currentUser[User] map {
       case Some(user) => Right { outActor =>
-        WebsocketInputActor(outActor)
+        WebsocketInputActor(user, outActor)
       }
       case None => Left(Forbidden)
     }
