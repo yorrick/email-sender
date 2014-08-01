@@ -11,7 +11,7 @@ import play.api.libs.json._
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.Play.current
 
-import ems.backend.{SmsStore, WebsocketInputActor}
+import ems.backend.{UserInfoStore, SmsStore, WebsocketInputActor}
 import ems.models._
 
 
@@ -27,13 +27,17 @@ class SmsController(override implicit val env: RuntimeEnvironment[User]) extends
   def list = SecuredAction.async { implicit request =>
     import scala.language.postfixOps
     implicit val timeout = Timeout(1 second)
-    implicit val user = Some(request.user)
+    val user = request.user
 
-    val futureSmsList = SmsStore.listSms(request.user.id).mapTo[List[Sms]]
+    val result = for {
+      userInfo <- UserInfoStore.findUserInfoByUserId(user.id)
+      smsList <- SmsStore.listSms(request.user.id).mapTo[List[Sms]]
+    } yield {
+      val smsDisplayList = smsList map {SmsDisplay.fromSms(_)}
+      Ok(ems.views.html.sms.list(smsDisplayList, user, userInfo))
+    }
 
-    futureSmsList map { smsList =>
-      Ok(ems.views.html.sms.list(smsList map {SmsDisplay.fromSms(_)}))
-    } recover {
+    result recover {
       case error @ _ =>
         val message = s"Could not get sms list: $error"
         Logger.warn(message)

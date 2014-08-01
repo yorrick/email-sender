@@ -7,6 +7,7 @@ import reactivemongo.api.Cursor
 import securesocial.core._
 import securesocial.core.services.SaveMode
 import play.api.Logger
+import play.modules.reactivemongo.json.BSONFormats._
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json.{JsObject, Json}
 
@@ -31,6 +32,13 @@ object UserStore extends ExternalUserService[User] with MongoDBStore {
 
     val filter = Json.obj("main.providerId" -> providerId, "main.userId" -> userId)
     findSingle(userCursor(filter))
+  }
+
+  def findUserById(id: String): Future[User] = {
+    toBSONObjectId(id) flatMap { bsonId =>
+      val filter = Json.obj("_id" -> bsonId)
+      findSingle(userCursor(filter)) map { _.get }
+    }
   }
 
   def findByEmailAndProvider(email: String, providerId: String): Future[Option[BasicProfile]] = {

@@ -2,10 +2,10 @@
 @import org.joda.time.DateTime
 @import ems.models.SmsDisplay
 @import securesocial.core.{BasicProfile, RuntimeEnvironment}
-@import ems.models.User
+@import ems.models.{User, UserInfo}
 
 
-@(smsList: List[SmsDisplay])(implicit user: Option[User], request: RequestHeader, env: RuntimeEnvironment[User])
+@(smsList: List[SmsDisplay], user: User, userInfo: UserInfo)(implicit request: RequestHeader, env: RuntimeEnvironment[User])
 
 @scripts = {
     <script type="text/javascript" charset="utf-8" src="@ems.controllers.routes.JavascriptController.javascriptRoutes()"></script>
@@ -13,10 +13,24 @@
 }
 
 
-@mainAuth("Sms forwardings", scripts, user){
+@mainAuth("Sms forwardings", scripts, Some(user)){
 
     <div class="page-header">
-        <h1>Message list</h1>
+        <h1>
+            <span>
+                @userInfo.phoneNumber match {
+                    case Some(phoneNumber) => {
+                        @userInfo.phoneNumber
+                    }
+                    case None => {
+                        <a href="@ems.controllers.routes.AccountController.account">Please give us a phone number</a>
+                    }
+                }
+            </span>
+            <span> => </span>
+            <span>@user.main.email.getOrElse("No email address")</span>
+        </h1>
+
     </div>
 
     <div id="smsList" class="list-group">
