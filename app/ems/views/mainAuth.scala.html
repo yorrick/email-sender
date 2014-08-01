@@ -2,6 +2,7 @@
 @import ems.views.html.auth.loginNav
 
 
-@(title: String)(content: Html)(implicit user: Option[User])
+@(title: String, scripts: Html = Html(""), user: Option[User] = None)(content: Html)
 
-@main("Sms forwardings")(content)(loginNav(user))
+
+@main(title, scripts, loginNav(user))(content)

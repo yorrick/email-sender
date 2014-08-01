@@ -1,6 +1,7 @@
 package ems.backend
 
 import scala.concurrent.duration._
+import scala.concurrent.Future
 
 import akka.pattern
 import akka.actor.{Actor, Props}
@@ -10,7 +11,7 @@ import play.api.Play.current
 import play.api.libs.concurrent.Execution.Implicits._
 
 import ems.models._
-import ems.backend.MongoDB._
+import ems.backend.SmsStore._
 import ems.backend.Mailgun._
 import ems.backend.WebsocketUpdatesMaster.notifyWebsockets
 
@@ -28,20 +29,31 @@ object SmsForwarder {
  */
 class SmsForwarder extends Actor {
 
+  /**
+   * Creates the sms if the incoming phone number is known
+   * @param post
+   * @return
+   */
+  def createSms(post: TwilioPost): Future[Sms] = {
+    UserInfoStore.findUserInfoByPhoneNumber(post.from) map { userInfo =>
+      Sms(SmsStore.generateId, userInfo._id, post.from, post.to, post.content, DateTime.now, SavedInMongo, "")
+    }
+  }
+
   def receive = {
     case post: TwilioPost =>
-      val sms = Sms(MongoDB.generateId, post.from, post.to, post.content, DateTime.now, SavedInMongo, "")
 
       for {
+        sms <- createSms(post)
         sms <- save(sms) andThen notifyWebsockets
         sms <- pattern.after(2.second, Akka.system.scheduler)(sendEmail(sms))
         sms <- updateStatusById(sms) andThen notifyWebsockets
       } yield sms
 
     case MailgunEvent(messageId, DELIVERED) =>
-      setStatusByMailgunId(messageId, AckedByMailgun) andThen notifyWebsockets
+      updateStatusByMailgunId(messageId, AckedByMailgun) andThen notifyWebsockets
 
     case MailgunEvent(messageId, _) =>
-      setStatusByMailgunId(messageId, FailedByMailgun) andThen notifyWebsockets
+      updateStatusByMailgunId(messageId, FailedByMailgun) andThen notifyWebsockets
   }
 }

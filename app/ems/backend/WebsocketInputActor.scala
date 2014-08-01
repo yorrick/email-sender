@@ -1,13 +1,14 @@
 package ems.backend
 
 import akka.actor.{Actor, ActorRef, Props}
+import ems.models.User
 
 
 /**
  * Allows easy Props creation
  */
 object WebsocketInputActor {
-  def apply(outActor: ActorRef) = Props(classOf[WebsocketInputActor], outActor)
+  def apply(user: User, outActor: ActorRef) = Props(classOf[WebsocketInputActor], user, outActor)
 }
 
 
@@ -15,7 +16,7 @@ object WebsocketInputActor {
  * Actor given to play to handle websocket input
  * @param outActor
  */
-class WebsocketInputActor(val outActor: ActorRef) extends Actor {
+class WebsocketInputActor(val user: User, val outActor: ActorRef) extends Actor {
 
   import ems.backend.WebsocketUpdatesMaster._
 
@@ -28,11 +29,11 @@ class WebsocketInputActor(val outActor: ActorRef) extends Actor {
   }
 
   override def preStart() = {
-    websocketUpdatesMaster ! Connect(outActor)
+    websocketUpdatesMaster ! Connect(user, outActor)
   }
 
   override def postStop() = {
-    websocketUpdatesMaster ! Disconnect(outActor)
+    websocketUpdatesMaster ! Disconnect(user, outActor)
   }
 }
 

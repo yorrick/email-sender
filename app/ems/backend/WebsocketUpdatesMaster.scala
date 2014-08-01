@@ -1,7 +1,5 @@
 package ems.backend
 
-import java.net.InetSocketAddress
-
 import akka.util.ByteString
 import redis.api.pubsub.Message
 
@@ -12,7 +10,6 @@ import scala.concurrent.duration._
 import akka.actor.{Actor, Props, ActorRef}
 import play.api.Logger
 import play.api.libs.concurrent.Akka
-import play.modules.rediscala.RedisPlugin
 import play.api.Play.current
 import play.api.libs.concurrent.Execution.Implicits._
 
@@ -24,8 +21,8 @@ import ems.models._
  */
 object WebsocketUpdatesMaster {
 
-  case class Connect(val outActor: ActorRef)
-  case class Disconnect(val outActor: ActorRef)
+  case class Connect(user: User, outActor: ActorRef)
+  case class Disconnect(user: User, outActor: ActorRef)
 
   // create the master actor once
   val websocketUpdatesMaster = Akka.system.actorOf(Props[WebsocketUpdatesMaster], name="websocketUpdatesMaster")
@@ -62,33 +59,34 @@ class WebsocketUpdatesMaster extends Actor {
   import WebsocketUpdatesMaster._
 
   /** List of output websocket actors that are connected to the node */
-  private val webSocketOutActors = mutable.ListBuffer[ActorRef]()
+  private val webSocketOutActors = mutable.Map[String, ActorRef]()
+
+  def userOutActors(lookupUserId: String) =
+    (webSocketOutActors filter { case (userId, outActor) => lookupUserId == userId }).values
 
   def receive = {
-    case Connect(actor) =>
+    case Connect(user, actor) =>
       Logger.debug("Opened a websocket connection")
-      webSocketOutActors += actor
+      webSocketOutActors(user.id) = actor
       Logger.debug(s"webSocketOutActors: $webSocketOutActors")
 
-    case Disconnect(actor) =>
+    case Disconnect(user, actor) =>
       Logger.debug("Websocket connection has closed")
-      webSocketOutActors -= actor
+      webSocketOutActors.remove(user.id)
       Logger.debug(s"webSocketOutActors: $webSocketOutActors")
 
     case sms: Sms =>
       // send notification to redis
-      Redis.redisClient.publish(WebsocketUpdatesMaster.redisChannel, SmsDisplay.fromSms(sms)) onComplete {
+      Redis.instance.redisClient.publish(WebsocketUpdatesMaster.redisChannel, SmsDisplay.fromSms(sms)) onComplete {
         case Success(message) => Logger.info(s"Successfuly published message ($message)")
         case Failure(t) => Logger.warn("An error has occured: " + t.getMessage)
       }
 
     case signal: Signal =>
-      //      Logger.debug(s"Broadcast signal $signal")
-      webSocketOutActors foreach {outActor => outActor ! Signal.signalFormat.writes(signal)}
+      webSocketOutActors.values foreach {outActor => outActor ! Signal.signalFormat.writes(signal)}
 
     case smsDisplay: SmsDisplay =>
       Logger.debug(s"Broadcast smsDisplay $smsDisplay")
-      webSocketOutActors foreach {outActor => outActor ! SmsDisplay.smsDisplayFormat.writes(smsDisplay)}
-
+      userOutActors(smsDisplay.userId) foreach {outActor => outActor ! SmsDisplay.smsDisplayFormat.writes(smsDisplay)}
   }
 }
