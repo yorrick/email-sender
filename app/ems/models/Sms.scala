@@ -9,15 +9,11 @@ import play.api.libs.json.Json
 /**
  * Represent a Sms, used to create objects with forms when receiving data over http
  */
-case class Sms(
-  _id: BSONObjectID,
-  userId: BSONObjectID,
-  from: String,
-  to: String,
-  content: String,
-  creationDate: DateTime,
-  status: SmsStatus,
-  mailgunId: String) {
+case class Sms(override val _id: BSONObjectID, _userId: BSONObjectID,
+  from: String, to: String, content: String, creationDate: DateTime,
+  status: SmsStatus, mailgunId: String) extends MongoId(_id) {
+
+  lazy val userId = _userId.stringify
 
   val formattedCreationDate = creationDate.toString("yyyy-MM-dd' 'HH:mm:ss")
 

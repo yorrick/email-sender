@@ -1,15 +1,11 @@
 package ems.controllers
 
 
-import com.github.nscala_time.time.Imports.DateTime
 import ems.utils.WithMongoTestData
 import org.junit.runner.RunWith
 import org.specs2.runner._
-import reactivemongo.bson.BSONObjectID
-import play.api.libs.json.JsValue
 import play.api.test._
 
-import ems.models.{SavedInMongo, Sms}
 import ems.utils.securesocial.WithSecureSocialUtils
 
 

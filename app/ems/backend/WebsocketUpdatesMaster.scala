@@ -67,12 +67,12 @@ class WebsocketUpdatesMaster extends Actor {
   def receive = {
     case Connect(user, actor) =>
       Logger.debug("Opened a websocket connection")
-      webSocketOutActors(user._id.stringify) = actor
+      webSocketOutActors(user.id) = actor
       Logger.debug(s"webSocketOutActors: $webSocketOutActors")
 
     case Disconnect(user, actor) =>
       Logger.debug("Websocket connection has closed")
-      webSocketOutActors.remove(user._id.stringify)
+      webSocketOutActors.remove(user.id)
       Logger.debug(s"webSocketOutActors: $webSocketOutActors")
 
     case sms: Sms =>

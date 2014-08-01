@@ -1,16 +1,22 @@
 @import securesocial.core.RuntimeEnvironment
 @import ems.views.html.mainAuth
-@import ems.models.User
+@import ems.models.{User, PhoneNumber}
+@import play.api.data.Form
 
 
-@()(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User])
+@(form: Form[PhoneNumber])(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User], flash: Flash)
 
 
-@scripts = {
-    <script type="text/javascript" charset="utf-8" src="@ems.controllers.routes.JavascriptController.javascriptRoutes()"></script>
-}
+@mainAuth("Account", user = Some(user)){
 
-@mainAuth("Account", scripts, Some(user)){
+    <div>
+        <p>@flash.get("success")</p>
+        <p>
+            @helper.form(action = ems.controllers.routes.AccountController.accountUpdate()) {
+                @helper.inputText(form("phoneNumber"))
+            }
+        </p>
+    </div>
 
     <ul>
         <li>User Id: @user.main.userId</li>

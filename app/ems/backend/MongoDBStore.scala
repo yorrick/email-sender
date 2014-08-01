@@ -37,4 +37,13 @@ trait MongoDBStore {
     case _ => None
   }
 
+  /**
+   * Parse a bson object id
+   * @param id
+   * @return
+   */
+  def toBSONObjectId(id: String): Future[BSONObjectID] = Future {
+    BSONObjectID.parse(id).get
+  }
+
 }

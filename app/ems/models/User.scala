@@ -8,11 +8,7 @@ import play.api.libs.json.Json
 
 
 // a simple User class that has one identity
-case class User(
-  _id: BSONObjectID,
-  main: BasicProfile,
-  phoneNumber: Option[String]
-)
+case class User(override val _id: BSONObjectID, main: BasicProfile) extends MongoId(_id)
 
 
 /**

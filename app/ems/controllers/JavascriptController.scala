@@ -13,7 +13,6 @@ object JavascriptController extends Controller {
   def javascriptRoutes() = Action { implicit request =>
     Ok(
       Routes.javascriptRouter("jsRoutes")(
-        routes.javascript.AccountController.phoneNumber,
         routes.javascript.SmsController.updatesSocket
       )
     ).as("text/javascript")

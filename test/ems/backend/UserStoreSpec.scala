@@ -49,9 +49,5 @@ class UserStoreSpec extends PlaySpecification with WithSecureSocialUtils {
       await(service.save(profile, SaveMode.LoggedIn)).main.userId must beEqualTo(userId)
     }
 
-    "Find user by phone number" in new WithMongoData(data) {
-      await(service.findUserByPhoneNumber(userPhoneNumber)).main.userId must beEqualTo(userId)
-    }
-
   }
 }

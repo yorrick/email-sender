@@ -5,13 +5,9 @@ import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
 import reactivemongo.api.Cursor
-import reactivemongo.bson.BSONObjectID
 import securesocial.core._
 import securesocial.core.services.SaveMode
 import play.api.Logger
-import play.modules.reactivemongo.ReactiveMongoPlugin
-import play.modules.reactivemongo.json.collection.JSONCollection
-import play.api.Play.current
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json.{JsObject, Json}
 
@@ -38,18 +34,6 @@ object UserStore extends ExternalUserService[User] with MongoDBStore {
     findSingle(userCursor(filter))
   }
 
-  def findUserByPhoneNumber(phoneNumber: String): Future[User] = {
-    Logger.debug(s"Trying to find a User by phone number $phoneNumber")
-
-    val filter = Json.obj("phoneNumber" -> phoneNumber)
-    findSingle(userCursor(filter)) map { _.get } andThen {
-      case Success(user) =>
-        Logger.debug(s"Found user for incoming number $phoneNumber")
-      case Failure(t) =>
-        Logger.debug(s"Could not create any sms for incoming number $phoneNumber")
-    }
-  }
-
   def findByEmailAndProvider(email: String, providerId: String): Future[Option[BasicProfile]] = {
     Logger.debug(s"Trying to find a BasicProfile by providerId $providerId and email $email")
 
@@ -62,12 +46,11 @@ object UserStore extends ExternalUserService[User] with MongoDBStore {
     findUser(profile.providerId, profile.userId) flatMap { userOption =>
       userOption match {
         case Some(user) =>
-          // TODO update the user?
+          // TODO update the BasicProfile?
           Future.successful(user)
         case None =>
-          // create the user, with no phone number for now
-          // TODO remove the test phone number once we can update phone number in app
-          val userToInsert = User(SmsStore.generateId, profile, Some("11111111"))
+          // create the user, with no phone number for a start
+          val userToInsert = User(generateId, profile)
           collection.insert(userToInsert) map {lastError => userToInsert}
       }
     }

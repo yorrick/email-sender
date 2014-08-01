@@ -24,8 +24,8 @@ object SmsDisplay {
    * @return
    */
   def fromSms(sms: Sms) = SmsDisplay(
-    sms._id.stringify,
-    sms.userId.stringify,
+    sms.id,
+    sms.userId,
     sms.from,
     sms.to,
     sms.content,

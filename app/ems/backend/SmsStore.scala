@@ -3,15 +3,10 @@ package ems.backend
 import scala.concurrent.Future
 
 import reactivemongo.api._
-import reactivemongo.bson.BSONObjectID
 
-import play.api.Play.current
 import play.api.libs.json._
-import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits._
 import play.modules.reactivemongo.json.BSONFormats._
-import play.modules.reactivemongo.ReactiveMongoPlugin
-import play.modules.reactivemongo.json.collection.JSONCollection
 
 import ems.models._
 
@@ -74,17 +69,19 @@ object SmsStore extends MongoDBStore {
    * @param userId
    * @return
    */
-  def listSms(userId: BSONObjectID): Future[List[Sms]] = {
-    val cursor: Cursor[Sms] = collection.
-      // find all sms
-      find(Json.obj("userId" -> userId)).
-      // sort by creation date
-      sort(Json.obj("creationDate" -> -1)).
-      // perform the query and get a cursor of JsObject
-      cursor[Sms]
+  def listSms(userId: String): Future[List[Sms]] = {
+    toBSONObjectId(userId) flatMap { bsonId =>
+      val cursor: Cursor[Sms] = collection.
+        // find all sms
+        find(Json.obj("_userId" -> bsonId)).
+        // sort by creation date
+        sort(Json.obj("creationDate" -> -1)).
+        // perform the query and get a cursor of JsObject
+        cursor[Sms]
 
-    // gather all the JsObjects in a list
-    cursor.collect[List]()
+      // gather all the JsObjects in a list
+      cursor.collect[List]()
+    }
   }
 
 }

@@ -7,13 +7,15 @@ import ems.backend.SmsStore
 import reactivemongo.bson.BSONObjectID
 import play.api.libs.json.JsValue
 
-import ems.models.{User, SavedInMongo, Sms}
+import ems.models.{UserInfo, User, SavedInMongo, Sms}
 
 
 /**
  * Provides data for mongo based tests
  */
 trait WithMongoTestData {
+
+  lazy val data = Seq(("smslist", smsJson), ("users", userJson), ("userInfo", userInfoJson))
 
   // sms data
   lazy val smsId = "53cd93ce93d970b47bea76fd"
@@ -39,8 +41,6 @@ trait WithMongoTestData {
   lazy val providerId = "providerId"
   lazy val userEmail = "paul.watson@foobar.com"
   lazy val otherUserEmail = "other.user@foobar.com"
-  lazy val userPhoneNumber = "1-514-000-0000"
-  lazy val otherUserPhoneNumber = "2-514-000-0000"
 
   lazy val profile = BasicProfile(
     providerId,
@@ -70,10 +70,17 @@ trait WithMongoTestData {
     None
   )
 
-  lazy val user = User(BSONObjectID.parse(userMongoId).get, profile, Some(userPhoneNumber))
-  lazy val otherUser = User(BSONObjectID.parse(otherUserMongoId).get, otherProfile, Some(otherUserPhoneNumber))
+  lazy val user = User(BSONObjectID.parse(userMongoId).get, profile)
+  lazy val otherUser = User(BSONObjectID.parse(otherUserMongoId).get, otherProfile)
   lazy val userList = List(user, otherUser)
   lazy val userJson: List[JsValue] = userList map {User.userFormat.writes(_)}
 
-  lazy val data = Seq(("smslist", smsJson), ("users", userJson))
+
+  lazy val phoneNumber = "1-514-000-0000"
+  lazy val otherPhoneNumber = "2-514-000-0000"
+
+  lazy val userInfo = UserInfo(BSONObjectID.parse(userMongoId).get, Some(phoneNumber))
+  lazy val otherUserInfo = UserInfo(BSONObjectID.parse(otherUserMongoId).get, Some(otherPhoneNumber))
+  lazy val userInfoList = List(userInfo, otherUserInfo)
+  lazy val userInfoJson: List[JsValue] = userInfoList map {UserInfo.userInfoFormat.writes(_)}
 }

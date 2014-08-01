@@ -1,14 +1,13 @@
 package ems.backend
 
 
-import reactivemongo.bson.BSONObjectID
 import com.github.nscala_time.time.Imports._
 import org.junit.runner.RunWith
 import org.specs2.runner._
 import play.api.test._
 
 import ems.utils.{WithMongoData, WithMongoTestData}
-import ems.models.{AckedByMailgun, SentToMailgun, Sms}
+import ems.models.{AckedByMailgun, SentToMailgun}
 
 
 @RunWith(classOf[JUnitRunner])
@@ -44,11 +43,9 @@ class SmsStoreSpec extends PlaySpecification with WithMongoTestData {
     }
 
     "List user sms" in new WithMongoData(data) {
-      val objectId = BSONObjectID.parse(userMongoId).get
-
-      val result = await(SmsStore.listSms(objectId))
+      val result = await(SmsStore.listSms(userMongoId))
       result.size must beEqualTo(1)
-      result.head.userId must beEqualTo(objectId)
+      result.head.userId must beEqualTo(userMongoId)
     }
   }
 }
