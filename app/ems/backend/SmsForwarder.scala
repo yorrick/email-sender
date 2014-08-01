@@ -30,23 +30,35 @@ object SmsForwarder {
 class SmsForwarder extends Actor {
 
   /**
-   * Creates the sms if the incoming phone number is known
+   * Creates the sms with the user and of course data from twilio
+   * @param user
+   * @return
+   */
+  def createSms(user: User, post: TwilioPost): Future[Sms] =
+    Future {
+      Sms(SmsStore.generateId, user._id, post.from, post.to, post.content, DateTime.now, SavedInMongo, "")
+    }
+
+  /**
+   * Find user with incoming phone number
    * @param post
    * @return
    */
-  def createSms(post: TwilioPost): Future[Sms] = {
-    UserInfoStore.findUserInfoByPhoneNumber(post.from) map { userInfo =>
-      Sms(SmsStore.generateId, userInfo._id, post.from, post.to, post.content, DateTime.now, SavedInMongo, "")
-    }
+  def findUser(post: TwilioPost): Future[User] = {
+    for {
+      userInfo <- UserInfoStore.findUserInfoByPhoneNumber(post.from)
+      user <- UserStore.findUserById(userInfo.id)
+    } yield user
   }
 
   def receive = {
     case post: TwilioPost =>
 
       for {
-        sms <- createSms(post)
+        user <- findUser(post)
+        sms <- createSms(user, post)
         sms <- save(sms) andThen notifyWebsockets
-        sms <- pattern.after(2.second, Akka.system.scheduler)(sendEmail(sms))
+        sms <- pattern.after(2.second, Akka.system.scheduler)(sendEmail(sms, user.main.email.get))
         sms <- updateStatusById(sms) andThen notifyWebsockets
       } yield sms
 
