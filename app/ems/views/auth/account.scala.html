@@ -14,6 +14,7 @@
         <p>
             @helper.form(action = ems.controllers.routes.AccountController.accountUpdate()) {
                 @helper.inputText(form("phoneNumber"))
+                <button type="submit" name="action" value="edit">Save</button >
             }
         </p>
     </div>
