@@ -46,6 +46,14 @@ object UserInfoStore extends MongoDBStore {
   }
 
   /**
+   * Creates the user info
+   * @param userInfo
+   * @return
+   */
+  def createUserInfo(userInfo: UserInfo): Future[UserInfo] =
+    collection.insert(userInfo) map { _ => userInfo }
+
+  /**
    * Set the phone number for a user
    */
   def savePhoneNumber(userId: String, phoneNumber: String): Future[UserInfo] = {

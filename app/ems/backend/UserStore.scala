@@ -2,7 +2,6 @@ package ems.backend
 
 
 import scala.concurrent.Future
-import scala.util.{Failure, Success}
 
 import reactivemongo.api.Cursor
 import securesocial.core._
@@ -11,7 +10,7 @@ import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json.{JsObject, Json}
 
-import ems.models.User
+import ems.models.{UserInfo, User}
 
 
 /**
@@ -19,7 +18,7 @@ import ems.models.User
  */
 object UserStore extends ExternalUserService[User] with MongoDBStore {
 
-  override val collectionName = "users"
+  override val collectionName = "user"
 
   def find(providerId: String, userId: String): Future[Option[BasicProfile]] = {
     Logger.debug(s"Trying to find a BasicProfile by providerId $providerId and userId $userId")
@@ -50,8 +49,14 @@ object UserStore extends ExternalUserService[User] with MongoDBStore {
           Future.successful(user)
         case None =>
           // create the user, with no phone number for a start
-          val userToInsert = User(generateId, profile)
-          collection.insert(userToInsert) map {lastError => userToInsert}
+          val id = generateId
+          val userToInsert = User(id, profile)
+          val userInfoToInsert = UserInfo(id, None)
+
+          for {
+            lastError <- collection.insert(userToInsert)
+            userinfo <- UserInfoStore.createUserInfo(userInfoToInsert)
+          } yield userToInsert
       }
     }
   }

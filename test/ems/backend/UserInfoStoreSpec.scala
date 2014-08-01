@@ -21,6 +21,11 @@ class UserInfoStoreSpec extends PlaySpecification with WithSecureSocialUtils {
       await(UserInfoStore.findUserInfoByPhoneNumber(phoneNumber)).id must beEqualTo(userMongoId)
     }
 
+    "Create user info" in new WithMongoData(data) {
+      val userInfoToCreate = userInfo.copy(_id = UserInfoStore.generateId)
+      await(UserInfoStore.createUserInfo(userInfoToCreate)).id must beEqualTo(userInfoToCreate.id)
+    }
+
     "Save phone number" in new WithMongoData(data) {
       await(UserInfoStore.savePhoneNumber(userMongoId, phoneNumber)).id must beEqualTo(userMongoId)
     }

@@ -16,7 +16,7 @@ import ems.models._
  */
 object SmsStore extends MongoDBStore {
 
-  override val collectionName = "smslist"
+  override val collectionName = "sms"
 
   /**
    * Save an sms

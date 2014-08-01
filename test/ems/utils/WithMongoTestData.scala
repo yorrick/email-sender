@@ -3,7 +3,7 @@ package ems.utils
 
 import _root_.securesocial.core.{AuthenticationMethod, BasicProfile}
 import com.github.nscala_time.time.Imports.DateTime
-import ems.backend.SmsStore
+import ems.backend.{UserInfoStore, UserStore, SmsStore}
 import reactivemongo.bson.BSONObjectID
 import play.api.libs.json.JsValue
 
@@ -15,7 +15,11 @@ import ems.models.{UserInfo, User, SavedInMongo, Sms}
  */
 trait WithMongoTestData {
 
-  lazy val data = Seq(("smslist", smsJson), ("users", userJson), ("userInfo", userInfoJson))
+  lazy val data = Seq(
+    (SmsStore.collectionName, smsJson),
+    (UserStore.collectionName, userJson),
+    (UserInfoStore.collectionName, userInfoJson)
+  )
 
   // sms data
   lazy val smsId = "53cd93ce93d970b47bea76fd"
