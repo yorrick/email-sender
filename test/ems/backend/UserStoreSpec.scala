@@ -10,21 +10,18 @@ import org.junit.runner.RunWith
 import org.specs2.runner._
 import play.api.test._
 
-import ems.utils.WithMongoData
+import ems.utils.{WithMongoTestData, WithMongoData}
 import ems.utils.securesocial.WithSecureSocialUtils
 import ems.models.User
 
 
 @RunWith(classOf[JUnitRunner])
-class MongoDBUserServiceSpec extends PlaySpecification with WithSecureSocialUtils {
+class UserStoreSpec extends PlaySpecification with WithSecureSocialUtils {
   sequential
 
-  lazy val service = new MongoDBUserService()
+  lazy val service = UserStore
 
-  lazy val json: List[JsValue] = List(user) map {User.userFormat.writes(_)}
-  lazy val data = Seq(("users", json))
-
-  "User service" should {
+  "User store" should {
     "Throw exceptions for all username / password related operations" in {
       await(service.saveToken(MailToken("uuid", "email", DateTime.yesterday, DateTime.tomorrow, true))) must throwA[Exception]
       await(service.findToken("token")) must throwA[Exception]

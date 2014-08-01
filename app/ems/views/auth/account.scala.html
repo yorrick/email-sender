@@ -1,17 +1,28 @@
 @import securesocial.core.RuntimeEnvironment
 @import ems.views.html.mainAuth
-@import ems.models.User
+@import ems.models.{User, PhoneNumber}
+@import play.api.data.Form
 
 
-@()(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User])
+@(form: Form[PhoneNumber])(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User], flash: Flash)
 
 
-@mainAuth("Login"){
+@mainAuth("Account", user = Some(user)){
+
+    <div>
+        <p>@flash.get("success")</p>
+        <p>
+            @helper.form(action = ems.controllers.routes.AccountController.accountUpdate()) {
+                @helper.inputText(form("phoneNumber"))
+                <button type="submit" name="action" value="edit">Save</button >
+            }
+        </p>
+    </div>
 
     <ul>
         <li>User Id: @user.main.userId</li>
         <li>Fist name: @user.main.firstName.getOrElse("")</li>
-        <li>Last name: @user.main.lastName.</li>
+        <li>Last name: @user.main.lastName</li>
         <li>Full name: @user.main.fullName.getOrElse("")</li>
         <li>Logged in from: @user.main.providerId</li>
         <li>Email: @user.main.email.map { email => @email }.getOrElse("Not Available")</li>
@@ -38,4 +49,5 @@
     </ul>
     }
 
-}(Some(user))
+}
+

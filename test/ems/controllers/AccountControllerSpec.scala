@@ -9,11 +9,11 @@ import ems.utils.securesocial.WithSecureSocialUtils
 
 
 @RunWith(classOf[JUnitRunner])
-class AuthControllerSpec extends PlaySpecification with WithSecureSocialUtils {
+class AccountControllerSpec extends PlaySpecification with WithSecureSocialUtils {
   sequential
 //  isolated
 
-  val controller = createController(classOf[AuthController])
+  val controller = createController(classOf[AccountController])
 
   "Auth controller" should {
 

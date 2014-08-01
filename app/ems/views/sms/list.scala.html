@@ -7,8 +7,13 @@
 
 @(smsList: List[SmsDisplay])(implicit user: Option[User], request: RequestHeader, env: RuntimeEnvironment[User])
 
+@scripts = {
+    <script type="text/javascript" charset="utf-8" src="@ems.controllers.routes.JavascriptController.javascriptRoutes()"></script>
+    <script type="text/javascript" charset="utf-8" src="@ems.controllers.routes.JavascriptController.updatesJs()"></script>
+}
 
-@mainAuth("Sms forwardings"){
+
+@mainAuth("Sms forwardings", scripts, user){
 
     <div class="page-header">
         <h1>Message list</h1>
@@ -17,13 +22,10 @@
     <div id="smsList" class="list-group">
 
     @if(smsList.isEmpty) {
-          @ems.views.html.sms.listElement(SmsDisplay("", "", "", "No sms sent", "", "", "", "false"), emptyClass = "empty-sms")
+          @ems.views.html.sms.listElement(SmsDisplay("", "", "", "", "No sms sent", "", "", "", "false"), emptyClass = "empty-sms")
     } else {
       @for(sms <- smsList) {
           @ems.views.html.sms.listElement(sms)
       }
     }
-
-    <script type="text/javascript" charset="utf-8" src="@ems.controllers.routes.JavascriptController.updatesJs()"></script>
-
 }

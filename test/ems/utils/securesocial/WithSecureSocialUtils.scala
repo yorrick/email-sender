@@ -1,16 +1,17 @@
 package ems.utils.securesocial
 
 
-import securesocial.core.{RuntimeEnvironment, AuthenticationMethod, BasicProfile}
+import securesocial.core.RuntimeEnvironment
 import securesocial.core.services.AuthenticatorService
 import securesocial.core.authenticator._
 import play.api.mvc.Cookie
 
 import ems.models.User
 import ems.backend.utils.{WithControllerUtils, EMSRuntimeEnvironment}
+import ems.utils.WithMongoTestData
 
 
-trait WithSecureSocialUtils extends WithControllerUtils {
+trait WithSecureSocialUtils extends WithControllerUtils with WithMongoTestData {
 
   /**
    * Cookie used for tests.
@@ -18,30 +19,6 @@ trait WithSecureSocialUtils extends WithControllerUtils {
    * TODO find a way to use configuration (we need an app in context to be able to use CookieAuthenticator.cookieName)
    */
   lazy val cookie = Cookie("emailsenderid", "")
-
-  lazy val providerId = "providerId"
-  lazy val userId = "userid-12345"
-  lazy val userEmail = "paul.watson@foobar.com"
-
-  lazy val profile = BasicProfile(
-    providerId,
-    userId,
-    Some("Paul"),
-    Some("Watson"),
-    Some("Paul Watson"),
-    Some(userEmail),
-    None,
-    AuthenticationMethod.OAuth2,
-    None,
-    None,
-    None
-  )
-
-  /**
-   * The user the tests will be based on
-   * @return
-   */
-  lazy val user: User = User(profile)
 
   /**
    * The runtime environment that will be injected to the classes
