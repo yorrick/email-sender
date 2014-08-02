@@ -1,5 +1,7 @@
 package ems.backend
 
+import reactivemongo.core.commands.LastError
+
 import scala.concurrent.Future
 import scala.util.{Success, Failure}
 
@@ -15,6 +17,12 @@ import ems.models._
  * Handles sms storage in mongodb
  */
 object UserInfoStore extends MongoDBStore {
+
+  /**
+   * Service exception
+   * @param msg
+   */
+  case class UserInfoStoreException(val msg: String) extends Exception(msg)
 
   override val collectionName = "userInfo"
 
@@ -61,7 +69,17 @@ object UserInfoStore extends MongoDBStore {
       collection.update(
         Json.obj("_id" -> bsonId),
         Json.obj("$set" -> Json.obj("phoneNumber" -> phoneNumber))
-      ) map { lastError => UserInfo(bsonId, Some(phoneNumber))}
+      ) transform (lastError => UserInfo(bsonId, Some(phoneNumber)), handleSaveError _)
+    }
+
+  }
+
+  private def handleSaveError(t: Throwable): UserInfoStoreException = {
+    t match {
+      case e: LastError if e.code == Some(11000) =>
+        UserInfoStoreException("This phone number is already used by somebody else")
+      case _ =>
+        UserInfoStoreException("Could not save phone number")
     }
   }
 

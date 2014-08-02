@@ -80,8 +80,8 @@ trait WithMongoTestData {
   lazy val userJson: List[JsValue] = userList map {User.userFormat.writes(_)}
 
 
-  lazy val phoneNumber = "1-514-000-0000"
-  lazy val otherPhoneNumber = "2-514-000-0000"
+  lazy val phoneNumber = "+15140000000"
+  lazy val otherPhoneNumber = "+15140000001"
 
   lazy val userInfo = UserInfo(BSONObjectID.parse(userMongoId).get, Some(phoneNumber))
   lazy val otherUserInfo = UserInfo(BSONObjectID.parse(otherUserMongoId).get, Some(otherPhoneNumber))

@@ -45,5 +45,15 @@ class AccountControllerSpec extends PlaySpecification with WithSecureSocialUtils
       status(response) must equalTo(BAD_REQUEST)
     }
 
+    "Block duplicate phone number" in new WithApplication() {
+      val request = FakeRequest(POST, "").withFormUrlEncodedBody(
+        "phoneNumber" -> phoneNumber
+      )
+
+      val response = controller.accountUpdate(request.withCookies(cookie))
+      status(response) must equalTo(BAD_REQUEST)
+    }
+
   }
+
 }

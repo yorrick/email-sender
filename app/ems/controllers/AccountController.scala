@@ -1,6 +1,9 @@
 package ems.controllers
 
 
+import ems.backend.UserInfoStore.UserInfoStoreException
+import reactivemongo.core.commands.LastError
+
 import scala.concurrent.Future
 
 import securesocial.core.{RuntimeEnvironment, SecureSocial}
@@ -56,6 +59,9 @@ class AccountController(override implicit val env: RuntimeEnvironment[User]) ext
         // update the phone number in mongo
         UserInfoStore.savePhoneNumber(user.id, phoneNumberToSave) map { userInfo =>
           Redirect(ems.controllers.routes.AccountController.account).flashing("success" -> "Phone number saved!")
+        } recover {
+          case UserInfoStoreException(message) =>
+            BadRequest(ems.views.html.auth.account(form.fill(phoneNumber).withGlobalError(message)))
         }
       }
     )
