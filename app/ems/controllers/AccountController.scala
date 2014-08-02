@@ -48,9 +48,8 @@ class AccountController(override implicit val env: RuntimeEnvironment[User]) ext
     implicit val user = request.user
 
     form.bindFromRequest.fold(
-      formWithErrors => {
-        Future.successful(BadRequest(ems.views.html.auth.account(formWithErrors)))
-      },
+      formWithErrors =>
+        Future.successful(BadRequest(ems.views.html.auth.account(formWithErrors))),
       phoneNumber => {
         val phoneNumberToSave = s"$phonePrefix${phoneNumber.value}"
 
