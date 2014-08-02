@@ -1,0 +1,28 @@
+@import ems.views.utils.Helpers
+
+
+@(flash: Flash, form: Form[_])
+
+
+@display(cssClass: String, message: String) = {
+    <div class="alert @cssClass">
+        <a href="#" class="close" data-dismiss="alert">&times;</a>
+        @message
+    </div>
+}
+
+@for(
+    (alertType, cssClass) <- Helpers.alertsTypes
+) {
+    @flash.get(alertType).map { message =>
+        @display(cssClass = cssClass, message = message)
+    }
+}
+
+@for(
+    error <- form.errors
+) {
+    @display(cssClass = Helpers.alertsTypes(Helpers.warning), message = error.message)
+}
+
+

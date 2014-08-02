@@ -1,8 +1,6 @@
 package ems.controllers
 
 
-import views.html.helper
-
 import scala.concurrent.Future
 
 import securesocial.core.{RuntimeEnvironment, SecureSocial}
@@ -13,6 +11,7 @@ import play.api.libs.concurrent.Execution.Implicits._
 
 import ems.models.{PhoneNumber, User}
 import ems.backend.UserInfoStore
+import ems.views.utils.Helpers._
 
 
 object AccountController {
@@ -30,7 +29,7 @@ class AccountController(override implicit val env: RuntimeEnvironment[User]) ext
   import AccountController._
 
   val form = Form(mapping(
-    "phoneNumber" -> (text verifying pattern(phoneRegex, "10 numbers"))
+    "phoneNumber" -> (text verifying pattern(phoneRegex, "10 digits", "The phone number must have 10 digits"))
   )(PhoneNumber.apply)(PhoneNumber.unapply))
 
   /**
@@ -49,8 +48,9 @@ class AccountController(override implicit val env: RuntimeEnvironment[User]) ext
     implicit val user = request.user
 
     form.bindFromRequest.fold(
-      formWithErrors =>
-        Future.successful(BadRequest(ems.views.html.auth.account(formWithErrors))),
+      formWithErrors => {
+        Future.successful(BadRequest(ems.views.html.auth.account(formWithErrors)))
+      },
       phoneNumber => {
         val phoneNumberToSave = s"$phonePrefix${phoneNumber.value}"
 

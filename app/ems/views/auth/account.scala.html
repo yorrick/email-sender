@@ -5,29 +5,20 @@
 @import ems.controllers.AccountController._
 @import helper.form._
 @import ems.views.utils.Helpers._
+@import ems.views.html.utils.alerts
+
 
 @(form: Form[PhoneNumber])(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User], flash: Flash)
 
 
 @mainAuth("Account", user = Some(user)){
 
+    @alerts(flash, form)
+
     <ul class="list-group" >
-        @flash.get("success") match {
-            case Some(message) => {
-                <li class="list-group-item">@message</li>
-            }
-            case None => {}
-        }
         <li class="list-group-item">
             <p>
                 @helper.form(action = ems.controllers.routes.AccountController.accountUpdate(), 'class -> "form-inline", 'role -> "form") {
-                    @*******************************************
-                    <div class="form-group">
-                        <label class="sr-only" for="exampleInputEmail2">Email address</label>
-                        <input type="email" class="form-control" id="exampleInputEmail2" placeholder="Enter email">
-                    </div>
-                    @helper.inputText(form("phoneNumber"), '_label -> "Please enter your phone number, like 5141234567")
-                    *******************************************@
                     <div class="form-group">
                         @helper.input(form("phoneNumber"), '_label -> "Please enter your phone number, like 5141234567") { (id, name, value, args) =>
                             <span>+1</span>
@@ -38,38 +29,11 @@
                 }
             </p>
         </li>
-        <li class="list-group-item">You can send sms to this phone number: (438) 793-8597</li>
-        <li class="list-group-item">Fist name: @user.main.firstName.getOrElse("")</li>
-        <li class="list-group-item">Last name: @user.main.lastName</li>
-        <li class="list-group-item">Full name: @user.main.fullName.getOrElse("")</li>
+        <li class="list-group-item">You can send sms to this phone number: <strong>(438) 793-8597</strong></li>
+        <li class="list-group-item">Name: @user.main.fullName.getOrElse("")</li>
         <li class="list-group-item">Logged in from: @user.main.providerId</li>
         <li class="list-group-item">Email: @user.main.email.map { email => @email }.getOrElse("Not Available")</li>
-        <li class="list-group-item">Authentication method: @user.main.authMethod</li>
     </ul>
-
-
-    @*******************************************
-    <li class="list-group-item">User Id: @user.main.userId</li>
-    @user.main.oAuth1Info.map { info =>
-    <h2>OAuth1 Info</h2>
-
-    <ul>
-        <li>Token: @info.token</li>
-        <li>Secret: @info.secret</li>
-    </ul>
-    }
-
-    @user.main.oAuth2Info.map { info =>
-    <h2>OAuth2 Info</h2>
-
-    <ul>
-        <li>Access Token: @info.accessToken</li>
-        @info.tokenType.map { t => <li>Token Type: @t</li> }
-        @info.expiresIn.map { exp => <li>Expires in: @exp seconds</li>}
-        @info.refreshToken.map { rt => <li>Refresh Token: @rt</li>}
-    </ul>
-    }
-    *******************************************@
 
 }
 
