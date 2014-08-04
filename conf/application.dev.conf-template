@@ -11,4 +11,10 @@ redis {
 mailgun.api.key=<API_KEY>
 mailgun.smtp.login=<postmaster@xxxxx.mailgun.org>
 
+
+twilio.api.url="https://api.twilio.com/2010-04-01/Accounts/<SID>/Messages.json"
+twilio.api.sid="<SID>"
+twilio.api.token="<TOKEN>"
+
+
 include "securesocial/securesocial-dev.conf"
