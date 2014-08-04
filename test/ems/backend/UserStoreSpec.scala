@@ -41,6 +41,10 @@ class UserStoreSpec extends PlaySpecification with WithSecureSocialUtils {
       await(service.findUser(providerId, userId)) should beSome
     }
 
+    "Find user by id" in new WithMongoData(data) {
+      await(service.findUserById(userMongoId)).id must beEqualTo(userMongoId)
+    }
+
     "Find basic profile by email" in new WithMongoData(data) {
       await(service.findByEmailAndProvider(userEmail, providerId)) should beSome
     }

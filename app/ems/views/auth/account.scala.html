@@ -1,7 +1,11 @@
 @import securesocial.core.RuntimeEnvironment
+@import play.api.data.Form
 @import ems.views.html.mainAuth
 @import ems.models.{User, PhoneNumber}
-@import play.api.data.Form
+@import ems.controllers.AccountController._
+@import helper.form._
+@import ems.views.utils.Helpers._
+@import ems.views.html.utils.alerts
 
 
 @(form: Form[PhoneNumber])(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User], flash: Flash)
@@ -9,45 +13,27 @@
 
 @mainAuth("Account", user = Some(user)){
 
-    <div>
-        <p>@flash.get("success")</p>
-        <p>
-            @helper.form(action = ems.controllers.routes.AccountController.accountUpdate()) {
-                @helper.inputText(form("phoneNumber"))
-                <button type="submit" name="action" value="edit">Save</button >
-            }
-        </p>
-    </div>
+    @alerts(flash, form)
 
-    <ul>
-        <li>User Id: @user.main.userId</li>
-        <li>Fist name: @user.main.firstName.getOrElse("")</li>
-        <li>Last name: @user.main.lastName</li>
-        <li>Full name: @user.main.fullName.getOrElse("")</li>
-        <li>Logged in from: @user.main.providerId</li>
-        <li>Email: @user.main.email.map { email => @email }.getOrElse("Not Available")</li>
-        <li>Authentication method: @user.main.authMethod</li>
+    <ul class="list-group" >
+        <li class="list-group-item">
+            <p>
+                @helper.form(action = ems.controllers.routes.AccountController.accountUpdate(), 'class -> "form-inline", 'role -> "form") {
+                    <div class="form-group">
+                        @helper.input(form("phoneNumber"), '_label -> "Please enter your phone number, like 5141234567") { (id, name, value, args) =>
+                            <span>+1</span>
+                            <input name="@name" id="@id" value="@value" @toHtmlArgs(args) class="form-control" type="phone" placeholder="Enter phone number">
+                        }
+                    </div>
+                    <button type="submit" class="btn btn-default">Save</button>
+                }
+            </p>
+        </li>
+        <li class="list-group-item">You can send sms to this phone number: <strong>(438) 793-8597</strong></li>
+        <li class="list-group-item">Name: @user.main.fullName.getOrElse("")</li>
+        <li class="list-group-item">Logged in from: @user.main.providerId</li>
+        <li class="list-group-item">Email: @user.main.email.map { email => @email }.getOrElse("Not Available")</li>
     </ul>
-
-    @user.main.oAuth1Info.map { info =>
-    <h2>OAuth1 Info</h2>
-
-    <ul>
-        <li>Token: @info.token</li>
-        <li>Secret: @info.secret</li>
-    </ul>
-    }
-
-    @user.main.oAuth2Info.map { info =>
-    <h2>OAuth2 Info</h2>
-
-    <ul>
-        <li>Access Token: @info.accessToken</li>
-        @info.tokenType.map { t => <li>Token Type: @t</li> }
-        @info.expiresIn.map { exp => <li>Expires in: @exp seconds</li>}
-        @info.refreshToken.map { rt => <li>Refresh Token: @rt</li>}
-    </ul>
-    }
 
 }
 

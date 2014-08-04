@@ -1,0 +1,13 @@
+@(elements: helper.FieldElements)
+
+@*******************************************
+<div class="@if(elements.hasErrors) {error}">
+*******************************************@
+
+<div class="form-group">
+    <div class="input">
+        <label class="sr-only" for="@elements.id">@elements.label</label>
+        @elements.input
+        <span class="help">(@elements.infos.mkString(", "))</span>
+    </div>
+</div>
