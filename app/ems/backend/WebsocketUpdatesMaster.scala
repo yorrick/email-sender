@@ -53,27 +53,42 @@ object WebsocketUpdatesMaster {
 
 
 /**
- * This actor stores all websocket connections to browsers
+ * This actor stores all websocket connections to browsers.
+ * Each user can have multiple connections at the same time.
  */
 class WebsocketUpdatesMaster extends Actor {
   import WebsocketUpdatesMaster._
 
-  /** List of output websocket actors that are connected to the node */
-  private val webSocketOutActors = mutable.Map[String, ActorRef]()
-
-  def userOutActors(lookupUserId: String) =
-    (webSocketOutActors filter { case (userId, outActor) => lookupUserId == userId }).values
+  /**
+   * userId -> list of websocket connections
+   */
+  private val webSocketOutActors = mutable.Map[String, mutable.ListBuffer[ActorRef]]()
 
   def receive = {
     case Connect(user, actor) =>
       Logger.debug("Opened a websocket connection")
-      webSocketOutActors(user.id) = actor
+
+      webSocketOutActors.get(user.id) match {
+        case Some(websocketOutList) => websocketOutList += actor
+        case None => webSocketOutActors(user.id) = mutable.ListBuffer(actor)
+      }
+
       Logger.debug(s"webSocketOutActors: $webSocketOutActors")
+
+      sender ! webSocketOutActors.toMap
 
     case Disconnect(user, actor) =>
       Logger.debug("Websocket connection has closed")
+
+      webSocketOutActors.get(user.id) match {
+        case Some(websocketOutList) => websocketOutList -= actor
+        case None =>
+      }
+
       webSocketOutActors.remove(user.id)
       Logger.debug(s"webSocketOutActors: $webSocketOutActors")
+
+      sender ! webSocketOutActors.toMap
 
     case sms: Sms =>
       // send notification to redis
@@ -83,10 +98,15 @@ class WebsocketUpdatesMaster extends Actor {
       }
 
     case signal: Signal =>
-      webSocketOutActors.values foreach {outActor => outActor ! Signal.signalFormat.writes(signal)}
+      webSocketOutActors.values.flatMap(identity) foreach {
+        _ ! Signal.signalFormat.writes(signal)}
 
     case smsDisplay: SmsDisplay =>
       Logger.debug(s"Broadcast smsDisplay $smsDisplay")
-      userOutActors(smsDisplay.userId) foreach {outActor => outActor ! SmsDisplay.smsDisplayFormat.writes(smsDisplay)}
+
+      webSocketOutActors.get(smsDisplay.userId) map {
+        _ foreach { outActor => outActor ! SmsDisplay.smsDisplayFormat.writes(smsDisplay)}
+      }
   }
+
 }

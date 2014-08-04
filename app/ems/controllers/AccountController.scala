@@ -1,7 +1,8 @@
 package ems.controllers
 
 
-import views.html.helper
+import ems.backend.UserInfoStore.UserInfoStoreException
+import reactivemongo.core.commands.LastError
 
 import scala.concurrent.Future
 
@@ -13,6 +14,7 @@ import play.api.libs.concurrent.Execution.Implicits._
 
 import ems.models.{PhoneNumber, User}
 import ems.backend.UserInfoStore
+import ems.views.utils.Helpers._
 
 
 object AccountController {
@@ -30,7 +32,7 @@ class AccountController(override implicit val env: RuntimeEnvironment[User]) ext
   import AccountController._
 
   val form = Form(mapping(
-    "phoneNumber" -> (text verifying pattern(phoneRegex, "10 numbers"))
+    "phoneNumber" -> (text verifying pattern(phoneRegex, "10 digits", "The phone number must have 10 digits"))
   )(PhoneNumber.apply)(PhoneNumber.unapply))
 
   /**
@@ -57,6 +59,9 @@ class AccountController(override implicit val env: RuntimeEnvironment[User]) ext
         // update the phone number in mongo
         UserInfoStore.savePhoneNumber(user.id, phoneNumberToSave) map { userInfo =>
           Redirect(ems.controllers.routes.AccountController.account).flashing("success" -> "Phone number saved!")
+        } recover {
+          case UserInfoStoreException(message) =>
+            BadRequest(ems.views.html.auth.account(form.fill(phoneNumber).withGlobalError(message)))
         }
       }
     )
