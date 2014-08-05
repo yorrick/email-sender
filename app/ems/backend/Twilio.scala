@@ -1,15 +1,13 @@
 package ems.backend
 
 
+import scala.util.{Success, Failure}
 import scala.concurrent.Future
 
-import play.api.Logger
 import play.api.Play.current
 import play.api.http.Status
 import play.api.libs.ws.{WSAuthScheme, WS, WSRequestHolder, WSResponse}
 import play.api.libs.concurrent.Execution.Implicits._
-
-import ems.models.{NotSentToMailgun, Sms}
 
 
 /**
