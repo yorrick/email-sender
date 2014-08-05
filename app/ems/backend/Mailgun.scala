@@ -11,8 +11,6 @@ import play.api.http.Status
 
 import ems.models._
 
-import scala.util.Success
-
 
 /**
  * Utility that send emails using mailgun http api.
@@ -51,7 +49,7 @@ object Mailgun {
       requestHolder.post(postData)
     } getOrElse Future.failed(missingCredentials)
 
-    val okResponse = responseFuture andThen {case Success(r) => println(s"======================$r: status is ${r.status} for post data $postData")} filter { _.status == Status.OK }
+    val okResponse = responseFuture filter { _.status == Status.OK }
     val smsResponse = okResponse flatMap { response => handleMailgunResponse(sms, response.json)}
 
     // in case something went wrong
