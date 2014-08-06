@@ -13,7 +13,7 @@ import play.api.data.validation.Constraints._
 import play.api.libs.concurrent.Execution.Implicits._
 
 import ems.models.{PhoneNumber, User}
-import ems.backend.UserInfoStore
+import ems.backend.{Twilio, UserInfoStore}
 import ems.views.utils.Helpers._
 
 
@@ -58,6 +58,10 @@ class AccountController(override implicit val env: RuntimeEnvironment[User]) ext
 
         // update the phone number in mongo
         UserInfoStore.savePhoneNumber(user.id, phoneNumberToSave) map { userInfo =>
+
+          // send a confirmation to the given phone number, but do not wait for the reply
+          Twilio.sendConfirmationSms(phoneNumberToSave)
+
           Redirect(ems.controllers.routes.AccountController.account).flashing("success" -> "Phone number saved!")
         } recover {
           case UserInfoStoreException(message) =>

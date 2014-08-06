@@ -18,12 +18,6 @@ import ems.models.TwilioPost
  */
 object TwilioController extends Controller {
 
-  val emptyTwiMLResponse = """<?xml version="1.0" encoding="UTF-8"?>""" +
-    <Response>
-      <Message></Message>
-    </Response>
-
-
   val form = Form(
     mapping(
       "From" -> text,
@@ -50,7 +44,7 @@ object TwilioController extends Controller {
    */
   private def handleFormValidated(post: TwilioPost): Result = {
     smsForwarder ! post
-    Ok(emptyTwiMLResponse)
+    Ok
   }
 
   /**

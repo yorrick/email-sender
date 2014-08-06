@@ -24,7 +24,7 @@ class TwilioControllerSpec extends PlaySpecification with WithMongoTestData {
       val postResponse = ems.controllers.TwilioController.sms(request)
       status(postResponse) must equalTo(OK)
       println(contentAsString(postResponse))
-      contentAsString(postResponse) must contain("Message")
+      contentAsString(postResponse) must beEqualTo("")
     }
 
     "Reply with bad request if request is malformed" in new WithMongoData(data) {
