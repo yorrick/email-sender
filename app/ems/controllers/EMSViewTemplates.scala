@@ -14,8 +14,7 @@ class EMSViewTemplates(env: RuntimeEnvironment[_]) extends ViewTemplates {
 
   override def getLoginPage(form: Form[(String, String)],
                             msg: Option[String] = None)(implicit request: RequestHeader, lang: Lang): Html = {
-//    securesocial.views.html.login(form, msg)(request, lang, env)
-    ems.views.html.auth.login(form, msg)(request, lang, env)
+    ems.views.html.auth.login(msg)(request, lang, env)
   }
 
   override def getSignUpPage(form: Form[RegistrationInfo], token: String)(implicit request: RequestHeader, lang: Lang): Html = {
