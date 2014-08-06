@@ -13,27 +13,42 @@
 
 @mainAuth("Account", user = Some(user)){
 
-    @alerts(flash, form)
+    <div class="row">
+        <ul class="col-md-10 col-md-offset-1" >
+            <li class="row list-group-item no-border">
+                @alerts(flash, form)
+            </li>
+        </ul>
+    </div>
 
-    <ul class="list-group" >
-        <li class="list-group-item">
-            <p>
+    <div class="row">
+        <ul class="col-md-10 col-md-offset-1" >
+            <li class="row list-group-item">
                 @helper.form(action = ems.controllers.routes.AccountController.accountUpdate(), 'class -> "form-inline", 'role -> "form") {
-                    <div class="form-group">
-                        @helper.input(form("phoneNumber"), '_label -> "Please enter your phone number, like 5141234567") { (id, name, value, args) =>
-                            <span>+1</span>
-                            <input name="@name" id="@id" value="@value" @toHtmlArgs(args) class="form-control" type="phone" placeholder="Enter phone number">
-                        }
-                    </div>
-                    <button type="submit" class="btn btn-default">Save</button>
-                }
-            </p>
-        </li>
-        <li class="list-group-item">You can send sms to this phone number: <strong>(438) 793-8597</strong></li>
-        <li class="list-group-item">Name: @user.main.fullName.getOrElse("")</li>
-        <li class="list-group-item">Logged in from: @user.main.providerId</li>
-        <li class="list-group-item">Email: @user.main.email.map { email => @email }.getOrElse("Not Available")</li>
-    </ul>
+                    @helper.input(form("phoneNumber"), '_label -> "Please enter your phone number, like 5141234567") { (id, name, value, args) =>
 
+                        <div class="form-group">
+                            <div class="input-group">
+                                <span class="input-group-addon">
+                                    <span class="glyphicon glyphicon-phone"></span>
+                                </span>
+                                <input name="@name" id="@id" value="@value" @toHtmlArgs(args) class="form-control" type="phone" placeholder="Enter phone number" >
+                            </div>
+                        </div>
+                    }
+
+                    <div class="col-md-1">
+                        <button type="submit" class="btn btn-default">Save</button>
+                    </div>
+
+                }
+
+            </li>
+            <li class="row list-group-item">You can send sms to this phone number: <strong>(438) 793-8597</strong></li>
+            <li class="row list-group-item">Name: @user.main.fullName.getOrElse("")</li>
+            <li class="row list-group-item">Logged in from: @user.main.providerId</li>
+            <li class="row list-group-item">Email: @user.main.email.map { email => @email }.getOrElse("Not Available")</li>
+        </ul>
+    </div>
 }
 

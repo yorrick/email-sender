@@ -1,4 +1,4 @@
-@import ems.views.html.mainAuth
+    @import ems.views.html.mainAuth
 @import org.joda.time.DateTime
 @import ems.models.SmsDisplay
 @import securesocial.core.{BasicProfile, RuntimeEnvironment}
@@ -15,31 +15,38 @@
 
 @mainAuth("Sms forwardings", scripts, Some(user)){
 
-    <div class="page-header">
-        <h1>
-            <span>
-                @userInfo.phoneNumber match {
-                    case Some(phoneNumber) => {
-                        @userInfo.phoneNumber
+    <div class="row">
+        <div class="col-md-2"></div>
+        <div class="col-md-8">
+            <h2 class="text-center">
+                <span>
+                    @userInfo.phoneNumber match {
+                        case Some(phoneNumber) => {
+                            @userInfo.phoneNumber
+                        }
+                        case None => {
+                            <a href="@ems.controllers.routes.AccountController.account">Please give us a phone number</a>
+                        }
                     }
-                    case None => {
-                        <a href="@ems.controllers.routes.AccountController.account">Please give us a phone number</a>
-                    }
-                }
-            </span>
-            <span> => </span>
-            <span>@user.main.email.getOrElse("No email address")</span>
-        </h1>
-
+                </span>
+                <span class="glyphicon glyphicon-arrow-right"></span>
+                <span>@user.main.email.getOrElse("No email address")</span>
+            </h2>
+        </div>
+        <div class="col-md-2"></div>
     </div>
 
-    <div id="smsList" class="list-group">
-
-    @if(smsList.isEmpty) {
-          @ems.views.html.sms.listElement(SmsDisplay("", "", "", "", "No sms sent", "", "", "", "false"), emptyClass = "empty-sms")
-    } else {
-      @for(sms <- smsList) {
-          @ems.views.html.sms.listElement(sms)
-      }
-    }
+    <div class="row">
+        <div class="col-md-1"></div>
+        <div id="smsList" class="col-md-10 list-group">
+            @if(smsList.isEmpty) {
+                  @ems.views.html.sms.listElement(SmsDisplay("", "", "", "", "No sms sent", "", "", "", "false"), emptyClass = "empty-sms")
+            } else {
+              @for(sms <- smsList) {
+                  @ems.views.html.sms.listElement(sms)
+              }
+            }
+        </div>
+        <div class="col-md-1"></div>
+    </div>
 }

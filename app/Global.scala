@@ -1,15 +1,10 @@
 import java.io.File
-import akka.actor.ActorRef
 import ems.backend.Redis
 
-import scala.concurrent.{Await, Future}
 import scala.sys.SystemProperties
-import scala.concurrent.duration._
 
 import com.typesafe.config.ConfigFactory
-import akka.pattern.gracefulStop
 import play.api._
-import play.api.libs.concurrent.Execution.Implicits._
 
 import ems.models.User
 import ems.backend.utils.{EMSRuntimeEnvironment, WithControllerUtils}

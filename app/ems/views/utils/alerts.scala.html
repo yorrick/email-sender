@@ -4,25 +4,26 @@
 @(flash: Flash, form: Form[_])
 
 
-@display(cssClass: String, message: String) = {
+@display(cssClass: String, glyphIcon: String, message: String) = {
     <div class="alert @cssClass">
-        <a href="#" class="close" data-dismiss="alert">&times;</a>
+        <span class="glyphicon @glyphIcon"></span>
         @message
+        <a href="#" class="close" data-dismiss="alert">&times;</a>
     </div>
 }
 
 @for(
-    (alertType, cssClass) <- Helpers.alertsTypes
+    alert <- Helpers.alerts
 ) {
-    @flash.get(alertType).map { message =>
-        @display(cssClass = cssClass, message = message)
+    @flash.get(alert.code).map { message =>
+        @display(alert.cssClass, alert.iconName, message)
     }
 }
 
 @for(
     error <- form.errors
 ) {
-    @display(cssClass = Helpers.alertsTypes(Helpers.warning), message = error.message)
+    @display(Helpers.warning.cssClass, Helpers.warning.iconName, error.message)
 }
 
 
