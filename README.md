@@ -1,11 +1,11 @@
 email-sender
 ============
 
-Sms to email bridge application - developped with [scala](http://www.scala-lang.org/) and [play2](http://www.playframework.com/).
+Sms <-> Email bridge application - developped with [scala](http://www.scala-lang.org/) and [play2](http://www.playframework.com/).
 
 
-[![Build Status](https://travis-ci.org/yorrick/email-sender.svg?branch=master)](https://travis-ci.org/yorrick/email-sender)
-[![Coverage Status](https://coveralls.io/repos/yorrick/email-sender/badge.png?branch=master)](https://coveralls.io/r/yorrick/email-sender?branch=master)
+[![Build Status](https://travis-ci.org/yorrick/email-sender.svg?branch=20-email-to-sms)](https://travis-ci.org/yorrick/email-sender)
+[![Coverage Status](https://coveralls.io/repos/yorrick/email-sender/badge.png?branch=20-email-to-sms)](https://coveralls.io/r/yorrick/email-sender?branch=20-email-to-sms)
 
 
 This app is based on a fully async stack

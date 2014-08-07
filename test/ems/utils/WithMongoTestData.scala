@@ -3,11 +3,11 @@ package ems.utils
 
 import _root_.securesocial.core.{AuthenticationMethod, BasicProfile}
 import com.github.nscala_time.time.Imports.DateTime
-import ems.backend.{UserInfoStore, UserStore, SmsStore}
+import ems.backend.{UserInfoStore, UserStore, ForwardingStore}
 import reactivemongo.bson.BSONObjectID
 import play.api.libs.json.JsValue
 
-import ems.models.{UserInfo, User, SavedInMongo, Sms}
+import ems.models.{UserInfo, User, SavedInMongo, Forwarding}
 
 
 /**
@@ -16,25 +16,25 @@ import ems.models.{UserInfo, User, SavedInMongo, Sms}
 trait WithMongoTestData {
 
   lazy val data = Seq(
-    (SmsStore.collectionName, smsJson),
+    (ForwardingStore.collectionName, forwardingJson),
     (UserStore.collectionName, userJson),
     (UserInfoStore.collectionName, userInfoJson)
   )
 
-  // sms data
-  lazy val smsId = "53cd93ce93d970b47bea76fd"
+  // forwarding data
+  lazy val forwardingId = "53cd93ce93d970b47bea76fd"
   lazy val mailgunId = "mailgunId"
-  lazy val sms = Sms(
-    BSONObjectID.parse(smsId).get,
-    BSONObjectID.parse(userMongoId).get,
+  lazy val forwarding = Forwarding(
+    BSONObjectID.parse(forwardingId).get,
+    Some(BSONObjectID.parse(userMongoId).get),
     "11111111",
     "222222222",
     "some text",
     DateTime.now,
     SavedInMongo,
     mailgunId)
-  lazy val smsList = List(sms)
-  lazy val smsJson: List[JsValue] = smsList map {Sms.smsFormat.writes(_)}
+  lazy val forwardingList = List(forwarding)
+  lazy val forwardingJson: List[JsValue] = forwardingList map {Forwarding.forwardingFormat.writes(_)}
 
 
   // user data

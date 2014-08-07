@@ -21,7 +21,7 @@ import play.api.libs.concurrent.Execution.Implicits._
  * @param app
  * @param data
  */
-abstract class WithRedisData(data: Seq[(String, ByteString)] = Seq(),
+abstract class WithRedisData(data: => Seq[(String, ByteString)] = Seq(),
                              override val app: FakeApplication = FakeApplication()) extends WithApplication(app) {
 
 

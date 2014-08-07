@@ -2,7 +2,7 @@
 @import ems.views.html.main
 
 
-@(loginForm: Form[(String,String)], errorMsg: Option[String] = None)(implicit request: RequestHeader, lang: Lang, env: RuntimeEnvironment[_])
+@(errorMsg: Option[String] = None)(implicit request: RequestHeader, lang: Lang, env: RuntimeEnvironment[_])
 
 
 @main("Login"){

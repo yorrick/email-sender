@@ -12,20 +12,20 @@ import ems.utils.{WithMongoTestData, WithMongoData}
 
 
 @RunWith(classOf[JUnitRunner])
-class SmsControllerSpec extends PlaySpecification with WithSecureSocialUtils with WithMongoTestData {
+class ForwardingControllerSpec extends PlaySpecification with WithSecureSocialUtils with WithMongoTestData {
   sequential
 //  isolated
 
-  val smsController = createController(classOf[SmsController])
+  val forwardingController = createController(classOf[ForwardingController])
 
   step {
     Logger.info("Before class")
   }
 
-  "Sms controller" should {
+  "Forwarding controller" should {
 
-    "render the sms list page" in new WithMongoData(data) {
-      val response = smsController.list(FakeRequest().withCookies(cookie))
+    "render the forwarding list page" in new WithMongoData(data) {
+      val response = forwardingController.list(FakeRequest().withCookies(cookie))
 
       status(response) must equalTo(OK)
       contentType(response) must beSome.which(_ == "text/html")
@@ -33,7 +33,7 @@ class SmsControllerSpec extends PlaySpecification with WithSecureSocialUtils wit
     }
 
     "block access to non logged users" in new WithMongoData(data) {
-      val response = smsController.list(FakeRequest().withHeaders(HeaderNames.ACCEPT -> MimeTypes.HTML))
+      val response = forwardingController.list(FakeRequest().withHeaders(HeaderNames.ACCEPT -> MimeTypes.HTML))
 
       status(response) must equalTo(SEE_OTHER)
     }

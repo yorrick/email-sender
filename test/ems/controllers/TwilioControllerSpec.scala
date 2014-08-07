@@ -21,7 +21,7 @@ class TwilioControllerSpec extends PlaySpecification with WithMongoTestData {
         "Body" -> "hello toto"
       )
 
-      val postResponse = ems.controllers.TwilioController.sms(request)
+      val postResponse = ems.controllers.TwilioController.receive(request)
       status(postResponse) must equalTo(OK)
       println(contentAsString(postResponse))
       contentAsString(postResponse) must beEqualTo("")
@@ -34,7 +34,7 @@ class TwilioControllerSpec extends PlaySpecification with WithMongoTestData {
         "BodyXXX" -> "hello toto"
       )
 
-      val postResponse = ems.controllers.TwilioController.sms(request)
+      val postResponse = ems.controllers.TwilioController.receive(request)
       status(postResponse) must equalTo(BAD_REQUEST)
     }
 

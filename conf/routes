@@ -5,14 +5,15 @@
 # Home page
 GET        /                            @ems.controllers.Application.index
 
-# Sms API
-POST        /sms/api/twilio				ems.controllers.TwilioController.sms()
-POST        /sms/api/mailgun/success	ems.controllers.MailgunController.success()
+# forwardings API
+POST        /forwarding/api/twilio/receive		ems.controllers.TwilioController.receive()
+POST        /forwarding/api/mailgun/receive   	ems.controllers.MailgunController.receive()
+POST        /forwarding/api/mailgun/event   	ems.controllers.MailgunController.event()
 
-# Sms pages
-GET         /sms/					    @ems.controllers.SmsController.list
-GET         /sms/updates.socket         @ems.controllers.SmsController.updatesSocket
-GET         /sms/updates.js             ems.controllers.JavascriptController.updatesJs()
+# forwarding pages
+GET         /forwarding/					    @ems.controllers.ForwardingController.list
+GET         /forwarding/updates.socket          @ems.controllers.ForwardingController.updatesSocket
+GET         /forwarding/updates.js              ems.controllers.JavascriptController.updatesJs()
 
 # Auth pages
 GET         /login                      @securesocial.controllers.LoginPage.login

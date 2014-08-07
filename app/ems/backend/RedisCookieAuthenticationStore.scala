@@ -1,6 +1,6 @@
 package ems.backend
 
-import scala.util.{Try, Failure, Success}
+
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 
@@ -14,25 +14,18 @@ import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json._
 
 import ems.models.User
+import ems.backend.utils.LogUtils
 
 
 /**
  * An distributed AuthenticationStore based on rediscala async client (using play2-rediscala plugin)
  */
-abstract class RedisAuthenticatorStore[A <: Authenticator[_]] extends AuthenticatorStore[A] {
-  val logger = Logger("application.RedisAuthenticatorStore")
+abstract class RedisAuthenticatorStore[A <: Authenticator[_]] extends AuthenticatorStore[A] with LogUtils {
+  val logger: Logger = Logger("application.RedisAuthenticatorStore")
 
   implicit def byteStringFormatter: ByteStringFormatter[A]
 
-  /**
-   * Allows for future result logging
-   * @param msg
-   * @return
-   */
-  def logResult(msg: String): PartialFunction[Try[_], Unit] = {
-    case Success(result) => logger.debug(s"$msg: SUCCESS $result")
-    case Failure(e) => logger.debug(s"$msg: ERROR $e")
-  }
+  def logResult(msg: String) = super.logResult(msg, logger)
 
   /**
    * Retrieves an Authenticator from the cache
