@@ -1,6 +1,6 @@
 package ems.backend
 
-
+import ems.models.Sms
 import org.junit.runner.RunWith
 import org.specs2.runner._
 import play.api.mvc.{Handler, Action}
@@ -11,7 +11,7 @@ import ems.utils.WithMongoTestData
 
 
 @RunWith(classOf[JUnitRunner])
-class TwilioSpec extends PlaySpecification with WithMongoTestData {
+class MailgunSpec extends PlaySpecification with WithMongoTestData {
   sequential
 
   /**
@@ -24,10 +24,10 @@ class TwilioSpec extends PlaySpecification with WithMongoTestData {
 
   val app = FakeApplication(withRoutes = routes)
 
-  "Twilio" should {
+  "Mailgun" should {
 
-    "Send confirmation sms" in new WithServer(app = app, port = 3333) {
-      await(Twilio.sendConfirmationSms("+15140000000")) must beTrue
+    "Send emails" in new WithServer(app = app, port = 3333) {
+      await(Mailgun.sendEmail(sms, "nobody@nobody.com")).id must beEqualTo(sms.id)
     }
 
   }
