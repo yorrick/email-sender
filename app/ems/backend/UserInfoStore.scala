@@ -3,10 +3,8 @@ package ems.backend
 import reactivemongo.core.commands.LastError
 
 import scala.concurrent.Future
-import scala.util.{Success, Failure}
 
 import play.api.libs.json._
-import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits._
 import play.modules.reactivemongo.json.BSONFormats._
 
@@ -15,7 +13,7 @@ import ems.models._
 
 
 /**
- * Handles sms storage in mongodb
+ * Handles forwarding storage in mongodb
  */
 object UserInfoStore extends MongoDBStore with LogUtils {
 

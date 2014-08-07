@@ -13,33 +13,32 @@ import ems.models._
 
 
 /**
- * Handles sms storage in mongodb
+ * Handles forwarding storage in mongodb
  */
-object SmsStore extends MongoDBStore with LogUtils {
+object ForwardingStore extends MongoDBStore with LogUtils {
 
-  override val collectionName = "sms"
+  override val collectionName = "forwarding"
 
   /**
-   * Save an sms
-   * @param sms
+   * Save an forwarding
+   * @param forwarding
    * @return
    */
-  def save(sms: Forwarding): Future[Forwarding] = {
-    collection.insert(sms) map {lastError => sms}
+  def save(forwarding: Forwarding): Future[Forwarding] = {
+    collection.insert(forwarding) map {lastError => forwarding}
   }
 
   /**
-   * Updates the status of an sms using the id
-   * @param sms
+   * Updates the status of an forwarding using the id
+   * @param forwarding
    */
-  def updateStatusById(sms: Forwarding): Future[Forwarding] = {
-    val modifier = Json.obj("$set" -> Json.obj("status.status" -> sms.status.status))
-    updateById(sms, modifier)
+  def updateStatusById(forwarding: Forwarding): Future[Forwarding] = {
+    val modifier = Json.obj("$set" -> Json.obj("status.status" -> forwarding.status.status))
+    updateById(forwarding, modifier)
   }
 
   /**
-   * Ack a sms, given a mailgunId
-   * Returns the acked forwarding
+   * Update forwarding status, given a mailgunId
    * @param mailgunId
    */
   def updateStatusByMailgunId(mailgunId: String, status: ForwardingStatus): Future[Forwarding] = {
@@ -54,26 +53,26 @@ object SmsStore extends MongoDBStore with LogUtils {
   }
 
   /**
-   * Set the mailgun id for an sms
-   * @param sms
+   * Set the mailgun id for an forwarding
+   * @param forwarding
    */
-  def updateSmsMailgunId(sms: Forwarding): Future[Forwarding] = {
-    val modifier = Json.obj("$set" -> Json.obj("mailgunId" -> sms.mailgunId))
-    updateById(sms, modifier)
+  def updateForwardingMailgunId(forwarding: Forwarding): Future[Forwarding] = {
+    val modifier = Json.obj("$set" -> Json.obj("mailgunId" -> forwarding.mailgunId))
+    updateById(forwarding, modifier)
   }
 
-  private def updateById(sms: Forwarding, modifier: JsObject) =
-    collection.update(Json.obj("_id" -> sms._id), modifier) map {lastError => sms}
+  private def updateById(forwarding: Forwarding, modifier: JsObject) =
+    collection.update(Json.obj("_id" -> forwarding._id), modifier) map {lastError => forwarding}
 
   /**
-   * Returns the list of sms for the given user
+   * Returns the list of forwarding for the given user
    * @param userId
    * @return
    */
-  def listSms(userId: String): Future[List[Forwarding]] = {
+  def listForwarding(userId: String): Future[List[Forwarding]] = {
     toBSONObjectId(userId) flatMap { bsonId =>
       val cursor: Cursor[Forwarding] = collection.
-        // find all sms
+        // find all forwarding
         find(Json.obj("_userId" -> bsonId)).
         // sort by creation date
         sort(Json.obj("creationDate" -> -1)).

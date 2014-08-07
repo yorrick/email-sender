@@ -5,7 +5,7 @@
 @import ems.models.{User, UserInfo}
 
 
-@(smsList: List[ForwardingDisplay], user: User, userInfo: UserInfo)(implicit request: RequestHeader, env: RuntimeEnvironment[User])
+@(forwardingList: List[ForwardingDisplay], user: User, userInfo: UserInfo)(implicit request: RequestHeader, env: RuntimeEnvironment[User])
 
 @scripts = {
     <script type="text/javascript" charset="utf-8" src="@ems.controllers.routes.JavascriptController.javascriptRoutes()"></script>
@@ -13,7 +13,7 @@
 }
 
 
-@mainAuth("Sms forwardings", scripts, Some(user)){
+@mainAuth("Forwardings", scripts, Some(user)){
 
     <div class="row">
         <div class="col-md-2"></div>
@@ -38,12 +38,12 @@
 
     <div class="row">
         <div class="col-md-1"></div>
-        <div id="smsList" class="col-md-10 list-group">
-            @if(smsList.isEmpty) {
-                  @ems.views.html.sms.listElement(ForwardingDisplay("", "", "", "", "No sms sent", "", "", "", "false"), emptyClass = "empty-sms")
+        <div id="forwardingList" class="col-md-10 list-group">
+            @if(forwardingList.isEmpty) {
+                  @ems.views.html.forwarding.listElement(ForwardingDisplay("", "", "", "", "No forwarding", "", "", "", "false"), emptyClass = "empty-forwarding")
             } else {
-              @for(sms <- smsList) {
-                  @ems.views.html.sms.listElement(sms)
+              @for(forwarding <- forwardingList) {
+                  @ems.views.html.forwarding.listElement(forwarding)
               }
             }
         </div>

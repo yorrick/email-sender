@@ -10,7 +10,7 @@ import play.api.data._
 import play.api.data.Forms._
 import play.api.mvc.Result
 
-import ems.backend.SmsForwarder.smsForwarder
+import ems.backend.Forwarder.forwarder
 import ems.models
 
 
@@ -53,7 +53,7 @@ object MailgunController extends Controller {
    *   Map(
    *     X-Mailgun-Sid -> ArrayBuffer(WyI0OTljZiIsICJ5b3JyaWNrLmphbnNlbkBnbWFpbC5jb20iLCAiNTM1MGUiXQ==),
    *     domain -> ArrayBuffer(app25130478.mailgun.org),
-   *     message-headers -> ArrayBuffer(["Received", "by luna.mailgun.net with HTTP; Sat, 19 Jul 2014 23:28:41 +0000"], ["Mime-Version", "1.0"], ["Content-Type", ["text/html", {"charset": "ascii"}]], ["Subject", "Sms forwarding"], ["From", "yorrick.jansen@gmail.com"], ["To", "yorrick.jansen@gmail.com"], ["Message-Id", "<20140719232841.6901.69937@app25130478.mailgun.org>"], ["Content-Transfer-Encoding", ["7bit", {}]], ["X-Mailgun-Sid", "WyI0OTljZiIsICJ5b3JyaWNrLmphbnNlbkBnbWFpbC5jb20iLCAiNTM1MGUiXQ=="], ["Date", "Sat, 19 Jul 2014 23:39:01 +0000"], ["Sender", "yorrick.jansen=gmail.com@mailgun.org"]),
+   *     message-headers -> ArrayBuffer(["Received", "by luna.mailgun.net with HTTP; Sat, 19 Jul 2014 23:28:41 +0000"], ["Mime-Version", "1.0"], ["Content-Type", ["text/html", {"charset": "ascii"}]], ["Subject", "Forwarding"], ["From", "yorrick.jansen@gmail.com"], ["To", "yorrick.jansen@gmail.com"], ["Message-Id", "<20140719232841.6901.69937@app25130478.mailgun.org>"], ["Content-Transfer-Encoding", ["7bit", {}]], ["X-Mailgun-Sid", "WyI0OTljZiIsICJ5b3JyaWNrLmphbnNlbkBnbWFpbC5jb20iLCAiNTM1MGUiXQ=="], ["Date", "Sat, 19 Jul 2014 23:39:01 +0000"], ["Sender", "yorrick.jansen=gmail.com@mailgun.org"]),
    *     Message-Id -> ArrayBuffer(<20140719232841.6901.69937@app25130478.mailgun.org>),
    *     recipient -> ArrayBuffer(yorrick.jansen@gmail.com),
    *     event -> ArrayBuffer(delivered),
@@ -68,7 +68,7 @@ object MailgunController extends Controller {
   def event = Action { implicit request =>
     eventForm.bindFromRequest.fold(
       formWithErrors => errorEventForm(formWithErrors),
-      sms => validatedEventForm(sms)
+      event => validatedEventForm(event)
     )
   }
 
@@ -85,7 +85,7 @@ object MailgunController extends Controller {
       FailedByMailgun
     }
 
-    smsForwarder ! models.MailgunEvent(event.messageId, status)
+    forwarder ! models.MailgunEvent(event.messageId, status)
 
     Ok
   }

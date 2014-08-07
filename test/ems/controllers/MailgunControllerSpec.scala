@@ -17,7 +17,7 @@ class MailgunControllerSpec extends PlaySpecification with WithMongoTestData {
 
     "Accept post data for delivery ack" in new WithMongoData(data) {
       val request = FakeRequest(POST, "").withFormUrlEncodedBody(
-        "Message-Id" -> smsId,
+        "Message-Id" -> forwardingId,
         "event" -> DELIVERED
       )
 

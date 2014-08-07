@@ -26,6 +26,6 @@ case class Forwarding(override val _id: BSONObjectID, _userId: Option[BSONObject
 
 
 object Forwarding {
-  implicit val smsStatusFormat = Json.format[ForwardingStatus]
-  implicit val smsFormat = Json.format[Forwarding]
+  implicit val forwardingStatusFormat = Json.format[ForwardingStatus]
+  implicit val forwardingFormat = Json.format[Forwarding]
 }

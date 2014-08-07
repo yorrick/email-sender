@@ -1,7 +1,7 @@
 package ems.controllers
 
 import akka.actor._
-import ems.backend.SmsStore
+import ems.backend.ForwardingStore
 import org.joda.time.DateTime
 
 import play.api.mvc.{Action, Controller}
@@ -10,7 +10,7 @@ import play.api.data._
 import play.api.data.Forms._
 import play.api.mvc.Result
 
-import ems.backend.SmsForwarder.smsForwarder
+import ems.backend.Forwarder.forwarder
 import ems.models.{SavedInMongo, Forwarding}
 
 
@@ -37,7 +37,7 @@ object TwilioController extends Controller {
    * POST for twilio when we receive an SMS
    * @return
    */
-  def sms = Action { implicit request =>
+  def receive = Action { implicit request =>
     form.bindFromRequest.fold(
       formWithErrors => handleFormError(formWithErrors),
       post => handleFormValidated(post)
@@ -52,9 +52,9 @@ object TwilioController extends Controller {
    */
   private def handleFormValidated(post: TwilioPost): Result = {
     // creates a forwarding with associated user
-    val forwarding = Forwarding(SmsStore.generateId, None, post.from, post.to, post.content, DateTime.now, SavedInMongo, "")
+    val forwarding = Forwarding(ForwardingStore.generateId, None, post.from, post.to, post.content, DateTime.now, SavedInMongo, "")
 
-    smsForwarder ! forwarding
+    forwarder ! forwarding
     Ok
   }
 

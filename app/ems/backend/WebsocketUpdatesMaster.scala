@@ -27,7 +27,7 @@ object WebsocketUpdatesMaster {
 
   // create the master actor once
   val websocketUpdatesMaster = Akka.system.actorOf(Props[WebsocketUpdatesMaster], name="websocketUpdatesMaster")
-  val redisChannel = "smsList"
+  val redisChannel = "forwardingList"
 
   // we periodically ping the client so the websocket connections do not close
   Akka.system.scheduler.schedule(30.second, 30.second, websocketUpdatesMaster, Ping)
@@ -37,8 +37,8 @@ object WebsocketUpdatesMaster {
    * @return
    */
   def notifyWebsockets: PartialFunction[Try[Forwarding], Unit] = {
-    case Success(sms) =>
-      websocketUpdatesMaster ! sms
+    case Success(forwarding) =>
+      websocketUpdatesMaster ! forwarding
   }
 
   /**
@@ -47,8 +47,8 @@ object WebsocketUpdatesMaster {
    */
   def onMessage(message: Message) {
     Logger.debug(s"message received: $message")
-    val smsDisplay = ForwardingDisplay.smsDisplayByteStringFormatter.deserialize(ByteString(message.data))
-    websocketUpdatesMaster ! smsDisplay
+    val forwardingDisplay = ForwardingDisplay.forwardingDisplayByteStringFormatter.deserialize(ByteString(message.data))
+    websocketUpdatesMaster ! forwardingDisplay
   }
 }
 
@@ -91,19 +91,19 @@ class WebsocketUpdatesMaster extends Actor with LogUtils {
 
       sender ! webSocketOutActors.toMap
 
-    case sms: Forwarding =>
+    case forwarding: Forwarding =>
       // send notification to redis
-      Redis.instance.redisClient.publish(WebsocketUpdatesMaster.redisChannel, ForwardingDisplay.fromForwarding(sms)) andThen logResult(s"Publish sms $sms in redis")
+      Redis.instance.redisClient.publish(WebsocketUpdatesMaster.redisChannel, ForwardingDisplay.fromForwarding(forwarding)) andThen logResult(s"Publish forwarding $forwarding in redis")
 
     case signal: Signal =>
       webSocketOutActors.values.flatMap(identity) foreach {
         _ ! Signal.signalFormat.writes(signal)}
 
-    case smsDisplay: ForwardingDisplay =>
-      Logger.debug(s"Broadcast smsDisplay $smsDisplay")
+    case forwardingDisplay: ForwardingDisplay =>
+      Logger.debug(s"Broadcast forwardingDisplay $forwardingDisplay")
 
-      webSocketOutActors.get(smsDisplay.userId) map {
-        _ foreach { outActor => outActor ! ForwardingDisplay.smsDisplayFormat.writes(smsDisplay)}
+      webSocketOutActors.get(forwardingDisplay.userId) map {
+        _ foreach { outActor => outActor ! ForwardingDisplay.forwardingDisplayFormat.writes(forwardingDisplay)}
       }
   }
 

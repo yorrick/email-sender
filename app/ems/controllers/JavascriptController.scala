@@ -7,13 +7,13 @@ import play.api.mvc.{Action, Controller}
 object JavascriptController extends Controller {
 
   def updatesJs() = Action { implicit request =>
-    Ok(ems.views.js.sms.updates())
+    Ok(ems.views.js.forwarding.updates())
   }
 
   def javascriptRoutes() = Action { implicit request =>
     Ok(
       Routes.javascriptRouter("jsRoutes")(
-        routes.javascript.SmsController.updatesSocket
+        routes.javascript.ForwardingController.updatesSocket
       )
     ).as("text/javascript")
   }

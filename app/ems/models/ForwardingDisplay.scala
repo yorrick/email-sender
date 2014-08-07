@@ -20,19 +20,19 @@ object ForwardingDisplay {
 
   /**
    * Creates an ForwardingDisplay object
-   * @param sms
+   * @param forwarding
    * @return
    */
-  def fromForwarding(sms: Forwarding) = ForwardingDisplay(
-    sms.id,
-    sms.userId.getOrElse(""),
-    sms.from,
-    sms.to,
-    sms.content,
-    sms.formattedCreationDate,
-    sms.status.status,
-    statusLabels(sms.status)._1,
-    statusLabels(sms.status)._2
+  def fromForwarding(forwarding: Forwarding) = ForwardingDisplay(
+    forwarding.id,
+    forwarding.userId.getOrElse(""),
+    forwarding.from,
+    forwarding.to,
+    forwarding.content,
+    forwarding.formattedCreationDate,
+    forwarding.status.status,
+    statusLabels(forwarding.status)._1,
+    statusLabels(forwarding.status)._2
   )
 
   val statusLabels = Map(
@@ -56,23 +56,23 @@ object ForwardingDisplay {
   object StatusMapping extends Mapping("##Status", "status")
   object SpinMapping extends Mapping("##Spin", "spin")
 
-  implicit val smsDisplayFormat = Json.format[ForwardingDisplay]
+  implicit val forwardingDisplayFormat = Json.format[ForwardingDisplay]
 
   /**
    * This formatter is used to serialize / deserialize ForwardingDisplay object in redis
    */
-  implicit val smsDisplayByteStringFormatter = new ByteStringFormatter[ForwardingDisplay] {
-    def serialize(smsDisplay: ForwardingDisplay): ByteString = {
+  implicit val forwardingDisplayByteStringFormatter = new ByteStringFormatter[ForwardingDisplay] {
+    def serialize(forwardingDisplay: ForwardingDisplay): ByteString = {
       ByteString(
-        smsDisplay.id + "|" +
-        smsDisplay.userId + "|" +
-        smsDisplay.from + "|" +
-        smsDisplay.to + "|" +
-        smsDisplay.content + "|" +
-        smsDisplay.creationDate + "|" +
-        smsDisplay.statusCode + "|" +
-        smsDisplay.status + "|" +
-        smsDisplay.spin
+        forwardingDisplay.id + "|" +
+        forwardingDisplay.userId + "|" +
+        forwardingDisplay.from + "|" +
+        forwardingDisplay.to + "|" +
+        forwardingDisplay.content + "|" +
+        forwardingDisplay.creationDate + "|" +
+        forwardingDisplay.statusCode + "|" +
+        forwardingDisplay.status + "|" +
+        forwardingDisplay.spin
       )
     }
 

@@ -2,7 +2,7 @@ package ems.models
 
 
 /**
- * All status for an sms
+ * All status for an forwarding
  * @param status
  */
 sealed case class ForwardingStatus(status: String)

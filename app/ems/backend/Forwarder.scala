@@ -11,23 +11,23 @@ import play.api.Play.current
 import play.api.libs.concurrent.Execution.Implicits._
 
 import ems.models._
-import ems.backend.SmsStore._
+import ems.backend.ForwardingStore._
 import ems.backend.Mailgun._
 import ems.backend.WebsocketUpdatesMaster.notifyWebsockets
 
 
 /**
- * Instance of the actor that handle sms forwarding
+ * Instance of the actor that handle forwarding routing
  */
-object SmsForwarder {
-  val smsForwarder = Akka.system.actorOf(Props[SmsForwarder], name="smsForwarder")
+object Forwarder {
+  val forwarder = Akka.system.actorOf(Props[Forwarder], name="forwarder")
 }
 
 
 /**
- * Handles sms forwarding logic
+ * Handles forwarding logic
  */
-class SmsForwarder extends Actor {
+class Forwarder extends Actor {
 
   /**
    * Find user with incoming phone number

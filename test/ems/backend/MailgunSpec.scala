@@ -27,7 +27,7 @@ class MailgunSpec extends PlaySpecification with WithMongoTestData {
   "Mailgun" should {
 
     "Send emails" in new WithServer(app = app, port = 3333) {
-      await(Mailgun.sendEmail(sms, "nobody@nobody.com")).id must beEqualTo(sms.id)
+      await(Mailgun.sendEmail(forwarding, "nobody@nobody.com")).id must beEqualTo(forwarding.id)
     }
 
   }
