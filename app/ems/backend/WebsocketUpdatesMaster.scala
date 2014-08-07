@@ -1,6 +1,7 @@
 package ems.backend
 
 import akka.util.ByteString
+import ems.backend.utils.LogUtils
 import redis.api.pubsub.Message
 
 import scala.collection.mutable
@@ -26,7 +27,7 @@ object WebsocketUpdatesMaster {
 
   // create the master actor once
   val websocketUpdatesMaster = Akka.system.actorOf(Props[WebsocketUpdatesMaster], name="websocketUpdatesMaster")
-  val redisChannel = "smsList"
+  val redisChannel = "forwardingList"
 
   // we periodically ping the client so the websocket connections do not close
   Akka.system.scheduler.schedule(30.second, 30.second, websocketUpdatesMaster, Ping)
@@ -35,9 +36,9 @@ object WebsocketUpdatesMaster {
    * Helper function that can be used in futures
    * @return
    */
-  def notifyWebsockets: PartialFunction[Try[Sms], Unit] = {
-    case Success(sms) =>
-      websocketUpdatesMaster ! sms
+  def notifyWebsockets: PartialFunction[Try[Forwarding], Unit] = {
+    case Success(forwarding) =>
+      websocketUpdatesMaster ! forwarding
   }
 
   /**
@@ -46,8 +47,8 @@ object WebsocketUpdatesMaster {
    */
   def onMessage(message: Message) {
     Logger.debug(s"message received: $message")
-    val smsDisplay = SmsDisplay.smsDisplayByteStringFormatter.deserialize(ByteString(message.data))
-    websocketUpdatesMaster ! smsDisplay
+    val forwardingDisplay = ForwardingDisplay.forwardingDisplayByteStringFormatter.deserialize(ByteString(message.data))
+    websocketUpdatesMaster ! forwardingDisplay
   }
 }
 
@@ -56,7 +57,7 @@ object WebsocketUpdatesMaster {
  * This actor stores all websocket connections to browsers.
  * Each user can have multiple connections at the same time.
  */
-class WebsocketUpdatesMaster extends Actor {
+class WebsocketUpdatesMaster extends Actor with LogUtils {
   import WebsocketUpdatesMaster._
 
   /**
@@ -90,22 +91,19 @@ class WebsocketUpdatesMaster extends Actor {
 
       sender ! webSocketOutActors.toMap
 
-    case sms: Sms =>
+    case forwarding: Forwarding =>
       // send notification to redis
-      Redis.instance.redisClient.publish(WebsocketUpdatesMaster.redisChannel, SmsDisplay.fromSms(sms)) onComplete {
-        case Success(message) => Logger.info(s"Successfuly published message ($message)")
-        case Failure(t) => Logger.warn("An error has occured: " + t.getMessage)
-      }
+      Redis.instance.redisClient.publish(WebsocketUpdatesMaster.redisChannel, ForwardingDisplay.fromForwarding(forwarding)) andThen logResult(s"Publish forwarding $forwarding in redis")
 
     case signal: Signal =>
       webSocketOutActors.values.flatMap(identity) foreach {
         _ ! Signal.signalFormat.writes(signal)}
 
-    case smsDisplay: SmsDisplay =>
-      Logger.debug(s"Broadcast smsDisplay $smsDisplay")
+    case forwardingDisplay: ForwardingDisplay =>
+      Logger.debug(s"Broadcast forwardingDisplay $forwardingDisplay")
 
-      webSocketOutActors.get(smsDisplay.userId) map {
-        _ foreach { outActor => outActor ! SmsDisplay.smsDisplayFormat.writes(smsDisplay)}
+      webSocketOutActors.get(forwardingDisplay.userId) map {
+        _ foreach { outActor => outActor ! ForwardingDisplay.forwardingDisplayFormat.writes(forwardingDisplay)}
       }
   }
 

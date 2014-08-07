@@ -10,13 +10,13 @@
 
     <div class="jumbotron">
         <h1>Welcome</h1>
-        <p>This tool transforms sms into emails</p>
+        <p>This is a bridge betwwen sms and emails. Send emails by sending sms, and send sms by sending emails</p>
     </div>
 
     @user match {
         case Some(user) => {
             <p>
-                <a href="@ems.controllers.routes.SmsController.list()" class="btn btn-primary btn-lg" role="button">
+                <a href="@ems.controllers.routes.ForwardingController.list()" class="btn btn-primary btn-lg" role="button">
                     See your sms
                 </a>
             </p>

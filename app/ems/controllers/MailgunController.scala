@@ -1,6 +1,8 @@
 package ems.controllers
 
 import akka.actor._
+import ems.backend.Mailgun
+import ems.models.{FailedByMailgun, AckedByMailgun}
 
 import play.api.mvc.{Action, Controller}
 import play.api.Logger
@@ -8,8 +10,8 @@ import play.api.data._
 import play.api.data.Forms._
 import play.api.mvc.Result
 
-import ems.backend.SmsForwarder.smsForwarder
-import ems.models._
+import ems.backend.Forwarder.forwarder
+import ems.models
 
 
 /**
@@ -19,7 +21,28 @@ import ems.models._
 object MailgunController extends Controller {
 
   /**
-   * Validation form
+   * Object used to build forms to validate Mailgun POST requests for email deliveries
+   */
+  private[MailgunController] case class MailgunEvent(messageId: String, event: String)
+
+  /**
+   * Object used to build forms to validate Mailgun POST requests for email receiving
+   */
+  private[MailgunController] case class MailgunReceive(messageId: String, event: String)
+
+
+  /**
+   * Validation form to receive emails from mailgun
+   */
+  val receiveEmailForm = Form(mapping("Message-Id" -> text, "event" -> text)(MailgunEvent.apply)(MailgunEvent.unapply))
+
+  def receive = Action { implicit request =>
+    Logger.debug(s"=========================== ${request.body.asFormUrlEncoded}")
+    Ok
+  }
+
+  /**
+   * Validation form for mailgun event
    */
   val eventForm = Form(mapping("Message-Id" -> text, "event" -> text)(MailgunEvent.apply)(MailgunEvent.unapply))
 
@@ -30,7 +53,7 @@ object MailgunController extends Controller {
    *   Map(
    *     X-Mailgun-Sid -> ArrayBuffer(WyI0OTljZiIsICJ5b3JyaWNrLmphbnNlbkBnbWFpbC5jb20iLCAiNTM1MGUiXQ==),
    *     domain -> ArrayBuffer(app25130478.mailgun.org),
-   *     message-headers -> ArrayBuffer(["Received", "by luna.mailgun.net with HTTP; Sat, 19 Jul 2014 23:28:41 +0000"], ["Mime-Version", "1.0"], ["Content-Type", ["text/html", {"charset": "ascii"}]], ["Subject", "Sms forwarding"], ["From", "yorrick.jansen@gmail.com"], ["To", "yorrick.jansen@gmail.com"], ["Message-Id", "<20140719232841.6901.69937@app25130478.mailgun.org>"], ["Content-Transfer-Encoding", ["7bit", {}]], ["X-Mailgun-Sid", "WyI0OTljZiIsICJ5b3JyaWNrLmphbnNlbkBnbWFpbC5jb20iLCAiNTM1MGUiXQ=="], ["Date", "Sat, 19 Jul 2014 23:39:01 +0000"], ["Sender", "yorrick.jansen=gmail.com@mailgun.org"]),
+   *     message-headers -> ArrayBuffer(["Received", "by luna.mailgun.net with HTTP; Sat, 19 Jul 2014 23:28:41 +0000"], ["Mime-Version", "1.0"], ["Content-Type", ["text/html", {"charset": "ascii"}]], ["Subject", "Forwarding"], ["From", "yorrick.jansen@gmail.com"], ["To", "yorrick.jansen@gmail.com"], ["Message-Id", "<20140719232841.6901.69937@app25130478.mailgun.org>"], ["Content-Transfer-Encoding", ["7bit", {}]], ["X-Mailgun-Sid", "WyI0OTljZiIsICJ5b3JyaWNrLmphbnNlbkBnbWFpbC5jb20iLCAiNTM1MGUiXQ=="], ["Date", "Sat, 19 Jul 2014 23:39:01 +0000"], ["Sender", "yorrick.jansen=gmail.com@mailgun.org"]),
    *     Message-Id -> ArrayBuffer(<20140719232841.6901.69937@app25130478.mailgun.org>),
    *     recipient -> ArrayBuffer(yorrick.jansen@gmail.com),
    *     event -> ArrayBuffer(delivered),
@@ -42,10 +65,10 @@ object MailgunController extends Controller {
    *
    * @return
    */
-  def success = Action { implicit request =>
+  def event = Action { implicit request =>
     eventForm.bindFromRequest.fold(
-      formWithErrors => handleFormError(formWithErrors),
-      sms => handleFormValidated(sms)
+      formWithErrors => errorEventForm(formWithErrors),
+      event => validatedEventForm(event)
     )
   }
 
@@ -55,8 +78,15 @@ object MailgunController extends Controller {
    * @param event
    * @return
    */
-  private def handleFormValidated(event: MailgunEvent): Result = {
-    smsForwarder ! event
+  private def validatedEventForm(event: MailgunEvent): Result = {
+    val status = if (event.event == Mailgun.DELIVERED) {
+      AckedByMailgun
+    } else {
+      FailedByMailgun
+    }
+
+    forwarder ! models.MailgunEvent(event.messageId, status)
+
     Ok
   }
 
@@ -65,7 +95,7 @@ object MailgunController extends Controller {
    * @param formWithErrors
    * @return
    */
-  private def handleFormError(formWithErrors: Form[MailgunEvent]): Result = {
+  private def errorEventForm(formWithErrors: Form[MailgunEvent]): Result = {
     val message = s"Could not bind the form: ${formWithErrors}"
     Logger.warn(message)
     BadRequest(message)

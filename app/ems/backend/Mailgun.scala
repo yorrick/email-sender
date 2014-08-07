@@ -31,18 +31,18 @@ object Mailgun {
   } yield WS.url(apiUrl).withAuth("api", key, WSAuthScheme.BASIC)
 
   /**
-   * Mailgun call will never reply with a failure, but with an sms that contains the updated status
-   * @param sms
+   * Mailgun call will never reply with a failure, but with an forwarding that contains the updated status
+   * @param forwarding
    * @param to
    * @return
    */
-  def sendEmail(sms: Sms, to: String): Future[Sms] = {
+  def sendEmail(forwarding: Forwarding, to: String): Future[Forwarding] = {
 
     val postData = Map(
       "from" -> Seq(to),
       "to" -> Seq(to),
       "subject" -> Seq("Sms forwarding"),
-      "html" -> Seq(sms.content)
+      "html" -> Seq(forwarding.content)
     )
 
     val responseFuture: Future[WSResponse] = requestHolderOption map { requestHolder =>
@@ -50,18 +50,18 @@ object Mailgun {
     } getOrElse Future.failed(missingCredentials)
 
     val okResponse = responseFuture filter { _.status == Status.OK }
-    val smsResponse = okResponse flatMap { response => handleMailgunResponse(sms, response.json)}
+    val forwardingResponse = okResponse flatMap { response => handleMailgunResponse(forwarding, response.json)}
 
     // in case something went wrong
-    smsResponse recover {
+    forwardingResponse recover {
       case t: Throwable =>
-        Logger.warn(s"Could not send sms to mailgun: $t")
-        sms.withStatus(NotSentToMailgun)
+        Logger.warn(s"Could not send forwarding to mailgun: $t")
+        forwarding.withStatus(NotSentToMailgun)
     }
   }
 
   /**
-   * Returns the given sms with updated status if everything went fine
+   * Returns the given forwarding with updated status if everything went fine
    *
    * Mailgun response looks like this
    *       {
@@ -69,16 +69,16 @@ object Mailgun {
    *         "id": "<20140719141813.41030.12232@emsdev.mailgun.org>"
    *       }
    *
-   * @param sms
+   * @param forwarding
    * @param json
    * @return
    */
-  private def handleMailgunResponse(sms: Sms, json: JsValue): Future[Sms] = {
+  private def handleMailgunResponse(forwarding: Forwarding, json: JsValue): Future[Forwarding] = {
     (json \ "id").validate[String] match {
       case JsSuccess(id, _) =>
         Logger.debug(s"Mailgun response id: $id")
-        SmsStore.updateSmsMailgunId(sms.withMailgunId(id))
-        Future.successful(sms.withStatus(SentToMailgun))
+        ForwardingStore.updateForwardingMailgunId(forwarding.withMailgunId(id))
+        Future.successful(forwarding.withStatus(SentToMailgun))
       case error @ JsError(_) =>
         Future.failed(new Exception(error.toString))
     }

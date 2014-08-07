@@ -11,14 +11,14 @@ import play.api.libs.json._
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.Play.current
 
-import ems.backend.{UserInfoStore, SmsStore, WebsocketInputActor}
+import ems.backend.{UserInfoStore, ForwardingStore, WebsocketInputActor}
 import ems.models._
 
 
 /**
  * Handles all http requests from browsers
  */
-class SmsController(override implicit val env: RuntimeEnvironment[User]) extends SecureSocial[User] {
+class ForwardingController(override implicit val env: RuntimeEnvironment[User]) extends SecureSocial[User] {
 
   /**
    * GET for browser
@@ -31,15 +31,15 @@ class SmsController(override implicit val env: RuntimeEnvironment[User]) extends
 
     val result = for {
       userInfo <- UserInfoStore.findUserInfoByUserId(user.id)
-      smsList <- SmsStore.listSms(request.user.id).mapTo[List[Sms]]
+      forwardingList <- ForwardingStore.listForwarding(request.user.id).mapTo[List[Forwarding]]
     } yield {
-      val smsDisplayList = smsList map {SmsDisplay.fromSms(_)}
-      Ok(ems.views.html.sms.list(smsDisplayList, user, userInfo))
+      val forwardingDisplayList = forwardingList map {ForwardingDisplay.fromForwarding(_)}
+      Ok(ems.views.html.forwarding.list(forwardingDisplayList, user, userInfo))
     }
 
     result recover {
       case error @ _ =>
-        val message = s"Could not get sms list: $error"
+        val message = s"Could not get forwarding list: $error"
         Logger.warn(message)
         NotFound(message)
     }

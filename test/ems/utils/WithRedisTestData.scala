@@ -11,14 +11,14 @@ import ems.utils.securesocial.WithSecureSocialUtils
  */
 trait WithRedisTestData { self: WithMongoTestData =>
 
-  lazy val store = new RedisCookieAuthenticatorStore()
-
-  lazy val authenticator: CookieAuthenticator[User] = new CookieAuthenticator(
-    cookieValue, user, DateTime.nextDay, DateTime.now, DateTime.lastDay, store)
-
   lazy val cookieValue = "autenticatorId"
 
-  lazy val redisData = Seq(
+  def store = new RedisCookieAuthenticatorStore()
+
+  def authenticator: CookieAuthenticator[User] = new CookieAuthenticator(
+    cookieValue, user, DateTime.nextDay, DateTime.now, DateTime.lastDay, store)
+
+  def redisData = Seq(
     (cookieValue, store.byteStringFormatter.serialize(authenticator))
   )
 }

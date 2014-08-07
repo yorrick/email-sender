@@ -17,11 +17,21 @@ class MailgunControllerSpec extends PlaySpecification with WithMongoTestData {
 
     "Accept post data for delivery ack" in new WithMongoData(data) {
       val request = FakeRequest(POST, "").withFormUrlEncodedBody(
-        "Message-Id" -> smsId,
+        "Message-Id" -> forwardingId,
         "event" -> DELIVERED
       )
 
-      val postResponse = ems.controllers.MailgunController.success(request)
+      val postResponse = ems.controllers.MailgunController.event(request)
+      status(postResponse) must equalTo(OK)
+      contentAsString(postResponse) must equalTo("")
+    }
+
+    "Accept post data for email receiving" in new WithMongoData(data) {
+      val request = FakeRequest(POST, "").withFormUrlEncodedBody(
+        "recipient" -> "somebody@example.com"
+      )
+
+      val postResponse = ems.controllers.MailgunController.receive(request)
       status(postResponse) must equalTo(OK)
       contentAsString(postResponse) must equalTo("")
     }

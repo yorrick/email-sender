@@ -1,6 +1,6 @@
 package ems.backend
 
-import ems.models.Sms
+import ems.models.Forwarding
 import org.junit.runner.RunWith
 import org.specs2.runner._
 import play.api.mvc.{Handler, Action}
@@ -27,7 +27,7 @@ class MailgunSpec extends PlaySpecification with WithMongoTestData {
   "Mailgun" should {
 
     "Send emails" in new WithServer(app = app, port = 3333) {
-      await(Mailgun.sendEmail(sms, "nobody@nobody.com")).id must beEqualTo(sms.id)
+      await(Mailgun.sendEmail(forwarding, "nobody@nobody.com")).id must beEqualTo(forwarding.id)
     }
 
   }
