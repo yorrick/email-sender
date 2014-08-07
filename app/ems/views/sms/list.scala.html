@@ -1,11 +1,11 @@
-    @import ems.views.html.mainAuth
+@import ems.views.html.mainAuth
 @import org.joda.time.DateTime
-@import ems.models.SmsDisplay
+@import ems.models.ForwardingDisplay
 @import securesocial.core.{BasicProfile, RuntimeEnvironment}
 @import ems.models.{User, UserInfo}
 
 
-@(smsList: List[SmsDisplay], user: User, userInfo: UserInfo)(implicit request: RequestHeader, env: RuntimeEnvironment[User])
+@(smsList: List[ForwardingDisplay], user: User, userInfo: UserInfo)(implicit request: RequestHeader, env: RuntimeEnvironment[User])
 
 @scripts = {
     <script type="text/javascript" charset="utf-8" src="@ems.controllers.routes.JavascriptController.javascriptRoutes()"></script>
@@ -40,7 +40,7 @@
         <div class="col-md-1"></div>
         <div id="smsList" class="col-md-10 list-group">
             @if(smsList.isEmpty) {
-                  @ems.views.html.sms.listElement(SmsDisplay("", "", "", "", "No sms sent", "", "", "", "false"), emptyClass = "empty-sms")
+                  @ems.views.html.sms.listElement(ForwardingDisplay("", "", "", "", "No sms sent", "", "", "", "false"), emptyClass = "empty-sms")
             } else {
               @for(sms <- smsList) {
                   @ems.views.html.sms.listElement(sms)

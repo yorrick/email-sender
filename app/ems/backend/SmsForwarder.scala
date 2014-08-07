@@ -30,42 +30,29 @@ object SmsForwarder {
 class SmsForwarder extends Actor {
 
   /**
-   * Creates the sms with the user and of course data from twilio
-   * @param user
-   * @return
-   */
-  def createSms(user: User, post: TwilioPost): Future[Sms] =
-    Future {
-      Sms(SmsStore.generateId, user._id, post.from, post.to, post.content, DateTime.now, SavedInMongo, "")
-    }
-
-  /**
    * Find user with incoming phone number
-   * @param post
+   * @param phoneNumber
    * @return
    */
-  def findUser(post: TwilioPost): Future[User] = {
+  def findUser(phoneNumber: String): Future[User] = {
     for {
-      userInfo <- UserInfoStore.findUserInfoByPhoneNumber(post.from)
+      userInfo <- UserInfoStore.findUserInfoByPhoneNumber(phoneNumber)
       user <- UserStore.findUserById(userInfo.id)
     } yield user
   }
 
   def receive = {
-    case post: TwilioPost =>
+    case forwarding: Forwarding =>
 
       for {
-        user <- findUser(post)
-        sms <- createSms(user, post)
-        sms <- save(sms) andThen notifyWebsockets
-        sms <- pattern.after(2.second, Akka.system.scheduler)(sendEmail(sms, user.main.email.get))
-        sms <- updateStatusById(sms) andThen notifyWebsockets
-      } yield sms
+        user <- findUser(forwarding.from)
+        forwarding <- Future.successful(forwarding.withUser(user._id))
+        forwarding <- save(forwarding) andThen notifyWebsockets
+        forwarding <- pattern.after(2.second, Akka.system.scheduler)(sendEmail(forwarding, user.main.email.get))
+        forwarding <- updateStatusById(forwarding) andThen notifyWebsockets
+      } yield forwarding
 
-    case MailgunEvent(messageId, DELIVERED) =>
-      updateStatusByMailgunId(messageId, AckedByMailgun) andThen notifyWebsockets
-
-    case MailgunEvent(messageId, _) =>
-      updateStatusByMailgunId(messageId, FailedByMailgun) andThen notifyWebsockets
+    case MailgunEvent(messageId, status) =>
+      updateStatusByMailgunId(messageId, status) andThen notifyWebsockets
   }
 }

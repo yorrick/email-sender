@@ -45,7 +45,7 @@ class SmsStoreSpec extends PlaySpecification with WithMongoTestData {
     "List user sms" in new WithMongoData(data) {
       val result = await(SmsStore.listSms(userMongoId))
       result.size must beEqualTo(1)
-      result.head.userId must beEqualTo(userMongoId)
+      result.head.userId must beEqualTo(Some(userMongoId))
     }
   }
 }

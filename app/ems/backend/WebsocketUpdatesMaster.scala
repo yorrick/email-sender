@@ -36,7 +36,7 @@ object WebsocketUpdatesMaster {
    * Helper function that can be used in futures
    * @return
    */
-  def notifyWebsockets: PartialFunction[Try[Sms], Unit] = {
+  def notifyWebsockets: PartialFunction[Try[Forwarding], Unit] = {
     case Success(sms) =>
       websocketUpdatesMaster ! sms
   }
@@ -47,7 +47,7 @@ object WebsocketUpdatesMaster {
    */
   def onMessage(message: Message) {
     Logger.debug(s"message received: $message")
-    val smsDisplay = SmsDisplay.smsDisplayByteStringFormatter.deserialize(ByteString(message.data))
+    val smsDisplay = ForwardingDisplay.smsDisplayByteStringFormatter.deserialize(ByteString(message.data))
     websocketUpdatesMaster ! smsDisplay
   }
 }
@@ -91,19 +91,19 @@ class WebsocketUpdatesMaster extends Actor with LogUtils {
 
       sender ! webSocketOutActors.toMap
 
-    case sms: Sms =>
+    case sms: Forwarding =>
       // send notification to redis
-      Redis.instance.redisClient.publish(WebsocketUpdatesMaster.redisChannel, SmsDisplay.fromSms(sms)) andThen logResult(s"Publish sms $sms in redis")
+      Redis.instance.redisClient.publish(WebsocketUpdatesMaster.redisChannel, ForwardingDisplay.fromForwarding(sms)) andThen logResult(s"Publish sms $sms in redis")
 
     case signal: Signal =>
       webSocketOutActors.values.flatMap(identity) foreach {
         _ ! Signal.signalFormat.writes(signal)}
 
-    case smsDisplay: SmsDisplay =>
+    case smsDisplay: ForwardingDisplay =>
       Logger.debug(s"Broadcast smsDisplay $smsDisplay")
 
       webSocketOutActors.get(smsDisplay.userId) map {
-        _ foreach { outActor => outActor ! SmsDisplay.smsDisplayFormat.writes(smsDisplay)}
+        _ foreach { outActor => outActor ! ForwardingDisplay.smsDisplayFormat.writes(smsDisplay)}
       }
   }
 

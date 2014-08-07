@@ -2,7 +2,6 @@ package ems.controllers
 
 
 import ems.backend.UserInfoStore.UserInfoStoreException
-import reactivemongo.core.commands.LastError
 
 import scala.concurrent.Future
 

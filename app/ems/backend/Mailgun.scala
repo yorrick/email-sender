@@ -36,7 +36,7 @@ object Mailgun {
    * @param to
    * @return
    */
-  def sendEmail(sms: Sms, to: String): Future[Sms] = {
+  def sendEmail(sms: Forwarding, to: String): Future[Forwarding] = {
 
     val postData = Map(
       "from" -> Seq(to),
@@ -73,7 +73,7 @@ object Mailgun {
    * @param json
    * @return
    */
-  private def handleMailgunResponse(sms: Sms, json: JsValue): Future[Sms] = {
+  private def handleMailgunResponse(sms: Forwarding, json: JsValue): Future[Forwarding] = {
     (json \ "id").validate[String] match {
       case JsSuccess(id, _) =>
         Logger.debug(s"Mailgun response id: $id")

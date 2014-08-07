@@ -7,7 +7,7 @@ import ems.backend.{UserInfoStore, UserStore, SmsStore}
 import reactivemongo.bson.BSONObjectID
 import play.api.libs.json.JsValue
 
-import ems.models.{UserInfo, User, SavedInMongo, Sms}
+import ems.models.{UserInfo, User, SavedInMongo, Forwarding}
 
 
 /**
@@ -24,9 +24,9 @@ trait WithMongoTestData {
   // sms data
   lazy val smsId = "53cd93ce93d970b47bea76fd"
   lazy val mailgunId = "mailgunId"
-  lazy val sms = Sms(
+  lazy val sms = Forwarding(
     BSONObjectID.parse(smsId).get,
-    BSONObjectID.parse(userMongoId).get,
+    Some(BSONObjectID.parse(userMongoId).get),
     "11111111",
     "222222222",
     "some text",
@@ -34,7 +34,7 @@ trait WithMongoTestData {
     SavedInMongo,
     mailgunId)
   lazy val smsList = List(sms)
-  lazy val smsJson: List[JsValue] = smsList map {Sms.smsFormat.writes(_)}
+  lazy val smsJson: List[JsValue] = smsList map {Forwarding.smsFormat.writes(_)}
 
 
   // user data

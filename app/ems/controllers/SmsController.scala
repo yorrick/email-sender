@@ -31,9 +31,9 @@ class SmsController(override implicit val env: RuntimeEnvironment[User]) extends
 
     val result = for {
       userInfo <- UserInfoStore.findUserInfoByUserId(user.id)
-      smsList <- SmsStore.listSms(request.user.id).mapTo[List[Sms]]
+      smsList <- SmsStore.listSms(request.user.id).mapTo[List[Forwarding]]
     } yield {
-      val smsDisplayList = smsList map {SmsDisplay.fromSms(_)}
+      val smsDisplayList = smsList map {ForwardingDisplay.fromForwarding(_)}
       Ok(ems.views.html.sms.list(smsDisplayList, user, userInfo))
     }
 

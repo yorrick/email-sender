@@ -1,6 +1,8 @@
 package ems.controllers
 
 import akka.actor._
+import ems.backend.Mailgun
+import ems.models.{FailedByMailgun, AckedByMailgun}
 
 import play.api.mvc.{Action, Controller}
 import play.api.Logger
@@ -9,7 +11,7 @@ import play.api.data.Forms._
 import play.api.mvc.Result
 
 import ems.backend.SmsForwarder.smsForwarder
-import ems.models._
+import ems.models
 
 
 /**
@@ -18,8 +20,21 @@ import ems.models._
  */
 object MailgunController extends Controller {
 
+  /**
+   * Object used to build forms to validate Mailgun POST requests for email deliveries
+   */
+  private[MailgunController] case class MailgunEvent(messageId: String, event: String)
 
-//  val receiveEmailForm = Form()
+  /**
+   * Object used to build forms to validate Mailgun POST requests for email receiving
+   */
+  private[MailgunController] case class MailgunReceive(messageId: String, event: String)
+
+
+  /**
+   * Validation form to receive emails from mailgun
+   */
+  val receiveEmailForm = Form(mapping("Message-Id" -> text, "event" -> text)(MailgunEvent.apply)(MailgunEvent.unapply))
 
   def receive = Action { implicit request =>
     Logger.debug(s"=========================== ${request.body.asFormUrlEncoded}")
@@ -64,7 +79,14 @@ object MailgunController extends Controller {
    * @return
    */
   private def validatedEventForm(event: MailgunEvent): Result = {
-    smsForwarder ! event
+    val status = if (event.event == Mailgun.DELIVERED) {
+      AckedByMailgun
+    } else {
+      FailedByMailgun
+    }
+
+    smsForwarder ! models.MailgunEvent(event.messageId, status)
+
     Ok
   }
 

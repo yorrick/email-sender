@@ -1,5 +1,5 @@
-@import ems.models.SmsDisplay._
-@import ems.models.SmsDisplay
+@import ems.models.ForwardingDisplay._
+@import ems.models.ForwardingDisplay
 
 @()(implicit r: RequestHeader)
 
@@ -8,7 +8,7 @@ $(function() {
     var r = jsRoutes.ems.controllers.SmsController.updatesSocket();
     var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket
     var chatSocket = new WS(r.webSocketURL())
-    var elementTemplate = '@ems.views.html.sms.listElement(SmsDisplay(IdMapping.templateTag, UserIdMapping.templateTag, FromMapping.templateTag, ToMapping.templateTag, ContentMapping.templateTag, CreationMapping.templateTag, StatusCodeMapping.templateTag, StatusMapping.templateTag, SpinMapping.templateTag))'
+    var elementTemplate = '@ems.views.html.sms.listElement(ForwardingDisplay(IdMapping.templateTag, UserIdMapping.templateTag, FromMapping.templateTag, ToMapping.templateTag, ContentMapping.templateTag, CreationMapping.templateTag, StatusCodeMapping.templateTag, StatusMapping.templateTag, SpinMapping.templateTag))'
 
     // given smsData, updates the spinners
     var updateSpinner = function(smsData) {

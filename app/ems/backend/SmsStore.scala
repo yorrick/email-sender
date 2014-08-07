@@ -24,7 +24,7 @@ object SmsStore extends MongoDBStore with LogUtils {
    * @param sms
    * @return
    */
-  def save(sms: Sms): Future[Sms] = {
+  def save(sms: Forwarding): Future[Forwarding] = {
     collection.insert(sms) map {lastError => sms}
   }
 
@@ -32,22 +32,22 @@ object SmsStore extends MongoDBStore with LogUtils {
    * Updates the status of an sms using the id
    * @param sms
    */
-  def updateStatusById(sms: Sms): Future[Sms] = {
+  def updateStatusById(sms: Forwarding): Future[Forwarding] = {
     val modifier = Json.obj("$set" -> Json.obj("status.status" -> sms.status.status))
     updateById(sms, modifier)
   }
 
   /**
    * Ack a sms, given a mailgunId
-   * Returns the acked sms
+   * Returns the acked forwarding
    * @param mailgunId
    */
-  def updateStatusByMailgunId(mailgunId: String, status: SmsStatus): Future[Sms] = {
+  def updateStatusByMailgunId(mailgunId: String, status: ForwardingStatus): Future[Forwarding] = {
     val modifier = Json.obj("$set" -> Json.obj("status.status" -> status.status))
     val findId = Json.obj("mailgunId" -> mailgunId)
 
     collection.update(findId, modifier) flatMap { lastError =>
-      val cursor = collection.find(findId).cursor[Sms]
+      val cursor = collection.find(findId).cursor[Forwarding]
       // return the first result
       findSingle(cursor) map { _.get }
     } andThen logResult(s"updateStatusByMailgunId for mailgunId $mailgunId with status $status")
@@ -57,12 +57,12 @@ object SmsStore extends MongoDBStore with LogUtils {
    * Set the mailgun id for an sms
    * @param sms
    */
-  def updateSmsMailgunId(sms: Sms): Future[Sms] = {
+  def updateSmsMailgunId(sms: Forwarding): Future[Forwarding] = {
     val modifier = Json.obj("$set" -> Json.obj("mailgunId" -> sms.mailgunId))
     updateById(sms, modifier)
   }
 
-  private def updateById(sms: Sms, modifier: JsObject) =
+  private def updateById(sms: Forwarding, modifier: JsObject) =
     collection.update(Json.obj("_id" -> sms._id), modifier) map {lastError => sms}
 
   /**
@@ -70,15 +70,15 @@ object SmsStore extends MongoDBStore with LogUtils {
    * @param userId
    * @return
    */
-  def listSms(userId: String): Future[List[Sms]] = {
+  def listSms(userId: String): Future[List[Forwarding]] = {
     toBSONObjectId(userId) flatMap { bsonId =>
-      val cursor: Cursor[Sms] = collection.
+      val cursor: Cursor[Forwarding] = collection.
         // find all sms
         find(Json.obj("_userId" -> bsonId)).
         // sort by creation date
         sort(Json.obj("creationDate" -> -1)).
         // perform the query and get a cursor of JsObject
-        cursor[Sms]
+        cursor[Forwarding]
 
       // gather all the JsObjects in a list
       cursor.collect[List]()

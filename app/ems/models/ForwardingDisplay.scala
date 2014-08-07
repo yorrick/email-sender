@@ -12,20 +12,20 @@ import play.api.libs.json.Json
  * @param content
  * @param creationDate
  */
-case class SmsDisplay(id: String, userId: String, from: String, to: String, content: String,
+case class ForwardingDisplay(id: String, userId: String, from: String, to: String, content: String,
                       creationDate: String, statusCode: String, status: String, spin: String)
 
 
-object SmsDisplay {
+object ForwardingDisplay {
 
   /**
-   * Creates an SmsDisplay object
+   * Creates an ForwardingDisplay object
    * @param sms
    * @return
    */
-  def fromSms(sms: Sms) = SmsDisplay(
+  def fromForwarding(sms: Forwarding) = ForwardingDisplay(
     sms.id,
-    sms.userId,
+    sms.userId.getOrElse(""),
     sms.from,
     sms.to,
     sms.content,
@@ -43,7 +43,7 @@ object SmsDisplay {
     FailedByMailgun -> ("Failed", "false")
   )
 
-  val empty = SmsDisplay("", "", "", "", "", "", "", "false", "")
+  val empty = ForwardingDisplay("", "", "", "", "", "", "", "false", "")
 
   case class Mapping(val templateTag: String, val jsonName: String)
   object IdMapping extends Mapping("##Id", "id")
@@ -56,13 +56,13 @@ object SmsDisplay {
   object StatusMapping extends Mapping("##Status", "status")
   object SpinMapping extends Mapping("##Spin", "spin")
 
-  implicit val smsDisplayFormat = Json.format[SmsDisplay]
+  implicit val smsDisplayFormat = Json.format[ForwardingDisplay]
 
   /**
-   * This formatter is used to serialize / deserialize SmsDisplay object in redis
+   * This formatter is used to serialize / deserialize ForwardingDisplay object in redis
    */
-  implicit val smsDisplayByteStringFormatter = new ByteStringFormatter[SmsDisplay] {
-    def serialize(smsDisplay: SmsDisplay): ByteString = {
+  implicit val smsDisplayByteStringFormatter = new ByteStringFormatter[ForwardingDisplay] {
+    def serialize(smsDisplay: ForwardingDisplay): ByteString = {
       ByteString(
         smsDisplay.id + "|" +
         smsDisplay.userId + "|" +
@@ -76,9 +76,9 @@ object SmsDisplay {
       )
     }
 
-    def deserialize(bs: ByteString): SmsDisplay = {
+    def deserialize(bs: ByteString): ForwardingDisplay = {
       val result = bs.utf8String.split('|').toList
-      SmsDisplay(result(0), result(1), result(2), result(3), result(4), result(5), result(6), result(7), result(8))
+      ForwardingDisplay(result(0), result(1), result(2), result(3), result(4), result(5), result(6), result(7), result(8))
     }
   }
 

@@ -1,6 +1,8 @@
 package ems.controllers
 
 import akka.actor._
+import ems.backend.SmsStore
+import org.joda.time.DateTime
 
 import play.api.mvc.{Action, Controller}
 import play.api.Logger
@@ -9,7 +11,7 @@ import play.api.data.Forms._
 import play.api.mvc.Result
 
 import ems.backend.SmsForwarder.smsForwarder
-import ems.models.TwilioPost
+import ems.models.{SavedInMongo, Forwarding}
 
 
 /**
@@ -17,6 +19,12 @@ import ems.models.TwilioPost
  * TODO secure this controller to ensure Twilio is making the calls!
  */
 object TwilioController extends Controller {
+
+  /**
+   * Object used to build forms to validate Twilio POST requests
+   */
+  private[TwilioController] case class TwilioPost(from: String, to: String, content: String)
+
 
   val form = Form(
     mapping(
@@ -43,7 +51,10 @@ object TwilioController extends Controller {
    * @return
    */
   private def handleFormValidated(post: TwilioPost): Result = {
-    smsForwarder ! post
+    // creates a forwarding with associated user
+    val forwarding = Forwarding(SmsStore.generateId, None, post.from, post.to, post.content, DateTime.now, SavedInMongo, "")
+
+    smsForwarder ! forwarding
     Ok
   }
 

@@ -1,17 +1,17 @@
-@import ems.models.SmsDisplay
+@import ems.models.ForwardingDisplay
 
-@(sms: SmsDisplay, emptyClass: String = "")
+@(forwarding: ForwardingDisplay, emptyClass: String = "")
 
-<a id="@sms.id" href="#" class="list-group-item clearfix @emptyClass">
-    <h4 class="list-group-item-heading">@sms.from</h4>
-    <span class="list-group-item-text">@sms.content</span>
+<a id="@forwarding.id" href="#" class="list-group-item clearfix @emptyClass">
+    <h4 class="list-group-item-heading">@forwarding.from</h4>
+    <span class="list-group-item-text">@forwarding.content</span>
 
     <span class="pull-right">
         <button class="btn btn-xs btn-info">
-            @sms.creationDate
+            @forwarding.creationDate
         </button>
-        <button class="status btn btn-xs btn-info @sms.statusCode">
-            <span>@sms.status</span>
+        <button class="status btn btn-xs btn-info @forwarding.statusCode">
+            <span>@forwarding.status</span>
             <i class=""></i>
         </button>
     </span>
