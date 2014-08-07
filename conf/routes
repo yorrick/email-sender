@@ -7,7 +7,8 @@ GET        /                            @ems.controllers.Application.index
 
 # Sms API
 POST        /sms/api/twilio				ems.controllers.TwilioController.sms()
-POST        /sms/api/mailgun/success	ems.controllers.MailgunController.success()
+POST        /sms/api/mailgun/event   	ems.controllers.MailgunController.event()
+POST        /sms/api/mailgun/receive   	ems.controllers.MailgunController.receive()
 
 # Sms pages
 GET         /sms/					    @ems.controllers.SmsController.list

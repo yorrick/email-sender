@@ -10,13 +10,14 @@ import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits._
 import play.modules.reactivemongo.json.BSONFormats._
 
+import ems.backend.utils.LogUtils
 import ems.models._
 
 
 /**
  * Handles sms storage in mongodb
  */
-object UserInfoStore extends MongoDBStore {
+object UserInfoStore extends MongoDBStore with LogUtils {
 
   /**
    * Service exception
@@ -45,12 +46,7 @@ object UserInfoStore extends MongoDBStore {
    */
   def findUserInfoByPhoneNumber(phoneNumber: String): Future[UserInfo] = {
     val filter = Json.obj("phoneNumber" -> phoneNumber)
-    findSingle(collection.find(filter).cursor[UserInfo]) map { _.get } andThen {
-      case Success(user) =>
-        Logger.debug(s"Found user info for incoming number $phoneNumber")
-      case Failure(t) =>
-        Logger.debug(s"Could not find any user info for number $phoneNumber")
-    }
+    findSingle(collection.find(filter).cursor[UserInfo]) map { _.get } andThen logResult("findUserInfoByPhoneNumber")
   }
 
   /**

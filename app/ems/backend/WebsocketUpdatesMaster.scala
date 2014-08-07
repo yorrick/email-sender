@@ -1,6 +1,7 @@
 package ems.backend
 
 import akka.util.ByteString
+import ems.backend.utils.LogUtils
 import redis.api.pubsub.Message
 
 import scala.collection.mutable
@@ -56,7 +57,7 @@ object WebsocketUpdatesMaster {
  * This actor stores all websocket connections to browsers.
  * Each user can have multiple connections at the same time.
  */
-class WebsocketUpdatesMaster extends Actor {
+class WebsocketUpdatesMaster extends Actor with LogUtils {
   import WebsocketUpdatesMaster._
 
   /**
@@ -92,10 +93,7 @@ class WebsocketUpdatesMaster extends Actor {
 
     case sms: Sms =>
       // send notification to redis
-      Redis.instance.redisClient.publish(WebsocketUpdatesMaster.redisChannel, SmsDisplay.fromSms(sms)) onComplete {
-        case Success(message) => Logger.info(s"Successfuly published message ($message)")
-        case Failure(t) => Logger.warn("An error has occured: " + t.getMessage)
-      }
+      Redis.instance.redisClient.publish(WebsocketUpdatesMaster.redisChannel, SmsDisplay.fromSms(sms)) andThen logResult(s"Publish sms $sms in redis")
 
     case signal: Signal =>
       webSocketOutActors.values.flatMap(identity) foreach {

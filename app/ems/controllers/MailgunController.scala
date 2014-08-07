@@ -18,8 +18,16 @@ import ems.models._
  */
 object MailgunController extends Controller {
 
+
+//  val receiveEmailForm = Form()
+
+  def receive = Action { implicit request =>
+    Logger.debug(s"=========================== ${request.body.asFormUrlEncoded}")
+    Ok
+  }
+
   /**
-   * Validation form
+   * Validation form for mailgun event
    */
   val eventForm = Form(mapping("Message-Id" -> text, "event" -> text)(MailgunEvent.apply)(MailgunEvent.unapply))
 
@@ -42,10 +50,10 @@ object MailgunController extends Controller {
    *
    * @return
    */
-  def success = Action { implicit request =>
+  def event = Action { implicit request =>
     eventForm.bindFromRequest.fold(
-      formWithErrors => handleFormError(formWithErrors),
-      sms => handleFormValidated(sms)
+      formWithErrors => errorEventForm(formWithErrors),
+      sms => validatedEventForm(sms)
     )
   }
 
@@ -55,7 +63,7 @@ object MailgunController extends Controller {
    * @param event
    * @return
    */
-  private def handleFormValidated(event: MailgunEvent): Result = {
+  private def validatedEventForm(event: MailgunEvent): Result = {
     smsForwarder ! event
     Ok
   }
@@ -65,7 +73,7 @@ object MailgunController extends Controller {
    * @param formWithErrors
    * @return
    */
-  private def handleFormError(formWithErrors: Form[MailgunEvent]): Result = {
+  private def errorEventForm(formWithErrors: Form[MailgunEvent]): Result = {
     val message = s"Could not bind the form: ${formWithErrors}"
     Logger.warn(message)
     BadRequest(message)

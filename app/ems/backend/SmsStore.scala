@@ -1,20 +1,21 @@
 package ems.backend
 
+
 import scala.concurrent.Future
 
 import reactivemongo.api._
-
 import play.api.libs.json._
 import play.api.libs.concurrent.Execution.Implicits._
 import play.modules.reactivemongo.json.BSONFormats._
 
+import ems.backend.utils.LogUtils
 import ems.models._
 
 
 /**
  * Handles sms storage in mongodb
  */
-object SmsStore extends MongoDBStore {
+object SmsStore extends MongoDBStore with LogUtils {
 
   override val collectionName = "sms"
 
@@ -49,7 +50,7 @@ object SmsStore extends MongoDBStore {
       val cursor = collection.find(findId).cursor[Sms]
       // return the first result
       findSingle(cursor) map { _.get }
-    }
+    } andThen logResult(s"updateStatusByMailgunId for mailgunId $mailgunId with status $status")
   }
 
   /**
