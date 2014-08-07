@@ -1,6 +1,8 @@
 package ems.backend
 
 
+import ems.backend.UserStore._
+
 import scala.concurrent.Future
 
 import reactivemongo.api._
@@ -30,11 +32,46 @@ object ForwardingStore extends MongoDBStore with LogUtils {
 
   /**
    * Updates the status of an forwarding using the id
-   * @param forwarding
+   * @param id
+   * @param status
    */
-  def updateStatusById(forwarding: Forwarding): Future[Forwarding] = {
-    val modifier = Json.obj("$set" -> Json.obj("status.status" -> forwarding.status.status))
-    updateById(forwarding, modifier)
+  def updateStatusById(id: String, status: ForwardingStatus): Future[Forwarding] = {
+    val modifier = Json.obj("$set" -> Json.obj("status.status" -> status.status))
+
+    for {
+      bsonId <- toBSONObjectId(id)
+      lastError <- collection.update(Json.obj("_id" -> bsonId), modifier)
+      forwarding <- findForwardingById(id)
+    } yield forwarding
+
+  }
+
+  /**
+   * Set the mailgun id for an forwarding
+   * @param id
+   * @param mailgunId
+   */
+  def updateMailgunIdById(id: String, mailgunId: String): Future[Forwarding] = {
+    val modifier = Json.obj("$set" -> Json.obj("mailgunId" -> mailgunId))
+
+    for {
+      bsonId <- toBSONObjectId(id)
+      lastError <- collection.update(Json.obj("_id" -> bsonId), modifier)
+      forwarding <- findForwardingById(id)
+    } yield forwarding
+
+  }
+
+  /**
+   * Find a forwarding by id
+   * @param id
+   * @return
+   */
+  def findForwardingById(id: String): Future[Forwarding] = {
+    toBSONObjectId(id) flatMap { bsonId =>
+      val filter = Json.obj("_id" -> bsonId)
+      findSingle(collection.find(filter).cursor[Forwarding]) map { _.get }
+    }
   }
 
   /**
@@ -50,15 +87,6 @@ object ForwardingStore extends MongoDBStore with LogUtils {
       // return the first result
       findSingle(cursor) map { _.get }
     } andThen logResult(s"updateStatusByMailgunId for mailgunId $mailgunId with status $status")
-  }
-
-  /**
-   * Set the mailgun id for an forwarding
-   * @param forwarding
-   */
-  def updateForwardingMailgunId(forwarding: Forwarding): Future[Forwarding] = {
-    val modifier = Json.obj("$set" -> Json.obj("mailgunId" -> forwarding.mailgunId))
-    updateById(forwarding, modifier)
   }
 
   private def updateById(forwarding: Forwarding, modifier: JsObject) =

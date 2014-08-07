@@ -11,7 +11,7 @@ import play.api.data.Forms._
 import play.api.mvc.Result
 
 import ems.backend.Forwarder.forwarder
-import ems.models.{SavedInMongo, Forwarding}
+import ems.models.{Received, Forwarding}
 
 
 /**
@@ -51,8 +51,8 @@ object TwilioController extends Controller {
    * @return
    */
   private def handleFormValidated(post: TwilioPost): Result = {
-    // creates a forwarding with associated user
-    val forwarding = Forwarding(ForwardingStore.generateId, None, post.from, post.to, post.content, DateTime.now, SavedInMongo, "")
+    // creates a forwarding with no associated user and destination
+    val forwarding = Forwarding(ForwardingStore.generateId, None, post.from, None, post.content, DateTime.now, Received, "")
 
     forwarder ! forwarding
     Ok
