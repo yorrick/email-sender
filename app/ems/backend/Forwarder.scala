@@ -55,11 +55,12 @@ class Forwarder extends Actor {
 
       for {
         user <- findUserByPhoneNumber(forwarding.from)
+        // add user and email to forwarding
         forwarding <- Future.successful(forwarding.withUserAndEmail(user))
         forwarding <- save(forwarding) andThen notifyWebsockets
         mailgunId <- pattern.after(2.second, Akka.system.scheduler)(sendEmail(forwarding.from, user.main.email.get, forwarding.content))
         saved <- ForwardingStore.updateMailgunIdById(forwarding.id, mailgunId)
-        forwarding <- updateStatusById(forwarding.id, Sent) andThen notifyWebsockets
+        forwarding <- updateStatusById(forwarding.id, Sending) andThen notifyWebsockets
       } yield forwarding
 
     // email -> sms
@@ -67,10 +68,11 @@ class Forwarder extends Actor {
 
       for {
         userInfo <- findUserAndUserInfoByEmail(forwarding.from)
+        // add user and phone number to forwarding
         forwarding <- Future.successful(forwarding.withUserInfoAndPhone(userInfo))
         forwarding <- save(forwarding) andThen notifyWebsockets
         smsSent <- pattern.after(2.second, Akka.system.scheduler)(sendSms(forwarding.to.get, forwarding.content))
-        forwarding <- updateStatusById(forwarding.id, Sent) andThen notifyWebsockets
+        forwarding <- updateStatusById(forwarding.id, Sending) andThen notifyWebsockets
       } yield forwarding
 
     case MailgunEvent(messageId, status) =>
