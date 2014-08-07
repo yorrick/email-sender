@@ -6,8 +6,9 @@ package ems.models
  * @param status
  */
 sealed case class ForwardingStatus(status: String)
-object SavedInMongo extends ForwardingStatus("SavedInMongo")
-object SentToMailgun extends ForwardingStatus("SentToMailgun")
-object NotSentToMailgun extends ForwardingStatus("NotSentToMailgun")
-object AckedByMailgun extends ForwardingStatus("AckedByMailgun")
-object FailedByMailgun extends ForwardingStatus("FailedByMailgun")
+
+
+object Received extends ForwardingStatus("Received")
+object Sending extends ForwardingStatus("Sending")
+object Sent extends ForwardingStatus("Sent")
+object Failed extends ForwardingStatus("Failed")

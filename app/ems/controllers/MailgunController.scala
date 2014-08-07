@@ -1,8 +1,9 @@
 package ems.controllers
 
 import akka.actor._
-import ems.backend.Mailgun
-import ems.models.{FailedByMailgun, AckedByMailgun}
+import ems.backend.{ForwardingStore, Mailgun}
+import ems.models.{Received, Sent, Failed, Forwarding}
+import org.joda.time.DateTime
 
 import play.api.mvc.{Action, Controller}
 import play.api.Logger
@@ -24,27 +25,55 @@ object MailgunController extends Controller {
    * Object used to build forms to validate Mailgun POST requests for email deliveries
    */
   private[MailgunController] case class MailgunEvent(messageId: String, event: String)
+  val eventForm = Form(mapping("Message-Id" -> text, "event" -> text)(MailgunEvent.apply)(MailgunEvent.unapply))
 
   /**
    * Object used to build forms to validate Mailgun POST requests for email receiving
    */
-  private[MailgunController] case class MailgunReceive(messageId: String, event: String)
-
+  private[MailgunController] case class MailgunReceive(from: String, to: String, subject: String, content: String)
+  val receiveForm = Form(
+    mapping("from" -> text, "recipient" -> text, "subject" -> text, "body-plain" -> text
+  )(MailgunReceive.apply)(MailgunReceive.unapply))
 
   /**
-   * Validation form to receive emails from mailgun
+   * Hook for mailgun email receiving
+   * @return
    */
-  val receiveEmailForm = Form(mapping("Message-Id" -> text, "event" -> text)(MailgunEvent.apply)(MailgunEvent.unapply))
-
   def receive = Action { implicit request =>
-    Logger.debug(s"=========================== ${request.body.asFormUrlEncoded}")
+    receiveForm.bindFromRequest.fold(
+      formWithErrors => errorReceiveForm(formWithErrors),
+      receive => validatedReceiveForm(receive)
+    )
+  }
+
+  /**
+   * Notifies the forwarder that an forwarding has arrived
+   * Replies with Ok as fast as possible
+   * @param receive
+   * @return
+   */
+  private def validatedReceiveForm(receive: MailgunReceive): Result = {
+    val content = s"${receive.subject}\n${receive.content}}"
+
+    // creates a forwarding with no associated user and no destination
+    val forwarding = Forwarding(ForwardingStore.generateId, None, receive.from, None, content, DateTime.now, Received, "")
+
+    forwarder ! forwarding
     Ok
   }
 
   /**
-   * Validation form for mailgun event
+   * Just return a BadRequest
+   * @param formWithErrors
+   * @return
    */
-  val eventForm = Form(mapping("Message-Id" -> text, "event" -> text)(MailgunEvent.apply)(MailgunEvent.unapply))
+  private def errorReceiveForm(formWithErrors: Form[MailgunReceive]): Result = {
+    val message = s"Could not bind the form: ${formWithErrors}"
+    Logger.warn(message)
+    BadRequest(message)
+  }
+
+
 
   /**
    * Hook for mailgun delivery
@@ -79,12 +108,7 @@ object MailgunController extends Controller {
    * @return
    */
   private def validatedEventForm(event: MailgunEvent): Result = {
-    val status = if (event.event == Mailgun.DELIVERED) {
-      AckedByMailgun
-    } else {
-      FailedByMailgun
-    }
-
+    val status = if (event.event == Mailgun.DELIVERED) Sent else Failed
     forwarder ! models.MailgunEvent(event.messageId, status)
 
     Ok

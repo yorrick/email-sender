@@ -7,7 +7,7 @@ import ems.backend.{UserInfoStore, UserStore, ForwardingStore}
 import reactivemongo.bson.BSONObjectID
 import play.api.libs.json.JsValue
 
-import ems.models.{UserInfo, User, SavedInMongo, Forwarding}
+import ems.models.{UserInfo, User, Received, Forwarding}
 
 
 /**
@@ -28,10 +28,10 @@ trait WithMongoTestData {
     BSONObjectID.parse(forwardingId).get,
     Some(BSONObjectID.parse(userMongoId).get),
     "11111111",
-    "222222222",
+    Some("222222222"),
     "some text",
     DateTime.now,
-    SavedInMongo,
+    Received,
     mailgunId)
   lazy val forwardingList = List(forwarding)
   lazy val forwardingJson: List[JsValue] = forwardingList map {Forwarding.forwardingFormat.writes(_)}

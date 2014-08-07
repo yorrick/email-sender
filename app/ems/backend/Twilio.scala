@@ -46,11 +46,20 @@ object Twilio {
    * @return
    */
   def sendConfirmationSms(to: String): Future[Boolean] = {
+    sendSms(to, confirmationMessage)
+  }
+
+  /**
+   * Send sms using twilio api
+   * @param to
+   * @return
+   */
+  def sendSms(to: String, content: String): Future[Boolean] = {
 
     val postData = Map(
       "To" -> Seq(to),
       "From" -> Seq(apiMainNumber),
-      "Body" -> Seq(confirmationMessage)
+      "Body" -> Seq(content)
     )
 
     val responseFuture: Future[WSResponse] = requestHolderOption map { requestHolder =>

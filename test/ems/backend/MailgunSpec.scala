@@ -14,12 +14,17 @@ import ems.utils.WithMongoTestData
 class MailgunSpec extends PlaySpecification with WithMongoTestData {
   sequential
 
+  val resultMailgunId = "<xxxxxxxx@xxxx.mailgun.org>"
+
+  val fakeMailgunResponse =
+    s"""{"message": "Queued. Thank you.","id": "${resultMailgunId}"}"""
+
   /**
    * Intercepts all POST made to the application
    */
   val routes: PartialFunction[(String, String), Handler] = {
     case ("POST", _: String) =>
-      Action { Ok("ok") }
+      Action { Ok(fakeMailgunResponse) }
   }
 
   val app = FakeApplication(withRoutes = routes)
@@ -27,7 +32,7 @@ class MailgunSpec extends PlaySpecification with WithMongoTestData {
   "Mailgun" should {
 
     "Send emails" in new WithServer(app = app, port = 3333) {
-      await(Mailgun.sendEmail(forwarding, "nobody@nobody.com")).id must beEqualTo(forwarding.id)
+      await(Mailgun.sendEmail("5140000000", "nobody@nobody.com", "Some content")) must beEqualTo(resultMailgunId)
     }
 
   }

@@ -41,6 +41,14 @@ object UserStore extends ExternalUserService[User] with MongoDBStore {
     }
   }
 
+  def findByEmail(email: String): Future[User] = {
+    // TODO We could maybe add a unique constraint on email to be able to find users by email for sure
+    Logger.debug(s"Trying to find a User by email $email")
+
+    val filter = Json.obj("main.email" -> email)
+    findSingle(userCursor(filter)) map { _.get }
+  }
+
   def findByEmailAndProvider(email: String, providerId: String): Future[Option[BasicProfile]] = {
     Logger.debug(s"Trying to find a BasicProfile by providerId $providerId and email $email")
 
