@@ -7,7 +7,7 @@ import org.specs2.runner._
 import play.api.test._
 
 import ems.utils.{WithMongoData, WithMongoTestData}
-import ems.models.{AckedByMailgun, SentToMailgun}
+import ems.models.{Sending, Sent}
 
 
 @RunWith(classOf[JUnitRunner])
@@ -25,20 +25,18 @@ class ForwardingStoreSpec extends PlaySpecification with WithMongoTestData {
     }
 
     "Update status by id" in new WithMongoData(data) {
-      val newForwarding = forwarding.copy(status = SentToMailgun)
-      val result = await(ForwardingStore.updateStatusById(newForwarding))
-      result.status must beEqualTo(SentToMailgun)
+      val result = await(ForwardingStore.updateStatusById(forwarding.id, Sending))
+      result.status must beEqualTo(Sending)
     }
 
     "Set status by mailgunId" in new WithMongoData(data) {
-      val result = await(ForwardingStore.updateStatusByMailgunId(mailgunId, AckedByMailgun))
-      result.status must beEqualTo(AckedByMailgun)
+      val result = await(ForwardingStore.updateStatusByMailgunId(mailgunId, Sent))
+      result.status must beEqualTo(Sent)
     }
 
     "Set forwarding mailgunId" in new WithMongoData(data) {
       val newMailgunId = "newMailgunId"
-      val newForwarding = forwarding.copy(mailgunId = newMailgunId)
-      val result = await(ForwardingStore.updateForwardingMailgunId(newForwarding))
+      val result = await(ForwardingStore.updateMailgunIdById(forwarding.id, newMailgunId))
       result.mailgunId must beEqualTo(newMailgunId)
     }
 

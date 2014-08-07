@@ -13,6 +13,7 @@ import play.api.libs.concurrent.Execution.Implicits._
 import ems.models._
 import ems.backend.ForwardingStore._
 import ems.backend.Mailgun._
+import ems.backend.Twilio._
 import ems.backend.WebsocketUpdatesMaster.notifyWebsockets
 
 
@@ -34,22 +35,44 @@ class Forwarder extends Actor {
    * @param phoneNumber
    * @return
    */
-  def findUser(phoneNumber: String): Future[User] = {
+  def findUserByPhoneNumber(phoneNumber: String): Future[User] = {
     for {
       userInfo <- UserInfoStore.findUserInfoByPhoneNumber(phoneNumber)
       user <- UserStore.findUserById(userInfo.id)
     } yield user
   }
 
+  def findUserAndUserInfoByEmail(email: String): Future[UserInfo] = {
+    for {
+      user <- UserStore.findByEmail(email)
+      userInfo <- UserInfoStore.findUserInfoByUserId(user.id)
+    } yield userInfo
+  }
+
   def receive = {
-    case forwarding: Forwarding =>
+    // sms -> email
+    case forwarding: Forwarding if forwarding.smsToEmail =>
 
       for {
-        user <- findUser(forwarding.from)
-        forwarding <- Future.successful(forwarding.withUser(user._id))
+        user <- findUserByPhoneNumber(forwarding.from)
+        // add user and email to forwarding
+        forwarding <- Future.successful(forwarding.withUserAndEmail(user))
         forwarding <- save(forwarding) andThen notifyWebsockets
-        forwarding <- pattern.after(2.second, Akka.system.scheduler)(sendEmail(forwarding, user.main.email.get))
-        forwarding <- updateStatusById(forwarding) andThen notifyWebsockets
+        mailgunId <- pattern.after(2.second, Akka.system.scheduler)(sendEmail(forwarding.from, user.main.email.get, forwarding.content))
+        saved <- ForwardingStore.updateMailgunIdById(forwarding.id, mailgunId)
+        forwarding <- updateStatusById(forwarding.id, Sending) andThen notifyWebsockets
+      } yield forwarding
+
+    // email -> sms
+    case forwarding: Forwarding if forwarding.emailToSms =>
+
+      for {
+        userInfo <- findUserAndUserInfoByEmail(forwarding.from)
+        // add user and phone number to forwarding
+        forwarding <- Future.successful(forwarding.withUserInfoAndPhone(userInfo))
+        forwarding <- save(forwarding) andThen notifyWebsockets
+        smsSent <- pattern.after(2.second, Akka.system.scheduler)(sendSms(forwarding.to.get, forwarding.content))
+        forwarding <- updateStatusById(forwarding.id, Sending) andThen notifyWebsockets
       } yield forwarding
 
     case MailgunEvent(messageId, status) =>

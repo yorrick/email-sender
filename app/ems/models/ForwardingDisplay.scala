@@ -27,7 +27,7 @@ object ForwardingDisplay {
     forwarding.id,
     forwarding.userId.getOrElse(""),
     forwarding.from,
-    forwarding.to,
+    forwarding.to.getOrElse(""),
     forwarding.content,
     forwarding.formattedCreationDate,
     forwarding.status.status,
@@ -36,11 +36,10 @@ object ForwardingDisplay {
   )
 
   val statusLabels = Map(
-    SavedInMongo -> ("Received", "true"),
-    SentToMailgun -> ("Sending", "true"),
-    NotSentToMailgun -> ("Failed", "false"),
-    AckedByMailgun -> ("Delivered", "false"),
-    FailedByMailgun -> ("Failed", "false")
+    Received -> ("Received", "true"),
+    Sending -> ("Sending", "true"),
+    Sent -> ("Sent", "false"),
+    Failed -> ("Failed", "false")
   )
 
   val empty = ForwardingDisplay("", "", "", "", "", "", "", "false", "")
