@@ -28,8 +28,8 @@ class MailgunControllerSpec extends PlaySpecification with WithMongoTestData {
 
     "Accept post data for email receiving" in new WithMongoData(data) {
       val request = FakeRequest(POST, "").withFormUrlEncodedBody(
-        "from" -> "somebody@example.com",
-        "recipient" -> "5140000000@xxxx.mailgun.net",
+        "from" -> "Somebody <somebody@example.com>",
+        "recipient" -> "+5140000000@xxxx.mailgun.net",
         "subject" -> "A subject",
         "body-plain" -> "Some plain content"
       )
