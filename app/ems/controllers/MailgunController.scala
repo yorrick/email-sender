@@ -35,6 +35,8 @@ object MailgunController extends Controller {
     mapping("from" -> text, "recipient" -> text, "subject" -> text, "body-plain" -> text
   )(MailgunReceive.apply)(MailgunReceive.unapply))
 
+  val emailRegex = """.*<(.*)>""".r
+
   /**
    * Hook for mailgun email receiving
    * @return
@@ -56,7 +58,8 @@ object MailgunController extends Controller {
     val content = s"${receive.subject}\n${receive.content}}"
 
     // creates a forwarding with no associated user and no destination
-    val forwarding = Forwarding(ForwardingStore.generateId, None, receive.from, None, content, DateTime.now, Received, "")
+    val from = emailRegex.findFirstMatchIn(receive.from) map { _.group(1)}
+    val forwarding = Forwarding(ForwardingStore.generateId, None, from.getOrElse(""), None, content, DateTime.now, Received, "")
 
     forwarder ! forwarding
     Ok
