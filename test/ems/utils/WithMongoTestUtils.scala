@@ -4,39 +4,34 @@ package ems.utils
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 
+import reactivemongo.api.collections.default.BSONCollection
 import reactivemongo.bson.BSONDocument
 import reactivemongo.core.commands.BSONCommandError
-import reactivemongo.api.collections.default.BSONCollection
-import org.specs2.execute.{Result, AsResult}
-import play.api.Logger
 import play.api.libs.iteratee.Enumerator
-import play.api.libs.json.JsValue
-import play.api.test.{WithApplication, FakeApplication}
-import play.libs.Akka
 import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.BSONFormats
+import play.api.libs.concurrent.Akka
+import play.api.libs.json.JsValue
+import play.api.{Application, Logger}
 import play.api.libs.concurrent.Execution.Implicits._
 
 
 /**
- * Context for mongodb based tests.
+ * Utility functions for mongo based tests.
  * Data must be given as JsValue, this way serialization is handled by the test.
  * This context uses ReactiveMongoPlugin database connections to initialize data.
- * @param data
- * @param app
  */
-abstract class WithMongoData(data: Seq[(String, List[JsValue])] = Seq(),
-                             override val app: FakeApplication = FakeApplication()) extends WithApplication(app)  {
+trait WithMongoTestUtils {
+
+//  override val app: FakeApplication = FakeApplication()
+
+  val data: Seq[(String, List[JsValue])]
+  implicit val app: Application
 
   /**
    * Timeout for database statements
    */
   lazy val mongoStatementTimeout = 5.seconds
-
-  override def around[T: AsResult](t: => T): Result = super.around {
-    initMongo
-    t
-  }
 
   def initMongo {
     implicit val system = Akka.system

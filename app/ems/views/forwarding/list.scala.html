@@ -29,7 +29,7 @@
                         }
                     }
                 </span>
-                <span class="glyphicon glyphicon-arrow-right"></span>
+                <span class="glyphicon glyphicon-resize-horizontal"></span>
                 <span>@user.main.email.getOrElse("No email address")</span>
             </h2>
         </div>
@@ -40,7 +40,7 @@
         <div class="col-md-1"></div>
         <div id="forwardingList" class="col-md-10 list-group">
             @if(forwardingList.isEmpty) {
-                  @ems.views.html.forwarding.listElement(ForwardingDisplay("", "", "", "", "No forwarding", "", "", "", "false"), emptyClass = "empty-forwarding")
+                  @ems.views.html.forwarding.listElement(ForwardingDisplay("", "", "", "", "No forwarding", "", "", "", "false", "", ""), emptyClass = "empty-forwarding")
             } else {
               @for(forwarding <- forwardingList) {
                   @ems.views.html.forwarding.listElement(forwarding)

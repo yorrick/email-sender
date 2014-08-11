@@ -13,7 +13,8 @@ import play.api.libs.json.Json
  * @param creationDate
  */
 case class ForwardingDisplay(id: String, userId: String, from: String, to: String, content: String,
-                      creationDate: String, statusCode: String, status: String, spin: String)
+                      creationDate: String, statusCode: String, status: String, spin: String,
+                      smsToEmail: String, emailToSms: String)
 
 
 object ForwardingDisplay {
@@ -32,7 +33,9 @@ object ForwardingDisplay {
     forwarding.formattedCreationDate,
     forwarding.status.status,
     statusLabels(forwarding.status)._1,
-    statusLabels(forwarding.status)._2
+    statusLabels(forwarding.status)._2,
+    forwarding.smsToEmail.toString,
+    forwarding.emailToSms.toString
   )
 
   val statusLabels = Map(
@@ -42,7 +45,7 @@ object ForwardingDisplay {
     Failed -> ("Failed", "false")
   )
 
-  val empty = ForwardingDisplay("", "", "", "", "", "", "", "false", "")
+  val empty = ForwardingDisplay("", "", "", "", "", "", "", "false", "", "", "")
 
   case class Mapping(val templateTag: String, val jsonName: String)
   object IdMapping extends Mapping("##Id", "id")
@@ -54,6 +57,8 @@ object ForwardingDisplay {
   object StatusCodeMapping extends Mapping("##StatusCode", "statusCode")
   object StatusMapping extends Mapping("##Status", "status")
   object SpinMapping extends Mapping("##Spin", "spin")
+  object SmsToEmailMapping extends Mapping("##SmsToEmail", "smsToEmail")
+  object EmailToSmsMapping extends Mapping("##EmailToSms", "emailToSms")
 
   implicit val forwardingDisplayFormat = Json.format[ForwardingDisplay]
 
@@ -71,13 +76,16 @@ object ForwardingDisplay {
         forwardingDisplay.creationDate + "|" +
         forwardingDisplay.statusCode + "|" +
         forwardingDisplay.status + "|" +
-        forwardingDisplay.spin
+        forwardingDisplay.spin + "|" +
+        forwardingDisplay.smsToEmail + "|" +
+        forwardingDisplay.emailToSms
       )
     }
 
     def deserialize(bs: ByteString): ForwardingDisplay = {
       val result = bs.utf8String.split('|').toList
-      ForwardingDisplay(result(0), result(1), result(2), result(3), result(4), result(5), result(6), result(7), result(8))
+      ForwardingDisplay(result(0), result(1), result(2), result(3), result(4), result(5), result(6),
+        result(7), result(8), result(9), result(10))
     }
   }
 
