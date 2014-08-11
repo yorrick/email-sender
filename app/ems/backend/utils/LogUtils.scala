@@ -14,9 +14,15 @@ trait LogUtils {
    * @param msg
    * @return
    */
-  def logResult(msg: String, logger: LoggerLike = Logger): PartialFunction[Try[_], Unit] = {
-    case Success(result) => logger.debug(s"$msg: SUCCESS $result")
-    case Failure(e) => logger.debug(s"$msg: ERROR $e")
+  def logResult[T](msg: String, logger: LoggerLike = Logger, extractor: T => String = {value: T => value.toString}): PartialFunction[Try[T], Unit] = {
+    case Success(result) =>
+      val valueToLog = Try {
+        extractor(result)
+      }.getOrElse("COULD NOT EXTRACT VALUE TO LOG")
+
+      logger.debug(s"$msg: SUCCESS $valueToLog")
+    case Failure(e) =>
+      logger.debug(s"$msg: ERROR $e")
   }
 
 }

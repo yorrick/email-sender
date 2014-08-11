@@ -27,6 +27,8 @@ libraryDependencies ++= Seq(
   "fr.njin" %% "play2-rediscala" % "2.3.0.0" exclude("org.scala-stm", "scala-stm_2.10.0"),
   // TODO do not depend on SNAPSHOT!
   "ws.securesocial" %% "securesocial" % "master-SNAPSHOT",
+//  "ws.securesocial" %% "securesocial" % "2.1.4",
+//  "com.typesafe.play.plugins" %% "play-plugins-mailer" % "2.3.0",
   "com.typesafe.akka" %% "akka-testkit" % "2.3.3" % "test"
 )
 

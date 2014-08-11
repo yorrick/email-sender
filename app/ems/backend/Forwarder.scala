@@ -83,8 +83,8 @@ class Forwarder extends Actor {
         // add user and phone number to forwarding
         forwarding <- Future.successful(forwarding.withUserInfoAndPhone(userInfo))
         forwarding <- save(forwarding) andThen notifyWebsockets
-        smsSent <- pattern.after(sendToMailgunSleep.second, Akka.system.scheduler)(sendSms(forwarding.to.get, forwarding.content))
-        forwarding <- updateStatusById(forwarding.id, Sending) andThen notifyWebsockets
+        twilioId <- pattern.after(sendToMailgunSleep.second, Akka.system.scheduler)(sendSms(forwarding.to.get, forwarding.content))
+        forwarding <- updateStatusById(forwarding.id, Sent) andThen notifyWebsockets
       } yield forwarding
 
       val senderRef = sender()
