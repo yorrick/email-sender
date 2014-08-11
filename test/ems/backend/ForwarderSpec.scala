@@ -5,7 +5,7 @@ import scala.concurrent.duration._
 
 import play.api.mvc.{Action, Handler}
 import play.api.mvc.Results._
-import akka.actor.{ActorRef, ActorSystem}
+import akka.actor.ActorSystem
 import akka.pattern.ask
 import akka.testkit.TestActorRef
 import akka.util.Timeout
@@ -13,8 +13,6 @@ import play.api.test.{FakeApplication, PlaySpecification}
 
 import ems.models.{Sending, Forwarding}
 import ems.utils.{WithMongoServer, WithMongoTestData}
-
-import scala.util.{Failure, Success}
 
 
 class ForwarderSpec extends PlaySpecification with WithMongoTestData {

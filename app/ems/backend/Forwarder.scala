@@ -31,6 +31,8 @@ object Forwarder {
  */
 class Forwarder extends Actor {
 
+  val sendToMailgunSleep = current.configuration.getInt("forwarder.mailgun.sleep").getOrElse(2)
+
   /**
    * Find user with incoming phone number
    * @param phoneNumber
@@ -60,7 +62,7 @@ class Forwarder extends Actor {
         // add user and email to forwarding
         forwarding <- Future.successful(forwarding.withUserAndEmail(user))
         forwarding <- save(forwarding) andThen notifyWebsockets
-        mailgunId <- pattern.after(2.second, Akka.system.scheduler)(sendEmail(forwarding.from, user.main.email.get, forwarding.content))
+        mailgunId <- pattern.after(sendToMailgunSleep.second, Akka.system.scheduler)(sendEmail(forwarding.from, user.main.email.get, forwarding.content))
         saved <- ForwardingStore.updateMailgunIdById(forwarding.id, mailgunId)
         forwarding <- updateStatusById(forwarding.id, Sending) andThen notifyWebsockets
       } yield forwarding
@@ -81,7 +83,7 @@ class Forwarder extends Actor {
         // add user and phone number to forwarding
         forwarding <- Future.successful(forwarding.withUserInfoAndPhone(userInfo))
         forwarding <- save(forwarding) andThen notifyWebsockets
-        smsSent <- pattern.after(2.second, Akka.system.scheduler)(sendSms(forwarding.to.get, forwarding.content))
+        smsSent <- pattern.after(sendToMailgunSleep.second, Akka.system.scheduler)(sendSms(forwarding.to.get, forwarding.content))
         forwarding <- updateStatusById(forwarding.id, Sending) andThen notifyWebsockets
       } yield forwarding
 
