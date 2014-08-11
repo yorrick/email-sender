@@ -14,6 +14,7 @@ import play.api.libs.json.Json
  */
 case class ForwardingDisplay(id: String, userId: String, from: String, to: String, content: String,
                       creationDate: String, statusCode: String, status: String, spin: String)
+//                      emailToSms: Boolean, smsToEmail: Boolean)
 
 
 object ForwardingDisplay {

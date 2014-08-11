@@ -1,14 +1,15 @@
 package ems.backend
 
+
 import scala.concurrent.duration._
 import scala.concurrent.Future
 
 import akka.pattern
 import akka.actor.{Actor, Props}
-import com.github.nscala_time.time.Imports.DateTime
 import play.api.libs.concurrent.Akka
 import play.api.Play.current
 import play.api.libs.concurrent.Execution.Implicits._
+import play.api.Logger
 
 import ems.models._
 import ems.backend.ForwardingStore._
@@ -52,8 +53,9 @@ class Forwarder extends Actor {
   def receive = {
     // sms -> email
     case forwarding: Forwarding if forwarding.smsToEmail =>
+      Logger.debug(s"smsToEmail: ${forwarding.from}")
 
-      for {
+      val future = for {
         user <- findUserByPhoneNumber(forwarding.from)
         // add user and email to forwarding
         forwarding <- Future.successful(forwarding.withUserAndEmail(user))
@@ -63,10 +65,18 @@ class Forwarder extends Actor {
         forwarding <- updateStatusById(forwarding.id, Sending) andThen notifyWebsockets
       } yield forwarding
 
+      val senderRef = sender()
+
+      future onSuccess {
+        case result @ _ =>
+          senderRef ! result
+      }
+
     // email -> sms
     case forwarding: Forwarding if forwarding.emailToSms =>
+      Logger.debug(s"emailToSms: ${forwarding.from}")
 
-      for {
+      val future = for {
         userInfo <- findUserAndUserInfoByEmail(forwarding.from)
         // add user and phone number to forwarding
         forwarding <- Future.successful(forwarding.withUserInfoAndPhone(userInfo))
@@ -74,6 +84,13 @@ class Forwarder extends Actor {
         smsSent <- pattern.after(2.second, Akka.system.scheduler)(sendSms(forwarding.to.get, forwarding.content))
         forwarding <- updateStatusById(forwarding.id, Sending) andThen notifyWebsockets
       } yield forwarding
+
+      val senderRef = sender()
+
+      future onSuccess {
+        case result @ _ =>
+          senderRef ! result
+      }
 
     case MailgunEvent(messageId, status) =>
       updateStatusByMailgunId(messageId, status) andThen notifyWebsockets

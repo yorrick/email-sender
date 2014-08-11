@@ -6,16 +6,32 @@ import org.specs2.runner._
 import play.api.test._
 
 import ems.backend.Mailgun._
-import ems.utils.{WithMongoTestData, WithMongoData}
+import ems.utils.{WithMongoTestData, WithMongoApplication}
 
 
 @RunWith(classOf[JUnitRunner])
 class MailgunControllerSpec extends PlaySpecification with WithMongoTestData {
   sequential
 
+  val rawEmailContent =
+    """hello from email
+      |
+      |
+      |2014-08-07 22:12 GMT-04:00 Yorrick Jansen <yorrick.email.sender@gmail.com>:
+      |
+      |> hello from email
+      |>
+      |>
+      |> 2014-08-07 22:12 GMT-04:00 <+14387639474@app25130478.mailgun.org>:
+      |>
+      |>> Hello from.sms
+      |>
+      |>
+      |>""".stripMargin
+
   "Mailgun controller" should {
 
-    "Accept post data for delivery ack" in new WithMongoData(data) {
+    "Accept post data for delivery ack" in new WithMongoApplication(data) {
       val request = FakeRequest(POST, "").withFormUrlEncodedBody(
         "Message-Id" -> forwardingId,
         "event" -> DELIVERED
@@ -26,17 +42,27 @@ class MailgunControllerSpec extends PlaySpecification with WithMongoTestData {
       contentAsString(postResponse) must equalTo("")
     }
 
-    "Accept post data for email receiving" in new WithMongoData(data) {
+    "Accept post data for email receiving" in new WithMongoApplication(data) {
       val request = FakeRequest(POST, "").withFormUrlEncodedBody(
         "from" -> "Somebody <somebody@example.com>",
         "recipient" -> "+5140000000@xxxx.mailgun.net",
         "subject" -> "A subject",
-        "body-plain" -> "Some plain content"
+        "body-plain" -> rawEmailContent
       )
 
       val postResponse = ems.controllers.MailgunController.receive(request)
       status(postResponse) must equalTo(OK)
       contentAsString(postResponse) must equalTo("")
+    }
+
+    "Extraxt email" in {
+      ems.controllers.MailgunController.extractEmail("Somebody <somebody@example.com>") must beEqualTo(Some("somebody@example.com"))
+    }
+
+    "Extract content properly" in {
+      val result = ems.controllers.MailgunController.extractContent("Re: Sms forwarding", rawEmailContent)
+      result must beEqualTo("Re: Sms forwarding\nhello from email")
+
     }
 
   }

@@ -42,6 +42,8 @@ object MailgunController extends Controller {
    * @return
    */
   def receive = Action { implicit request =>
+    Logger.debug(s"Raw data for email: ${request.body.asFormUrlEncoded}")
+
     receiveForm.bindFromRequest.fold(
       formWithErrors => errorReceiveForm(formWithErrors),
       receive => validatedReceiveForm(receive)
@@ -55,13 +57,19 @@ object MailgunController extends Controller {
    * @return
    */
   private def validatedReceiveForm(receive: MailgunReceive): Result = {
-    val content = s"${receive.subject}\n${receive.content}}"
+    extractEmail(receive.from) match {
+      case Some(from) =>
+        Logger.debug(s"Extracted email '$from' from string '${receive.from}'")
 
-    // creates a forwarding with no associated user and no destination
-    val from = emailRegex.findFirstMatchIn(receive.from) map { _.group(1)}
-    val forwarding = Forwarding(ForwardingStore.generateId, None, from.getOrElse(""), None, content, DateTime.now, Received, "")
+        // creates a forwarding with no associated user and no destination
+        val forwarding = Forwarding(ForwardingStore.generateId, None, from, None,
+          extractContent(receive.subject, receive.content), DateTime.now, Received, "")
 
-    forwarder ! forwarding
+        forwarder ! forwarding
+      case None =>
+        Logger.debug(s"Could mot extract email from string '${receive.from}'")
+    }
+
     Ok
   }
 
@@ -76,7 +84,25 @@ object MailgunController extends Controller {
     BadRequest(message)
   }
 
+  /**
+   * Extract the user email from the raw string "Somebody <somebody@example.com>"
+   *
+   */
+  def extractEmail(rawFrom: String): Option[String] =
+    emailRegex.findFirstMatchIn(rawFrom) map { _.group(1)}
 
+  /**
+   * Extract the content from the subject and the multiline raw email content
+   * @param subject
+   * @param rawContent
+   * @return
+   */
+  def extractContent(subject: String, rawContent: String): String = {
+    val stripedContent = rawContent.replaceAll(">.*", "").replaceAll("""\d{4}-.*""", "").replaceAll("(?m)^[ \t]*\r?\n", "")
+    val content = s"${subject}\n${stripedContent.stripLineEnd}"
+
+    content
+  }
 
   /**
    * Hook for mailgun delivery
