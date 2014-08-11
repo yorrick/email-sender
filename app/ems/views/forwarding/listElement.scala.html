@@ -3,7 +3,17 @@
 @(forwarding: ForwardingDisplay, emptyClass: String = "")
 
 <a id="@forwarding.id" href="#" class="list-group-item clearfix @emptyClass">
-    <h4 class="list-group-item-heading">@forwarding.from</h4>
+    <h4 class="list-group-item-heading">
+
+        @if(forwarding.smsToEmail == "true") {
+        <span class="glyphicon glyphicon-phone"></span>
+        } else {
+        <span class="glyphicon glyphicon-envelope"></span>
+        }
+
+        <span>@forwarding.from</span>
+    </h4>
+
     <span class="list-group-item-text">@forwarding.content</span>
 
     <span class="pull-right">
@@ -14,5 +24,6 @@
             <span>@forwarding.status</span>
             <i class=""></i>
         </button>
+
     </span>
 </a>
