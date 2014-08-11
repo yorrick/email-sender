@@ -31,7 +31,7 @@ class MailgunSpec extends PlaySpecification with WithMongoTestData {
 
   "Mailgun" should {
 
-    "Send emails" in new WithServer(app = app, port = 3333) {
+    "Send emails" in new WithServer(app = app) {
       await(Mailgun.sendEmail("5140000000", "nobody@nobody.com", "Some content")) must beEqualTo(resultMailgunId)
     }
 

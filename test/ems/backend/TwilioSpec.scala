@@ -26,7 +26,7 @@ class TwilioSpec extends PlaySpecification with WithMongoTestData {
 
   "Twilio" should {
 
-    "Send confirmation sms" in new WithServer(app = app, port = 3333) {
+    "Send confirmation sms" in new WithServer(app = app) {
       await(Twilio.sendConfirmationSms("+15140000000")) must beTrue
     }
 

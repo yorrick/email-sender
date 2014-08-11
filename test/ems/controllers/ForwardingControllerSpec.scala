@@ -8,7 +8,7 @@ import play.api.Logger
 import play.api.test._
 
 import ems.utils.securesocial.WithSecureSocialUtils
-import ems.utils.{WithMongoTestData, WithMongoData}
+import ems.utils.{WithMongoTestData, WithMongoApplication}
 
 
 @RunWith(classOf[JUnitRunner])
@@ -24,7 +24,7 @@ class ForwardingControllerSpec extends PlaySpecification with WithSecureSocialUt
 
   "Forwarding controller" should {
 
-    "render the forwarding list page" in new WithMongoData(data) {
+    "render the forwarding list page" in new WithMongoApplication(data) {
       val response = forwardingController.list(FakeRequest().withCookies(cookie))
 
       status(response) must equalTo(OK)
@@ -32,7 +32,7 @@ class ForwardingControllerSpec extends PlaySpecification with WithSecureSocialUt
       contentAsString(response) must contain ("some text")
     }
 
-    "block access to non logged users" in new WithMongoData(data) {
+    "block access to non logged users" in new WithMongoApplication(data) {
       val response = forwardingController.list(FakeRequest().withHeaders(HeaderNames.ACCEPT -> MimeTypes.HTML))
 
       status(response) must equalTo(SEE_OTHER)

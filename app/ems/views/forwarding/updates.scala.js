@@ -8,7 +8,7 @@ $(function() {
     var r = jsRoutes.ems.controllers.ForwardingController.updatesSocket();
     var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket
     var chatSocket = new WS(r.webSocketURL())
-    var elementTemplate = '@ems.views.html.forwarding.listElement(ForwardingDisplay(IdMapping.templateTag, UserIdMapping.templateTag, FromMapping.templateTag, ToMapping.templateTag, ContentMapping.templateTag, CreationMapping.templateTag, StatusCodeMapping.templateTag, StatusMapping.templateTag, SpinMapping.templateTag))'
+    var elementTemplate = '@ems.views.html.forwarding.listElement(ForwardingDisplay(IdMapping.templateTag, UserIdMapping.templateTag, FromMapping.templateTag, ToMapping.templateTag, ContentMapping.templateTag, CreationMapping.templateTag, StatusCodeMapping.templateTag, StatusMapping.templateTag, SpinMapping.templateTag, SmsToEmailMapping.templateTag, EmailToSmsMapping.templateTag))'
 
     // given forwardingData, updates the spinners
     var updateSpinner = function(forwardingData) {

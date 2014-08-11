@@ -15,6 +15,8 @@ import ems.models.{UserInfo, User, Received, Forwarding}
  */
 trait WithMongoTestData {
 
+  def generateId = BSONObjectID.generate
+
   lazy val data = Seq(
     (ForwardingStore.collectionName, forwardingJson),
     (UserStore.collectionName, userJson),
@@ -24,16 +26,16 @@ trait WithMongoTestData {
   // forwarding data
   lazy val forwardingId = "53cd93ce93d970b47bea76fd"
   lazy val mailgunId = "mailgunId"
-  lazy val forwarding = Forwarding(
+  lazy val smsToEmailForwarding = Forwarding(
     BSONObjectID.parse(forwardingId).get,
     Some(BSONObjectID.parse(userMongoId).get),
-    "11111111",
+    phoneNumber,
     Some("222222222"),
     "some text",
     DateTime.now,
     Received,
     mailgunId)
-  lazy val forwardingList = List(forwarding)
+  lazy val forwardingList = List(smsToEmailForwarding)
   lazy val forwardingJson: List[JsValue] = forwardingList map {Forwarding.forwardingFormat.writes(_)}
 
 
