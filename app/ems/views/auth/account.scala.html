@@ -8,7 +8,7 @@
 @import ems.views.html.utils.alerts
 
 
-@(form: Form[PhoneNumber])(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User], flash: Flash)
+@(form: Form[PhoneNumber], smsTarget: String, emailTarget: String)(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User], flash: Flash)
 
 
 @mainAuth("Account", user = Some(user)){
@@ -44,8 +44,8 @@
                 }
 
             </li>
-            <li class="row list-group-item">You can send sms to this phone number: <strong>(438) 793-8597</strong></li>
-            <li class="row list-group-item">You can send emails to this address: <strong>TODO</strong></li>
+            <li class="row list-group-item">You can send sms to this phone number: <strong>@smsTarget</strong></li>
+            <li class="row list-group-item">You can send emails to this address: <strong>@emailTarget</strong></li>
             <li class="row list-group-item">Name: @user.main.fullName.getOrElse("")</li>
             <li class="row list-group-item">Logged in from: @user.main.providerId</li>
             <li class="row list-group-item">Email: @user.main.email.map { email => @email }.getOrElse("Not Available")</li>

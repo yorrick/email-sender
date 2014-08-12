@@ -43,7 +43,7 @@ object Mailgun {
   def sendEmail(from: String, to: String, content: String): Future[String] = {
 
     val postData = Map(
-      "from" -> Seq(s"${from}@${domain.get}"),
+      "from" -> Seq(emailSource(from)),
       "to" -> Seq(to),
       "subject" -> Seq("Sms forwarding"),
       "html" -> Seq(content)
@@ -56,6 +56,13 @@ object Mailgun {
     val okResponse = responseFuture filter { _.status == Status.OK }
     okResponse flatMap { response => handleMailgunResponse(response.json)}
   }
+
+  /**
+   * Builds source email address
+   * @param from
+   * @return
+   */
+  def emailSource(from: String) = s"${from}@${domain.get}"
 
   /**
    * Returns the given mailgunId

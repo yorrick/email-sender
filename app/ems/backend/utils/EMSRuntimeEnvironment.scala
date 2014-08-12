@@ -32,6 +32,7 @@ class EMSRuntimeEnvironment extends RuntimeEnvironment.Default[User] {
 
   override lazy val providers = ListMap(
     include(new GoogleProvider(routes, cacheService, oauth2ClientFor(GoogleProvider.Google)))
+//    include(new GoogleProvider(routes, cacheService, oauth2ClientFor(GoogleProvider.Google)))
   )
 }
 
