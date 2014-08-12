@@ -61,7 +61,7 @@ class MailgunControllerSpec extends PlaySpecification with WithMongoTestData {
 
     "Extract content properly" in {
       val result = ems.controllers.MailgunController.extractContent("Re: Sms forwarding", rawEmailContent)
-      result must beEqualTo("Re: Sms forwarding\nhello from email")
+      result must beEqualTo("hello from email")
 
     }
 

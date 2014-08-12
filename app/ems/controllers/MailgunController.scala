@@ -99,9 +99,7 @@ object MailgunController extends Controller {
    */
   def extractContent(subject: String, rawContent: String): String = {
     val stripedContent = rawContent.replaceAll(">.*", "").replaceAll("""\d{4}-.*""", "").replaceAll("(?m)^[ \t]*\r?\n", "")
-    val content = s"${subject}\n${stripedContent.stripLineEnd}"
-
-    content
+    stripedContent.stripLineEnd
   }
 
   /**
