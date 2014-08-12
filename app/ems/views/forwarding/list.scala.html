@@ -15,10 +15,10 @@
 
 @mainAuth("Forwardings", scripts, Some(user)){
 
+        @*
     <div class="row">
-        <div class="col-md-2"></div>
-        <div class="col-md-8">
-            <h2 class="text-center">
+        <div class="col-md-8 col-md-offset-2">
+            <h2 class="h2 text-center">
                 <span>
                     @userInfo.phoneNumber match {
                         case Some(phoneNumber) => {
@@ -33,7 +33,6 @@
                 <span>@user.main.email.getOrElse("No email address")</span>
             </h2>
         </div>
-        <div class="col-md-2"></div>
     </div>
 
     <div class="row">
@@ -45,6 +44,41 @@
                   @ems.views.html.forwarding.listElement(forwarding)
               }
             }
+        </div>
+    </div>
+        *@
+
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        <span>
+                            @userInfo.phoneNumber match {
+                                case Some(phoneNumber) => {
+                                    @userInfo.phoneNumber
+                                }
+                                case None => {
+                                    <a href="@ems.controllers.routes.AccountController.account">Please give us a phone number</a>
+                                }
+                            }
+                        </span>
+                        <span class="glyphicon glyphicon-resize-horizontal"></span>
+                        <span>@user.main.email.getOrElse("No email address")</span>
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    <div id="forwardingList" class="col-md-12 container">
+                        @if(forwardingList.isEmpty) {
+                            @ems.views.html.forwarding.listElement(ForwardingDisplay.empty, emptyClass = "empty-forwarding")
+                        } else {
+                            @for(forwarding <- forwardingList) {
+                                @ems.views.html.forwarding.listElement(forwarding)
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 }
