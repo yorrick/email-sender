@@ -10,9 +10,10 @@ import play.api.data.Form
 import play.api.data.Forms._
 import play.api.data.validation.Constraints._
 import play.api.libs.concurrent.Execution.Implicits._
+import play.api.mvc.{RequestHeader, Flash}
 
 import ems.models.{PhoneNumber, User}
-import ems.backend.{Twilio, UserInfoStore}
+import ems.backend.{Mailgun, Twilio, UserInfoStore}
 import ems.views.utils.Helpers._
 
 
@@ -35,6 +36,25 @@ class AccountController(override implicit val env: RuntimeEnvironment[User]) ext
   )(PhoneNumber.apply)(PhoneNumber.unapply))
 
   /**
+   * Generates the common display response
+   * @param form
+   * @return
+   */
+  def displayResponse(form: Form[PhoneNumber])(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User]) =
+    ems.views.html.auth.account(form, Twilio.apiMainNumber, Mailgun.emailSource(Twilio.apiMainNumber))
+
+  /**
+   * Generates the common redirect response
+   * @param message
+   * @param user
+   * @param request
+   * @param env
+   * @return
+   */
+  def redirectResponse(message: String)(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User]) =
+    Redirect(ems.controllers.routes.AccountController.account).flashing("success" -> message)
+
+  /**
    * Account view
    * @return
    */
@@ -42,7 +62,7 @@ class AccountController(override implicit val env: RuntimeEnvironment[User]) ext
     implicit val user = request.user
 
     userForm map { form =>
-      Ok(ems.views.html.auth.account(form))
+      Ok(displayResponse(form))
     }
   }
 
@@ -51,21 +71,30 @@ class AccountController(override implicit val env: RuntimeEnvironment[User]) ext
 
     form.bindFromRequest.fold(
       formWithErrors =>
-        Future.successful(BadRequest(ems.views.html.auth.account(formWithErrors))),
+        Future.successful(BadRequest(displayResponse(formWithErrors))),
       phoneNumber => {
         val phoneNumberToSave = s"$phonePrefix${phoneNumber.value}"
 
-        // update the phone number in mongo
-        UserInfoStore.savePhoneNumber(user.id, phoneNumberToSave) map { userInfo =>
+        UserInfoStore.findUserInfoByUserId(user.id) flatMap { userInfo =>
+          if (phoneNumberToSave == userInfo.phoneNumber) {
+            // update the phone number in mongo
+            UserInfoStore.savePhoneNumber(user.id, phoneNumberToSave) map { userInfo =>
 
-          // send a confirmation to the given phone number, but do not wait for the reply
-          Twilio.sendConfirmationSms(phoneNumberToSave)
+              // send a confirmation to the given phone number, but do not wait for the reply
+              Twilio.sendConfirmationSms(phoneNumberToSave)
 
-          Redirect(ems.controllers.routes.AccountController.account).flashing("success" -> "Phone number saved!")
-        } recover {
-          case UserInfoStoreException(message) =>
-            BadRequest(ems.views.html.auth.account(form.fill(phoneNumber).withGlobalError(message)))
+              redirectResponse("Phone number saved!")
+            } recover {
+              case UserInfoStoreException(message) =>
+                BadRequest(displayResponse(form.fill(phoneNumber).withGlobalError(message)))
+            }
+
+          } else {
+              Future {redirectResponse("Phone has not changed") }
+          }
+
         }
+
       }
     )
   }
