@@ -13,7 +13,7 @@ import play.api.libs.json.Json
  * @param creationDate
  */
 case class ForwardingDisplay(id: String, userId: String, from: String, to: String, content: String,
-                      creationDate: String, statusCode: String, status: String, spin: String,
+                      creationDate: String, statusCode: String, status: String,
                       smsToEmail: String, emailToSms: String)
 
 
@@ -32,20 +32,19 @@ object ForwardingDisplay {
     forwarding.content,
     forwarding.formattedCreationDate,
     forwarding.status.status,
-    statusLabels(forwarding.status)._1,
-    statusLabels(forwarding.status)._2,
+    statusLabels(forwarding.status),
     forwarding.smsToEmail.toString,
     forwarding.emailToSms.toString
   )
 
   val statusLabels = Map(
-    Received -> ("Received", "true"),
-    Sending -> ("Sending", "true"),
-    Sent -> ("Sent", "false"),
-    Failed -> ("Failed", "false")
+    Received -> "Received",
+    Sending -> "Sending",
+    Sent -> "Sent",
+    Failed -> "Failed"
   )
 
-  val empty = ForwardingDisplay("", "", "", "", "", "", "", "false", "", "", "")
+  val empty = ForwardingDisplay("", "", "No sms or emails have been sent yet", "", "", "", "", "", "", "")
 
   case class Mapping(val templateTag: String, val jsonName: String)
   object IdMapping extends Mapping("##Id", "id")
@@ -56,7 +55,6 @@ object ForwardingDisplay {
   object CreationMapping extends Mapping("##Creation", "creationDate")
   object StatusCodeMapping extends Mapping("##StatusCode", "statusCode")
   object StatusMapping extends Mapping("##Status", "status")
-  object SpinMapping extends Mapping("##Spin", "spin")
   object SmsToEmailMapping extends Mapping("##SmsToEmail", "smsToEmail")
   object EmailToSmsMapping extends Mapping("##EmailToSms", "emailToSms")
 
@@ -76,7 +74,6 @@ object ForwardingDisplay {
         forwardingDisplay.creationDate + "|" +
         forwardingDisplay.statusCode + "|" +
         forwardingDisplay.status + "|" +
-        forwardingDisplay.spin + "|" +
         forwardingDisplay.smsToEmail + "|" +
         forwardingDisplay.emailToSms
       )
@@ -85,7 +82,7 @@ object ForwardingDisplay {
     def deserialize(bs: ByteString): ForwardingDisplay = {
       val result = bs.utf8String.split('|').toList
       ForwardingDisplay(result(0), result(1), result(2), result(3), result(4), result(5), result(6),
-        result(7), result(8), result(9), result(10))
+        result(7), result(8), result(9))
     }
   }
 
