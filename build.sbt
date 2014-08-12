@@ -12,8 +12,9 @@ scalacOptions ++= Seq("-feature", "-deprecation")
 
 resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
-//resolvers += "rediscala" at "https://raw.github.com/etaty/rediscala-mvn/master/releases/"
 resolvers += "play2-rediscala" at "http://dl.bintray.com/yorrick/maven"
+
+resolvers += "securesocial" at "http://dl.bintray.com/yorrick/maven"
 
 libraryDependencies ++= Seq(
   "org.webjars" %% "webjars-play" % "2.3.0",
@@ -25,8 +26,7 @@ libraryDependencies ++= Seq(
   "org.reactivemongo" %% "play2-reactivemongo" % "0.10.5.akka23-SNAPSHOT",
   "com.github.nscala-time" %% "nscala-time" % "1.2.0",
   "fr.njin" %% "play2-rediscala" % "2.3.0.0" exclude("org.scala-stm", "scala-stm_2.10.0"),
-  // TODO do not depend on SNAPSHOT!
-  "ws.securesocial" %% "securesocial" % "master-SNAPSHOT",
+  "ws.securesocial" %% "securesocial" % "2.3.1.0",
   "com.typesafe.akka" %% "akka-testkit" % "2.3.3" % "test"
 )
 
