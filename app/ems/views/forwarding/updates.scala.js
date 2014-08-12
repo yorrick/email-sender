@@ -10,18 +10,29 @@ $(function() {
     var chatSocket = new WS(r.webSocketURL())
     var elementTemplate = '@ems.views.html.forwarding.listElement(ForwardingDisplay(IdMapping.templateTag, UserIdMapping.templateTag, FromMapping.templateTag, ToMapping.templateTag, ContentMapping.templateTag, CreationMapping.templateTag, StatusCodeMapping.templateTag, StatusMapping.templateTag, SpinMapping.templateTag, SmsToEmailMapping.templateTag, EmailToSmsMapping.templateTag))'
 
-    // given forwardingData, updates the spinners
-    var updateSpinner = function(forwardingData) {
-        var existingElement = $('#' + forwardingData.@IdMapping.jsonName);
-
+    // given forwarding <a> tag and received data, updates the spinners
+    var updateSpinner = function(element, data) {
         // spinning classes
-        var statusButton = existingElement.find("button.status");
+        var statusButton = element.find("button.status");
         var spinner = statusButton.find("i");
         spinner.removeClass();
 
-        if (forwardingData.@SpinMapping.jsonName == "true") {
+        if (data.@SpinMapping.jsonName == "true") {
             spinner.addClass("fa fa-spinner fa-spin");
         }
+    }
+
+    // given forwarding <a> tag and received data, update the glyphicon
+    var updateGlyphicon = function(element, data) {
+          // spinning classes
+          var iconSpan = element.find("span.glyphicon");
+
+          if (data.@SmsToEmailMapping.jsonName == "true") {
+              iconSpan.addClass("glyphicon-phone");
+          }
+          if (data.@EmailToSmsMapping.jsonName == "true") {
+              iconSpan.addClass("glyphicon-envelope");
+          }
     }
 
     var receiveEvent = function(event) {
@@ -63,7 +74,10 @@ $(function() {
             forwardingElement.fadeIn("slow");
         }
 
-        updateSpinner(data);
+        var element = $('#' + data.@IdMapping.jsonName);
+
+        updateSpinner(element, data);
+        updateGlyphicon(element, data);
     }
 
     chatSocket.onmessage = receiveEvent

@@ -5,11 +5,10 @@
 <a id="@forwarding.id" href="#" class="list-group-item clearfix @emptyClass">
     <h4 class="list-group-item-heading">
 
-        @if(forwarding.smsToEmail == "true") {
-        <span class="glyphicon glyphicon-phone"></span>
-        } else {
-        <span class="glyphicon glyphicon-envelope"></span>
-        }
+        <span class="glyphicon
+            @if(forwarding.smsToEmail == "true") { glyphicon-phone }
+            @if(forwarding.emailToSms == "true") { glyphicon-envelope }
+        "></span>
 
         <span>@forwarding.from</span>
     </h4>
