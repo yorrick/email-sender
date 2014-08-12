@@ -2,28 +2,45 @@
 
 @(forwarding: ForwardingDisplay, emptyClass: String = "")
 
-<a id="@forwarding.id" href="#" class="list-group-item clearfix @emptyClass">
-    <h4 class="list-group-item-heading">
+@icon = {
+    @if(forwarding.smsToEmail == "true") {
+        glyphicon-phone
+    }
+    @if(forwarding.emailToSms == "true") {
+        glyphicon-envelope
+    }
+}
 
-        @if(forwarding.smsToEmail == "true") {
-        <span class="glyphicon glyphicon-phone"></span>
-        } else {
-        <span class="glyphicon glyphicon-envelope"></span>
-        }
+@gridOffset = {
+    @if(forwarding.emailToSms == "true") {
+        col-md-offset-1
+    }
+}
 
-        <span>@forwarding.from</span>
-    </h4>
+@spinClasses = {
+    @if(forwarding.status == "Sending") {
+        fa fa-spinner fa-spin
+    }
+}
 
-    <span class="list-group-item-text">@forwarding.content</span>
+<div class="row">
+    <div id="@forwarding.id" href="#" class="well well-sm @emptyClass col-md-11 @gridOffset">
+        <h4 class="list-group-item-heading">
+            <span class="glyphicon @icon"></span>
+            <span>@forwarding.from</span>
+        </h4>
 
-    <span class="pull-right">
-        <button class="btn btn-xs btn-info">
-            @forwarding.creationDate
-        </button>
-        <button class="status btn btn-xs btn-info @forwarding.statusCode">
-            <span>@forwarding.status</span>
-            <i class=""></i>
-        </button>
+        <span class="list-group-item-text">@forwarding.content</span>
 
-    </span>
-</a>
+        <span class="pull-right">
+            <button class="btn btn-xs btn-info">
+                @forwarding.creationDate
+            </button>
+            <button class="status btn btn-xs btn-info @forwarding.statusCode">
+                <span>@forwarding.status</span>
+                <i class="@spinClasses"></i>
+            </button>
+
+        </span>
+    </div>
+</div>

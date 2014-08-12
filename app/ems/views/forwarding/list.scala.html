@@ -37,16 +37,14 @@
     </div>
 
     <div class="row">
-        <div class="col-md-1"></div>
-        <div id="forwardingList" class="col-md-10 list-group">
+        <div id="forwardingList" class="col-md-10 col-md-offset-1 container">
             @if(forwardingList.isEmpty) {
-                  @ems.views.html.forwarding.listElement(ForwardingDisplay("", "", "", "", "No forwarding", "", "", "", "false", "", ""), emptyClass = "empty-forwarding")
+                  @ems.views.html.forwarding.listElement(ForwardingDisplay.empty, emptyClass = "empty-forwarding")
             } else {
               @for(forwarding <- forwardingList) {
                   @ems.views.html.forwarding.listElement(forwarding)
               }
             }
         </div>
-        <div class="col-md-1"></div>
     </div>
 }
