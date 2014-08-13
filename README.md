@@ -18,6 +18,7 @@ This application is developped for learning purposes only. It demonstrates how t
  * set up continuous integration with [travis](https://travis-ci.org/)
  * set up a local development environment with [docker](http://www.docker.com/)
  * set up a staging and production environment
+ * use [google Oauth2 SSO](https://developers.google.com/accounts/docs/OAuth2) and [facebook Oauth2 SSO](https://developers.facebook.com/docs/facebook-login/v2.1) to allow users to login
  * deploy the app on [heroku](https://www.heroku.com/) using [a custom scala buildpack](https://github.com/yorrick/heroku-buildpack-scala)
  * use [newrelic](http://newrelic.com/) and [papertrail](https://papertrailapp.com/) for monitoring and logging
 

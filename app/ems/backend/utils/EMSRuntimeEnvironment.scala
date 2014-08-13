@@ -6,7 +6,7 @@ import scala.collection.immutable.ListMap
 import securesocial.controllers.ViewTemplates
 import securesocial.core.RuntimeEnvironment
 import securesocial.core.authenticator.CookieAuthenticatorBuilder
-import securesocial.core.providers.GoogleProvider
+import securesocial.core.providers.{GoogleProvider, FacebookProvider}
 import securesocial.core.services.AuthenticatorService
 
 import ems.backend.{MyEventListener, RedisCookieAuthenticatorStore, UserStore}
@@ -31,8 +31,8 @@ class EMSRuntimeEnvironment extends RuntimeEnvironment.Default[User] {
   override lazy val viewTemplates: ViewTemplates = new EMSViewTemplates(this)
 
   override lazy val providers = ListMap(
-    include(new GoogleProvider(routes, cacheService, oauth2ClientFor(GoogleProvider.Google)))
-//    include(new GoogleProvider(routes, cacheService, oauth2ClientFor(GoogleProvider.Google)))
+    include(new GoogleProvider(routes, cacheService, oauth2ClientFor(GoogleProvider.Google))),
+    include(new FacebookProvider(routes, cacheService, oauth2ClientFor(FacebookProvider.Facebook)))
   )
 }
 

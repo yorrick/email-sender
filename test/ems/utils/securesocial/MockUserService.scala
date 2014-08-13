@@ -19,10 +19,6 @@ class MockUserService extends ExternalUserService[User] {
     Future.failed(new NotImplementedError())
   }
 
-  def findUser(providerId: String, userId: String): Future[Option[User]] = {
-    Future.failed(new NotImplementedError())
-  }
-
   def findByEmailAndProvider(email: String, providerId: String): Future[Option[BasicProfile]] = {
     Future.failed(new NotImplementedError())
   }

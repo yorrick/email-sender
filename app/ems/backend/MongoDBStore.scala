@@ -32,9 +32,10 @@ trait MongoDBStore {
    * @tparam T
    * @return
    */
-  def findSingle[T](cursor: Cursor[T]): Future[Option[T]] = cursor.collect[List]() map {
-    case element :: Nil => Some(element)
-    case _ => None
+  def findSingle[T](cursor: Cursor[T]): Future[T] = cursor.collect[List]() flatMap {
+    case element :: Nil => Future.successful(element)
+    case Nil => Future.failed(new Exception("Could not find any element"))
+    case _ => Future.failed(new Exception("More than one element matched query"))
   }
 
   /**

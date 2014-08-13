@@ -70,7 +70,7 @@ object ForwardingStore extends MongoDBStore with LogUtils {
   def findForwardingById(id: String): Future[Forwarding] = {
     toBSONObjectId(id) flatMap { bsonId =>
       val filter = Json.obj("_id" -> bsonId)
-      findSingle(collection.find(filter).cursor[Forwarding]) map { _.get }
+      findSingle(collection.find(filter).cursor[Forwarding])
     }
   }
 
@@ -85,7 +85,7 @@ object ForwardingStore extends MongoDBStore with LogUtils {
     collection.update(findId, modifier) flatMap { lastError =>
       val cursor = collection.find(findId).cursor[Forwarding]
       // return the first result
-      findSingle(cursor) map { _.get }
+      findSingle(cursor)
     } andThen logResult(s"updateStatusByMailgunId for mailgunId $mailgunId with status $status")
   }
 

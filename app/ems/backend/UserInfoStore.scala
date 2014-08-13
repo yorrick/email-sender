@@ -33,7 +33,7 @@ object UserInfoStore extends MongoDBStore with LogUtils {
   def findUserInfoByUserId(userId: String): Future[UserInfo] = {
     toBSONObjectId(userId) flatMap { bsonId =>
       val filter = Json.obj("_id" -> bsonId)
-      findSingle(collection.find(filter).cursor[UserInfo]) map { _.get }
+      findSingle(collection.find(filter).cursor[UserInfo])
     }
   }
 
@@ -44,7 +44,7 @@ object UserInfoStore extends MongoDBStore with LogUtils {
    */
   def findUserInfoByPhoneNumber(phoneNumber: String): Future[UserInfo] = {
     val filter = Json.obj("phoneNumber" -> phoneNumber)
-    findSingle(collection.find(filter).cursor[UserInfo]) map { _.get } andThen logResult("findUserInfoByPhoneNumber")
+    findSingle(collection.find(filter).cursor[UserInfo]) andThen logResult("findUserInfoByPhoneNumber")
   }
 
   /**
