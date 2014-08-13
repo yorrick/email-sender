@@ -22,8 +22,14 @@ This application is developped for learning purposes only. It demonstrates how t
  * deploy the app on [heroku](https://www.heroku.com/) using [a custom scala buildpack](https://github.com/yorrick/heroku-buildpack-scala)
  * use [newrelic](http://newrelic.com/) and [papertrail](https://papertrailapp.com/) for monitoring and logging
 
+Architecture evolution
+ * to be able to scale out, web UI, api endpoints and forwarding jobs should be split into different nodes
+ * web, forwarding and api nodes would thus be able to scale out independently
+ * api endpoints would send jobs to forwarding workers (using AMQP shared queues - rabbitMQ, since akka remote actors cannot be setup
+   on an infrastructure with changing IP addresses such as Heroku's)
+ * forwarding workers would still send notifications to web nodes, using redis pubsub (as it is now), or an AMQP topic
+
 Sms and email managenement are done with [twilio](https://www.twilio.com/) and [mailgun](https://mailgun.com/).
 
 Project documentation is [here](https://github.com/yorrick/email-sender/wiki).
-
 
