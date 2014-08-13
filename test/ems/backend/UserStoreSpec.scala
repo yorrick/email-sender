@@ -38,7 +38,7 @@ class UserStoreSpec extends PlaySpecification with WithSecureSocialUtils {
     }
 
     "Find user" in new WithMongoApplication(data) {
-      await(service.findUser(providerId, userId)) should beSome
+      await(service.findUser(userId)) should beSome
     }
 
     "Find user by id" in new WithMongoApplication(data) {

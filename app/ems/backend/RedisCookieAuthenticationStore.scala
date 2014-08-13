@@ -19,6 +19,8 @@ import ems.backend.utils.LogUtils
 
 /**
  * An distributed AuthenticationStore based on rediscala async client (using play2-rediscala plugin)
+ * For each connected user, a redis key value entry is added.
+ * The entry is dropped during logout.
  */
 abstract class RedisAuthenticatorStore[A <: Authenticator[_]] extends AuthenticatorStore[A] with LogUtils {
   val logger: Logger = Logger("application.RedisAuthenticatorStore")
