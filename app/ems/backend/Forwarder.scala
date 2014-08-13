@@ -1,6 +1,8 @@
 package ems.backend
 
 
+import ems.backend.utils.LogUtils
+
 import scala.concurrent.duration._
 import scala.concurrent.Future
 
@@ -29,7 +31,7 @@ object Forwarder {
 /**
  * Handles forwarding logic
  */
-class Forwarder extends Actor {
+class Forwarder extends Actor with LogUtils {
 
   val sendToMailgunSleep = current.configuration.getInt("forwarder.mailgun.sleep").getOrElse(2)
 
@@ -47,7 +49,7 @@ class Forwarder extends Actor {
 
   def findUserAndUserInfoByEmail(email: String): Future[UserInfo] = {
     for {
-      user <- UserStore.findByEmail(email)
+      user <- UserStore.findByEmail(email) andThen logResult("findByEmail")
       userInfo <- UserInfoStore.findUserInfoByUserId(user.id)
     } yield userInfo
   }

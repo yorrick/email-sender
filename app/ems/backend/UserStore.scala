@@ -31,13 +31,13 @@ object UserStore extends ExternalUserService[User] with MongoDBStore {
     Logger.debug(s"Trying to find a User by providerId $providerId and userId $userId")
 
     val filter = Json.obj("main.providerId" -> providerId, "main.userId" -> userId)
-    findSingle(userCursor(filter))
+    findSingle(userCursor(filter)) map { Some(_) }
   }
 
   def findUserById(id: String): Future[User] = {
     toBSONObjectId(id) flatMap { bsonId =>
       val filter = Json.obj("_id" -> bsonId)
-      findSingle(userCursor(filter)) map { _.get }
+      findSingle(userCursor(filter))
     }
   }
 
@@ -46,14 +46,14 @@ object UserStore extends ExternalUserService[User] with MongoDBStore {
     Logger.debug(s"Trying to find a User by email $email")
 
     val filter = Json.obj("main.email" -> email)
-    findSingle(userCursor(filter)) map { _.get }
+    findSingle(userCursor(filter))
   }
 
   def findByEmailAndProvider(email: String, providerId: String): Future[Option[BasicProfile]] = {
     Logger.debug(s"Trying to find a BasicProfile by providerId $providerId and email $email")
 
     val filter = Json.obj("main.providerId" -> providerId, "main.email" -> email)
-    findSingle(userCursor(filter)) map { basicProfileOption => basicProfileOption map { _.main} }
+    findSingle(userCursor(filter)) map { user => Some(user.main) }
   }
 
   def save(profile: BasicProfile, mode: SaveMode): Future[User] = {
