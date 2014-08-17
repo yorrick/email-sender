@@ -11,6 +11,7 @@ import play.api.data.Forms._
 import play.api.data.validation.Constraints._
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.mvc.{RequestHeader, Flash}
+import play.api.Logger
 
 import ems.models.{PhoneNumber, User}
 import ems.backend.{Mailgun, Twilio, UserInfoStore}
@@ -76,7 +77,9 @@ class AccountController(override implicit val env: RuntimeEnvironment[User]) ext
         val phoneNumberToSave = s"$phonePrefix${phoneNumber.value}"
 
         UserInfoStore.findUserInfoByUserId(user.id) flatMap { userInfo =>
-          if (phoneNumberToSave == userInfo.phoneNumber) {
+          Logger.debug(s"Existing user info $userInfo, phoneNumberToSave $phoneNumberToSave")
+
+          if (phoneNumberToSave != userInfo.phoneNumber) {
             // update the phone number in mongo
             UserInfoStore.savePhoneNumber(user.id, phoneNumberToSave) map { userInfo =>
 
