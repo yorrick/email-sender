@@ -6,6 +6,7 @@ import org.specs2.runner._
 import play.api.test._
 
 import ems.utils.securesocial.WithSecureSocialUtils
+import ems.utils.WithMongoApplication
 
 
 @RunWith(classOf[JUnitRunner])
@@ -16,7 +17,7 @@ class AccountControllerSpec extends PlaySpecification with WithSecureSocialUtils
 
   "Account controller" should {
 
-    "display the account page" in new WithApplication() {
+    "display the account page" in new WithMongoApplication(data) {
       val response = controller.account(FakeRequest().withCookies(cookie))
 
       status(response) must equalTo(OK)
@@ -24,7 +25,7 @@ class AccountControllerSpec extends PlaySpecification with WithSecureSocialUtils
       contentAsString(response) must contain ("paul.watson@foobar.com")
     }
 
-    "Update phone number" in new WithApplication() {
+    "Update phone number" in new WithMongoApplication(data) {
       val request = FakeRequest(POST, "").withFormUrlEncodedBody(
         "phoneNumber" -> "0123456789"
       )
