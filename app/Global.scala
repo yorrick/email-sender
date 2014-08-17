@@ -1,16 +1,19 @@
 import java.io.File
-import ems.backend.Redis
+
 
 import scala.sys.SystemProperties
 
 import com.typesafe.config.ConfigFactory
 import play.api._
+import scaldi.play.ScaldiSupport
 
 import ems.models.User
+import ems.backend.Redis
 import ems.backend.utils.{EMSRuntimeEnvironment, WithControllerUtils}
+import ems.modules.WebModule
 
 
-object Global extends GlobalSettings with WithControllerUtils {
+object Global extends GlobalSettings with WithControllerUtils with ScaldiSupport {
 
   val CONFIG_FILE = "config.file"
 
@@ -41,8 +44,9 @@ object Global extends GlobalSettings with WithControllerUtils {
     super.onLoadConfig(loadedConfig ++ overrideConfig, path, classloader, mode)
   }
 
-
   override def onStart(app: Application) {
+    super.onStart(app)
+
     Redis.openConnections
     Logger.info("Application has started")
   }
@@ -50,6 +54,8 @@ object Global extends GlobalSettings with WithControllerUtils {
   override def onStop(app: Application) {
     Redis.closeConnections
     Logger.info("Application shutdown...")
+
+    super.onStop(app)
   }
 
   /**
@@ -66,4 +72,9 @@ object Global extends GlobalSettings with WithControllerUtils {
     getControllerInstance[A, User](EMSRuntimeEnvironment.instance)(controllerClass)
       .getOrElse(super.getControllerInstance(controllerClass))
 
+  /**
+   * Defines scaldi modules
+   * @return
+   */
+  override def applicationModule = new WebModule
 }

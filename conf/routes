@@ -30,3 +30,6 @@ GET     /secure-social-assets/*file     securesocial.controllers.Assets.at(path 
 
 # Javascript routes
 GET         /javascriptRoutes           ems.controllers.JavascriptController.javascriptRoutes()
+
+# test
+GET        /test                            @ems.controllers.InjectedApplication.index

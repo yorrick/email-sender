@@ -27,7 +27,10 @@ libraryDependencies ++= Seq(
   "com.github.nscala-time" %% "nscala-time" % "1.2.0",
   "fr.njin" %% "play2-rediscala" % "2.3.0.0" exclude("org.scala-stm", "scala-stm_2.10.0"),
   "ws.securesocial" %% "securesocial" % "2.3.1.0",
-  "com.typesafe.akka" %% "akka-testkit" % "2.3.3" % "test"
+  "com.typesafe.akka" %% "akka-testkit" % "2.3.3" % "test",
+  "org.scaldi" %% "scaldi" % "0.3.2",
+  "org.scaldi" %% "scaldi-play" % "0.3.3",
+  "org.scaldi" %% "scaldi-akka" % "0.3.3"
 )
 
 libraryDependencies += ws
