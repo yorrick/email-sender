@@ -6,7 +6,7 @@ version := "1.0-SNAPSHOT"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
-scalaVersion := Option(System.getProperty("scala.version")).getOrElse("2.10.4")
+scalaVersion := "2.11.0"
 
 scalacOptions ++= Seq("-feature", "-deprecation")
 
@@ -25,12 +25,12 @@ libraryDependencies ++= Seq(
   // TODO do not depend on SNAPSHOT!
   "org.reactivemongo" %% "play2-reactivemongo" % "0.10.5.akka23-SNAPSHOT",
   "com.github.nscala-time" %% "nscala-time" % "1.2.0",
-  "fr.njin" %% "play2-rediscala" % "2.3.0.0" exclude("org.scala-stm", "scala-stm_2.10.0"),
-  "ws.securesocial" %% "securesocial" % "2.3.1.0",
+  "fr.njin" %% "play2-rediscala" % "2.3.1.0" exclude("org.scala-stm", "scala-stm_2.10.0"),
+  "ws.securesocial" %% "securesocial" % "2.3.1.1",
   "com.typesafe.akka" %% "akka-testkit" % "2.3.3" % "test",
-  "org.scaldi" %% "scaldi" % "0.3.2",
-  "org.scaldi" %% "scaldi-play" % "0.3.3",
-  "org.scaldi" %% "scaldi-akka" % "0.3.3"
+  "org.scaldi" %% "scaldi" % "0.4",
+  "org.scaldi" %% "scaldi-play" % "0.4.1",
+  "org.scaldi" %% "scaldi-akka" % "0.4"
 )
 
 libraryDependencies += ws

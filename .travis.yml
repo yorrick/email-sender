@@ -1,7 +1,7 @@
 language: scala
 
 scala:
-   - "2.10.4"
+   - "2.11.0"
 
 # specific configuration for continuous integration
 script: sbt '; set javaOptions += "-Dconfig.file=conf/application.test-ci.conf" ; test'
