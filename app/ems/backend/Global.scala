@@ -1,15 +1,14 @@
+package ems.backend
+
 import java.io.File
-
-
 import scala.sys.SystemProperties
 
 import com.typesafe.config.ConfigFactory
 import play.api._
-import scaldi.play.ScaldiSupport
+import scaldi.play.{ControllerInjector, ScaldiSupport}
 
-import ems.models.User
-import ems.backend.Redis
 import ems.backend.utils.{EMSRuntimeEnvironment, WithControllerUtils}
+import ems.models.User
 import ems.modules.WebModule
 
 
@@ -69,12 +68,16 @@ object Global extends GlobalSettings with WithControllerUtils with ScaldiSupport
    * @return
    */
   override def getControllerInstance[A](controllerClass: Class[A]): A =
-    getControllerInstance[A, User](EMSRuntimeEnvironment.instance)(controllerClass)
-      .getOrElse(super.getControllerInstance(controllerClass))
+    if (controllerClass == classOf[Application]) {
+      super.getControllerInstance(controllerClass)
+    } else {
+      getControllerInstance[A, User](EMSRuntimeEnvironment.instance)(controllerClass)
+        .getOrElse(super.getControllerInstance(controllerClass))
+    }
 
   /**
    * Defines scaldi modules
    * @return
    */
-  override def applicationModule = new WebModule
+  override def applicationModule = new WebModule :: new ControllerInjector
 }

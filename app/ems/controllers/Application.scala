@@ -3,16 +3,19 @@ package ems.controllers
 import scaldi.{Injectable, Injector}
 import securesocial.core._
 import securesocial.core.SecureSocial
+import play.api.Logger
 
 import ems.models.User
 
 
-class Application(override implicit val env: RuntimeEnvironment[User]) extends SecureSocial[User] {
-//class Application(implicit inj: Injector) extends SecureSocial[User] with Injectable {
+class Application(implicit inj: Injector) extends SecureSocial[User] with Injectable {
 
-//  override implicit val env = inject [RuntimeEnvironment[User]]
+  override implicit val env = inject [RuntimeEnvironment[User]]
+  val message = inject [String] (identified by "my-message")
 
   def index = UserAwareAction { implicit request =>
+    Logger.debug(s"Message: $message")
+
     implicit val user = request.user
     Ok(ems.views.html.index())
   }
