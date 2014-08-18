@@ -3,7 +3,7 @@ package ems.modules
 import scaldi.Module
 import scaldi.play.condition._
 import securesocial.core.RuntimeEnvironment
-import securesocial.core.authenticator.{IdGenerator, CookieAuthenticatorBuilder}
+import securesocial.core.authenticator.{CookieAuthenticator, AuthenticatorStore, IdGenerator, CookieAuthenticatorBuilder}
 import securesocial.core.services.{AuthenticatorService, UserService}
 
 import ems.backend.utils.EMSRuntimeEnvironment
@@ -22,5 +22,7 @@ class WebModule extends Module {
   bind[AuthenticatorService[User]] when (inDevMode or inProdMode) to new AuthenticatorService(
     new CookieAuthenticatorBuilder[User](new RedisCookieAuthenticatorStore(), new IdGenerator.Default())
   )
+
+  bind[AuthenticatorStore[CookieAuthenticator[User]]] to new RedisCookieAuthenticatorStore()
 
 }

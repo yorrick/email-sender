@@ -19,12 +19,12 @@ trait WithSecureSocialUtils {
    */
   lazy val cookie = Cookie("emailsenderid", "")
 
-  object TestGlobal extends WithGlobal {
+  lazy val testGlobal = new WithGlobal {
     override def applicationModule = new TestModule :: new WebModule :: new ControllerInjector
   }
 
   /**
    * An application with an always logged in user
    */
-  def app = FakeApplication(withGlobal = Some(TestGlobal))
+  def app = FakeApplication(withGlobal = Some(testGlobal))
 }

@@ -1,6 +1,8 @@
 package ems.backend
 
 
+import scaldi.play.ScaldiSupport
+
 import scala.concurrent.duration._
 
 import org.junit.runner.RunWith
@@ -22,7 +24,8 @@ class RedisCookieAuthenticationStoreSpec extends PlaySpecification with WithSecu
 
   "Authentication store" should {
     "Return Some when authenticator does exist" in new WithRedisData(redisData) {
-//      app.global.asInstanceOf[ems.backend.Global].
+      implicit val injector = app.global.asInstanceOf[ScaldiSupport].injector
+
       val result = await(store.find(cookieValue))
       result should beSome
     }
