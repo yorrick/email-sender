@@ -3,6 +3,7 @@ package ems.views.auth
 
 import ems.backend.Global
 import ems.models.User
+import ems.modules.WebModule
 import org.junit.runner.RunWith
 import org.specs2.runner._
 import play.api.test._
@@ -15,7 +16,7 @@ import securesocial.core.RuntimeEnvironment
 class LoginSpec extends PlaySpecification with Injectable {
   sequential
 
-  implicit val injector = Global.applicationModule
+  implicit val injector = new WebModule
 
   "Login view" should {
 
