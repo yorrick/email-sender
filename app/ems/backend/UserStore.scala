@@ -12,7 +12,7 @@ import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json.{JsObject, Json}
 
 import ems.models.{UserInfo, User}
-import ems.backend.utils.LogUtils
+import ems.backend.utils.{ExternalUserService, LogUtils}
 
 import scala.util.Success
 

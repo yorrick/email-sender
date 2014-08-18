@@ -1,13 +1,11 @@
-package ems.backend
-
-
-import scala.concurrent.Future
-
-import securesocial.core.{BasicProfile, PasswordInfo}
-import securesocial.core.providers.MailToken
-import securesocial.core.services.UserService
+package ems.backend.utils
 
 import ems.models.User
+import securesocial.core.providers.MailToken
+import securesocial.core.services.UserService
+import securesocial.core.{BasicProfile, PasswordInfo}
+
+import scala.concurrent.Future
 
 
 /**

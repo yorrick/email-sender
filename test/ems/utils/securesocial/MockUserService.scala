@@ -1,6 +1,7 @@
 package ems.utils.securesocial
 
 
+import ems.backend.utils.ExternalUserService
 import securesocial.core.services.SaveMode
 import securesocial.core.BasicProfile
 
@@ -8,7 +9,6 @@ import scala.concurrent.Future
 
 
 import ems.models.User
-import ems.backend.ExternalUserService
 
 
 /**

@@ -1,20 +1,17 @@
-package ems.backend
+package ems.backend.utils
 
-
-import scala.concurrent.Future
-import scala.reflect.ClassTag
-
-import org.joda.time.DateTime
 import akka.util.ByteString
-import redis.ByteStringFormatter
-import securesocial.core.authenticator.{CookieAuthenticator, Authenticator, AuthenticatorStore}
-
+import ems.backend.Redis
+import ems.models.User
+import org.joda.time.DateTime
 import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json._
+import redis.ByteStringFormatter
+import securesocial.core.authenticator.{Authenticator, AuthenticatorStore, CookieAuthenticator}
 
-import ems.models.User
-import ems.backend.utils.LogUtils
+import scala.concurrent.Future
+import scala.reflect.ClassTag
 
 
 /**
@@ -48,7 +45,7 @@ abstract class RedisAuthenticatorStore[A <: Authenticator[_]] extends Authentica
    * @return the saved authenticator
    */
   override def save(authenticator: A, timeoutInSeconds: Int): Future[A] = {
-    Redis.instance.redisClient.set(authenticator.id, authenticator) andThen logResult(s"REDIS: save authenticator $authenticator") map { _ => authenticator}
+    Redis.instance.redisClient.set(authenticator.id, authenticator) andThen logResult(s"REDIS: save authenticator: $authenticator") map { _ => authenticator}
   }
 
   /**
@@ -98,8 +95,6 @@ class CookieAuthenticatorFormatter(val store: AuthenticatorStore[CookieAuthentic
       scAuth.id, scAuth.user, scAuth.expirationDate, scAuth.lastUsed, scAuth.creationDate, store
     )
   }
-
-  import ems.models.User._
   implicit val format: Format[SerializableCookieAuthenticator] = Json.format[SerializableCookieAuthenticator]
 
   def serialize(cAuth: CookieAuthenticator[User]): ByteString = {
