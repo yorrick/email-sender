@@ -22,7 +22,7 @@ class TwilioControllerSpec extends PlaySpecification with WithMongoTestData {
         "Body" -> "hello toto"
       )
 
-      val postResponse = Global.getControllerInstance(classOf[TwilioController]).receive(request)
+      val postResponse = app.global.getControllerInstance(classOf[TwilioController]).receive(request)
       status(postResponse) must equalTo(OK)
       println(contentAsString(postResponse))
       contentAsString(postResponse) must beEqualTo("")
@@ -35,7 +35,7 @@ class TwilioControllerSpec extends PlaySpecification with WithMongoTestData {
         "BodyXXX" -> "hello toto"
       )
 
-      val postResponse = Global.getControllerInstance(classOf[TwilioController]).receive(request)
+      val postResponse = app.global.getControllerInstance(classOf[TwilioController]).receive(request)
       status(postResponse) must equalTo(BAD_REQUEST)
     }
 

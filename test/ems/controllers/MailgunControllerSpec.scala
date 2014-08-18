@@ -39,7 +39,7 @@ class MailgunControllerSpec extends PlaySpecification with WithMongoTestData {
         "event" -> DELIVERED
       )
 
-      val postResponse = Global.getControllerInstance(classOf[MailgunController]).event(request)
+      val postResponse = app.global.getControllerInstance(classOf[MailgunController]).event(request)
       status(postResponse) must equalTo(OK)
       contentAsString(postResponse) must equalTo("")
     }
@@ -52,18 +52,18 @@ class MailgunControllerSpec extends PlaySpecification with WithMongoTestData {
         "body-plain" -> rawEmailContent
       )
 
-      val postResponse = Global.getControllerInstance(classOf[MailgunController]).receive(request)
+      val postResponse = app.global.getControllerInstance(classOf[MailgunController]).receive(request)
       status(postResponse) must equalTo(OK)
       contentAsString(postResponse) must equalTo("")
     }
 
     "Extract email" in new WithMongoApplication(data) {
-      val result = Global.getControllerInstance(classOf[MailgunController]).extractEmail("Somebody <somebody@example.com>")
+      val result = app.global.getControllerInstance(classOf[MailgunController]).extractEmail("Somebody <somebody@example.com>")
       result must beSome.which(_ == "somebody@example.com")
     }
 
     "Extract content properly" in new WithMongoApplication(data) {
-      val result = Global.getControllerInstance(classOf[MailgunController]).extractContent("Re: Sms forwarding", rawEmailContent)
+      val result = app.global.getControllerInstance(classOf[MailgunController]).extractContent("Re: Sms forwarding", rawEmailContent)
       result must beEqualTo("hello from email")
 
     }
