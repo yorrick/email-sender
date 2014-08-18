@@ -11,12 +11,15 @@ import scaldi.{Injector, Injectable}
 
 import ems.controllers.EMSViewTemplates
 import ems.models.User
+import ems.controllers.auth.EMSRoutesService
 
 
 /**
  * The runtime environment for this sample app.
  */
 class EMSRuntimeEnvironment(implicit inj: Injector) extends RuntimeEnvironment.Default[User] with Injectable {
+  override lazy val routes = new EMSRoutesService()
+
   override lazy val userService = inject[UserService[User]]
   override lazy val authenticatorService = inject[AuthenticatorService[User]]
 

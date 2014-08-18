@@ -1,7 +1,10 @@
 package ems.backend
 
 
+import ems.models.User
+import scaldi.Injectable
 import scaldi.play.ScaldiSupport
+import securesocial.core.authenticator.{AuthenticatorStore, CookieAuthenticator}
 
 import scala.concurrent.duration._
 
@@ -17,7 +20,8 @@ import ems.utils.securesocial.WithSecureSocialUtils
 
 @RunWith(classOf[JUnitRunner])
 class RedisCookieAuthenticationStoreSpec extends PlaySpecification with WithSecureSocialUtils
-      with WithRedisTestData with WithMongoTestData {
+      with WithRedisTestData with WithMongoTestData with Injectable {
+
   sequential
 
   implicit lazy val timeout: Timeout = 5.second
@@ -25,24 +29,34 @@ class RedisCookieAuthenticationStoreSpec extends PlaySpecification with WithSecu
   "Authentication store" should {
     "Return Some when authenticator does exist" in new WithRedisData(redisData) {
       implicit val injector = app.global.asInstanceOf[ScaldiSupport].injector
+      val authStore = inject[AuthenticatorStore[CookieAuthenticator[User]]]
 
-      val result = await(store.find(cookieValue))
+      val result = await(authStore.find(cookieValue))
       result should beSome
     }
 
     "Return None when authenticator does not exist" in new WithRedisData(redisData) {
-      val result = await(store.find("blahblah"))
+      implicit val injector = app.global.asInstanceOf[ScaldiSupport].injector
+      val authStore = inject[AuthenticatorStore[CookieAuthenticator[User]]]
+
+      val result = await(authStore.find("blahblah"))
       result should beNone
     }
 
     "Save authenticator" in new WithRedisData(redisData) {
+      implicit val injector = app.global.asInstanceOf[ScaldiSupport].injector
+      val authStore = inject[AuthenticatorStore[CookieAuthenticator[User]]]
+
       val newId = "67890"
-      val result = await(store.save(authenticator.copy(id = newId), 1))
+      val result = await(authStore.save(authenticator.copy(id = newId), 1))
       result.id must beEqualTo(newId)
     }
 
     "Delete authenticator" in new WithRedisData(redisData) {
-      await(store.delete(cookieValue))
+      implicit val injector = app.global.asInstanceOf[ScaldiSupport].injector
+      val authStore = inject[AuthenticatorStore[CookieAuthenticator[User]]]
+
+      await(authStore.delete(cookieValue))
     }
 
   }

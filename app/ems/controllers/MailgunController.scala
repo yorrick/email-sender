@@ -1,7 +1,7 @@
 package ems.controllers
 
-import akka.actor._
-import ems.backend.{ForwardingStore, Mailgun}
+import akka.actor.ActorSystem
+import ems.backend.{Forwarder, ForwardingStore, Mailgun}
 import ems.models.{Received, Sent, Failed, Forwarding}
 import org.joda.time.DateTime
 
@@ -11,16 +11,19 @@ import play.api.data._
 import play.api.data.Forms._
 import play.api.mvc.Result
 
-import ems.backend.Forwarder.forwarder
 import ems.models
-import scaldi.{Injectable, Injector}
+import scaldi.Injector
+import scaldi.akka.AkkaInjectable
 
 
 /**
  * Handles all requests comming from mailgun
  * TODO secure this controller to ensure mailgun is making the calls!
  */
-class MailgunController(implicit inj: Injector) extends Controller with Injectable {
+class MailgunController(implicit inj: Injector) extends Controller with AkkaInjectable {
+
+  implicit val system = inject[ActorSystem]
+  val forwarder = injectActorRef[Forwarder]
 
   /**
    * Object used to build forms to validate Mailgun POST requests for email deliveries

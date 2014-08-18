@@ -2,6 +2,8 @@ package ems.backend
 
 
 import ems.backend.utils.LogUtils
+import scaldi.Injector
+import scaldi.akka.AkkaInjectable
 
 import scala.concurrent.duration._
 import scala.concurrent.Future
@@ -20,18 +22,18 @@ import ems.backend.Twilio._
 import ems.backend.WebsocketUpdatesMaster.notifyWebsockets
 
 
-/**
- * Instance of the actor that handle forwarding routing
- */
-object Forwarder {
-  val forwarder = Akka.system.actorOf(Props[Forwarder], name="forwarder")
-}
+///**
+// * Instance of the actor that handle forwarding routing
+// */
+//object Forwarder {
+//  val forwarder = Akka.system.actorOf(Props[Forwarder], name="forwarder")
+//}
 
 
 /**
  * Handles forwarding logic
  */
-class Forwarder extends Actor with LogUtils {
+class Forwarder(implicit inj: Injector) extends Actor with LogUtils with AkkaInjectable {
 
   val sendToMailgunSleep = current.configuration.getInt("forwarder.mailgun.sleep").getOrElse(2)
 

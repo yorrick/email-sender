@@ -1,7 +1,7 @@
 package ems.controllers
 
 import akka.actor._
-import ems.backend.ForwardingStore
+import ems.backend.{Forwarder, ForwardingStore}
 import org.joda.time.DateTime
 
 import play.api.mvc.{Action, Controller}
@@ -10,8 +10,8 @@ import play.api.data._
 import play.api.data.Forms._
 import play.api.mvc.Result
 
-import ems.backend.Forwarder.forwarder
 import ems.models.{Received, Forwarding}
+import scaldi.akka.AkkaInjectable
 import scaldi.{Injector, Injectable}
 
 
@@ -19,7 +19,10 @@ import scaldi.{Injector, Injectable}
  * Handles all requests comming from twilio
  * TODO secure this controller to ensure Twilio is making the calls!
  */
-class TwilioController(implicit inj: Injector) extends Controller with Injectable {
+class TwilioController(implicit inj: Injector) extends Controller with AkkaInjectable {
+
+  implicit val system = inject[ActorSystem]
+  val forwarder = injectActorRef[Forwarder]
 
   /**
    * Object used to build forms to validate Twilio POST requests

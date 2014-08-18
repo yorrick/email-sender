@@ -16,9 +16,9 @@ GET         /forwarding/updates.socket          @ems.controllers.ForwardingContr
 GET         /forwarding/updates.js              @ems.controllers.JavascriptController.updatesJs()
 
 # Auth pages
-GET         /login                      @securesocial.controllers.LoginPage.login
-GET         /logout                     @securesocial.controllers.LoginPage.logout
-GET         /authenticate/:provider     @securesocial.controllers.ProviderController.authenticate(provider, redirectTo: Option[String])
+GET         /login                      @ems.controllers.auth.LoginController.login
+GET         /logout                     @ems.controllers.auth.LoginController.logout
+GET         /authenticate/:provider     @ems.controllers.auth.ProviderController.authenticate(provider, redirectTo: Option[String])
 
 # Account page
 GET         /account                    @ems.controllers.AccountController.account

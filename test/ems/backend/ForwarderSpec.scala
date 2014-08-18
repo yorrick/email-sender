@@ -1,5 +1,8 @@
 package ems.backend
 
+import scaldi.akka.AkkaInjectable
+import scaldi.play.ScaldiSupport
+
 import scala.concurrent.duration._
 
 
@@ -7,7 +10,6 @@ import play.api.mvc.{Action, Handler}
 import play.api.mvc.Results._
 import akka.actor.ActorSystem
 import akka.pattern.ask
-import akka.testkit.TestActorRef
 import akka.util.Timeout
 import play.api.test.{FakeApplication, PlaySpecification}
 
@@ -15,7 +17,7 @@ import ems.models.{Sending, Forwarding}
 import ems.utils.{WithMongoServer, WithMongoTestData}
 
 
-class ForwarderSpec extends PlaySpecification with WithMongoTestData {
+class ForwarderSpec extends PlaySpecification with WithMongoTestData with AkkaInjectable {
 
   implicit val system = ActorSystem("TestActorSystem")
   implicit val timeout = Timeout(10.second)
@@ -39,7 +41,10 @@ class ForwarderSpec extends PlaySpecification with WithMongoTestData {
   "Forwarder" should {
 
     "Forward sms to emails" in new WithMongoServer(data, app) {
-      val actorRef = TestActorRef(new Forwarder)
+      implicit val injector = app.global.asInstanceOf[ScaldiSupport].injector
+      val actorRef = injectActorRef[Forwarder]
+
+//      val actorRef = TestActorRef(new Forwarder)
       val forwarding = smsToEmailForwarding.copy(_id = generateId)
 
       val result = await((actorRef ? forwarding).mapTo[Forwarding])
