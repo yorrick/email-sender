@@ -31,13 +31,13 @@ class RedisCookieAuthenticationStoreSpec extends PlaySpecification with WithSecu
       result should beNone
     }
 
-    "Save authenticator" in new WithApplication() {
+    "Save authenticator" in new WithRedisData(redisData) {
       val newId = "67890"
       val result = await(store.save(authenticator.copy(id = newId), 1))
       result.id must beEqualTo(newId)
     }
 
-    "Delete authenticator" in new WithApplication() {
+    "Delete authenticator" in new WithRedisData(redisData) {
       await(store.delete(cookieValue))
     }
 

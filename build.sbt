@@ -8,7 +8,7 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
 scalaVersion := "2.11.0"
 
-scalacOptions ++= Seq("-feature", "-deprecation")
+parallelExecution in Test := false
 
 resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
@@ -60,5 +60,6 @@ net.virtualvoid.sbt.graph.Plugin.graphSettings
 
 scalacOptions ++= Seq(
   "-feature", // Shows warnings in detail in the stdout
-  "-language:reflectiveCalls"
+  "-language:reflectiveCalls",
+  "-deprecation"
 )
