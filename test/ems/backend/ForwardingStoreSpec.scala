@@ -1,7 +1,6 @@
 package ems.backend
 
 
-import com.github.nscala_time.time.Imports._
 import org.junit.runner.RunWith
 import org.specs2.runner._
 import play.api.test._

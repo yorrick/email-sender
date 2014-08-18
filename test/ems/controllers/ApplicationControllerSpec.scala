@@ -7,7 +7,6 @@ import play.api.test._
 
 import ems.utils.WithMongoTestData
 import ems.utils.securesocial.WithSecureSocialUtils
-import ems.backend.Global
 
 
 @RunWith(classOf[JUnitRunner])

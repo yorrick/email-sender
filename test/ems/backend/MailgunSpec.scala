@@ -1,6 +1,5 @@
 package ems.backend
 
-import ems.models.Forwarding
 import org.junit.runner.RunWith
 import org.specs2.runner._
 import play.api.mvc.{Handler, Action}

@@ -1,7 +1,6 @@
 package ems.controllers
 
 
-import ems.backend.Global
 import org.junit.runner.RunWith
 import org.specs2.runner._
 import play.api.test._

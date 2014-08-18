@@ -27,6 +27,7 @@ object Redis {
    * Opens connections to redis
    */
   def openConnections {
+    Logger.info("Opening redis connections")
     instanceOption = Some(new Redis())
   }
 
@@ -34,6 +35,7 @@ object Redis {
    * Blocks until connections are closed
    */
   def closeConnections {
+    Logger.info("Closing redis connections")
     instanceOption map { _.closeConnections() }
   }
 }

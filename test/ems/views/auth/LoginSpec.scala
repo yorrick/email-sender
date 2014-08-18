@@ -1,7 +1,6 @@
 package ems.views.auth
 
 
-import ems.backend.Global
 import ems.models.User
 import ems.modules.WebModule
 import org.junit.runner.RunWith
