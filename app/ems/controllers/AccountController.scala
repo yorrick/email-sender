@@ -79,7 +79,7 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
         val phoneNumberToSave = s"$phonePrefix${phoneNumber.value}"
 
         UserInfoStore.findUserInfoByUserId(user.id) flatMap { userInfo =>
-          if (phoneNumberToSave == userInfo.phoneNumber) {
+          if (phoneNumberToSave != userInfo.phoneNumber) {
             // update the phone number in mongo
             UserInfoStore.savePhoneNumber(user.id, phoneNumberToSave) map { userInfo =>
 
