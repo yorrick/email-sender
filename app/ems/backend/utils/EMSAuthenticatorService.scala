@@ -16,19 +16,12 @@ import scala.concurrent.{ExecutionContext, Future}
  */
 class EMSAuthenticatorService(implicit inj: Injector) extends AuthenticatorService[User] with Injectable {
 
-//  val builders = Seq(new CookieAuthenticatorBuilder[User](store, new IdGenerator.Default()))
   val builders = Seq(inject[EMSCookieAuthenticatorBuilder])
 
   override val asMap = builders.map { builder => builder.id -> builder }.toMap
 
-  override def find(id: String): Option[AuthenticatorBuilder[User]] = {
-    println(s"===========================Trying to find auth builder $id")
-    super.find(id)
-  }
-
   override def fromRequest(implicit request: RequestHeader): Future[Option[Authenticator[User]]] = {
     import ExecutionContext.Implicits.global
-    println(s"========================= Building authenticator fromRequest: ${request.cookies}, ${asMap}")
 
     def iterateIt(seq: Seq[AuthenticatorBuilder[User]]): Future[Option[Authenticator[User]]] = {
       if ( seq.isEmpty )

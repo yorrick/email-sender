@@ -15,7 +15,6 @@ import ems.backend.{Forwarder, UserStore}
 
 
 class WebModule extends Module {
-//  bind identifiedBy "my-message" to "web module message"
 
   bind[RuntimeEnvironment[User]] to new EMSRuntimeEnvironment
 
