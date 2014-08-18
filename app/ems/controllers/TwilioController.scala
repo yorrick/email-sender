@@ -12,13 +12,14 @@ import play.api.mvc.Result
 
 import ems.backend.Forwarder.forwarder
 import ems.models.{Received, Forwarding}
+import scaldi.{Injector, Injectable}
 
 
 /**
  * Handles all requests comming from twilio
  * TODO secure this controller to ensure Twilio is making the calls!
  */
-object TwilioController extends Controller {
+class TwilioController(implicit inj: Injector) extends Controller with Injectable {
 
   /**
    * Object used to build forms to validate Twilio POST requests

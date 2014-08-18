@@ -7,12 +7,13 @@ import com.typesafe.config.ConfigFactory
 import play.api._
 import scaldi.play.{ControllerInjector, ScaldiSupport}
 
-import ems.backend.utils.{EMSRuntimeEnvironment, WithControllerUtils}
-import ems.models.User
 import ems.modules.WebModule
 
 
-object Global extends GlobalSettings with WithControllerUtils with ScaldiSupport {
+object Global extends WithGlobal
+
+
+trait WithGlobal extends GlobalSettings with ScaldiSupport {
 
   val CONFIG_FILE = "config.file"
 
@@ -56,24 +57,6 @@ object Global extends GlobalSettings with WithControllerUtils with ScaldiSupport
 
     super.onStop(app)
   }
-
-  /**
-   * An implementation that checks if the controller expects a RuntimeEnvironment and
-   * passes the instance to it if required.
-   *
-   * This can be replaced by any DI framework to inject it differently.
-   *
-   * @param controllerClass
-   * @tparam A
-   * @return
-   */
-  override def getControllerInstance[A](controllerClass: Class[A]): A =
-    if (controllerClass == classOf[Application]) {
-      super.getControllerInstance(controllerClass)
-    } else {
-      getControllerInstance[A, User](EMSRuntimeEnvironment.instance)(controllerClass)
-        .getOrElse(super.getControllerInstance(controllerClass))
-    }
 
   /**
    * Defines scaldi modules

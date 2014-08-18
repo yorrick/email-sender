@@ -13,13 +13,14 @@ import play.api.mvc.Result
 
 import ems.backend.Forwarder.forwarder
 import ems.models
+import scaldi.{Injectable, Injector}
 
 
 /**
  * Handles all requests comming from mailgun
  * TODO secure this controller to ensure mailgun is making the calls!
  */
-object MailgunController extends Controller {
+class MailgunController(implicit inj: Injector) extends Controller with Injectable {
 
   /**
    * Object used to build forms to validate Mailgun POST requests for email deliveries

@@ -2,6 +2,7 @@ package ems.controllers
 
 
 import ems.backend.UserInfoStore.UserInfoStoreException
+import scaldi.{Injectable, Injector}
 
 import scala.concurrent.Future
 
@@ -28,8 +29,10 @@ object AccountController {
 /**
  * Handles authentication custom views
  */
-class AccountController(override implicit val env: RuntimeEnvironment[User]) extends SecureSocial[User] {
+class AccountController(implicit inj: Injector) extends SecureSocial[User] with Injectable {
   import AccountController._
+
+  override implicit val env = inject [RuntimeEnvironment[User]]
 
   val form = Form(mapping(
     "phoneNumber" -> (text verifying pattern(phoneRegex, "10 digits", "The phone number must have 10 digits"))

@@ -4,7 +4,6 @@ package ems.controllers
 import org.junit.runner.RunWith
 import org.specs2.runner._
 import play.api.test._
-import scaldi.Injectable
 
 import ems.utils.WithMongoTestData
 import ems.utils.securesocial.WithSecureSocialUtils
@@ -12,13 +11,9 @@ import ems.backend.Global
 
 
 @RunWith(classOf[JUnitRunner])
-class ApplicationControllerSpec extends PlaySpecification with WithSecureSocialUtils
-      with WithMongoTestData with Injectable {
+class ApplicationControllerSpec extends PlaySpecification with WithSecureSocialUtils with WithMongoTestData {
 
   sequential
-
-//  val applicationController = createController(classOf[Application])
-//  val applicationController: Application = inject [Application]
 
   "Main module" should {
 
@@ -27,12 +22,13 @@ class ApplicationControllerSpec extends PlaySpecification with WithSecureSocialU
     }
 
     "render the index page" in new WithApplication {
-      val applicationController = Global.getControllerInstance(classOf[Application])
-      val home = applicationController.index(FakeRequest().withCookies(cookie))
+      val controller = Global.getControllerInstance(classOf[Application])
+      val home = controller.index(FakeRequest().withCookies(cookie))
 
       status(home) must equalTo(OK)
       contentType(home) must beSome.which(_ == "text/html")
       contentAsString(home) must contain("Welcome")
+      contentAsString(home) must contain("Login")
     }
   }
 

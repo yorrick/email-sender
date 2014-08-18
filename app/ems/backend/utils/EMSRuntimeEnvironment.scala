@@ -5,11 +5,10 @@ import scala.collection.immutable.ListMap
 
 import securesocial.controllers.ViewTemplates
 import securesocial.core.RuntimeEnvironment
-import securesocial.core.authenticator.CookieAuthenticatorBuilder
 import securesocial.core.providers.{GoogleProvider, FacebookProvider}
-import securesocial.core.services.AuthenticatorService
+import securesocial.core.services.{UserService, AuthenticatorService}
+import scaldi.{Injector, Injectable}
 
-import ems.backend.{MyEventListener, RedisCookieAuthenticatorStore, UserStore}
 import ems.controllers.EMSViewTemplates
 import ems.models.User
 
@@ -17,15 +16,9 @@ import ems.models.User
 /**
  * The runtime environment for this sample app.
  */
-class EMSRuntimeEnvironment extends RuntimeEnvironment.Default[User] {
-  override lazy val userService = UserStore
-
-  // use AuthenticationStore based on redis (distributed)
-  override lazy val authenticatorService = new AuthenticatorService(
-    new CookieAuthenticatorBuilder[User](new RedisCookieAuthenticatorStore(), idGenerator)
-  )
-
-  override lazy val eventListeners = List(new MyEventListener())
+class EMSRuntimeEnvironment(implicit inj: Injector) extends RuntimeEnvironment.Default[User] with Injectable {
+  override lazy val userService = inject[UserService[User]]
+  override lazy val authenticatorService = inject[AuthenticatorService[User]]
 
   // override authentication views
   override lazy val viewTemplates: ViewTemplates = new EMSViewTemplates(this)
@@ -34,8 +27,4 @@ class EMSRuntimeEnvironment extends RuntimeEnvironment.Default[User] {
     include(new GoogleProvider(routes, cacheService, oauth2ClientFor(GoogleProvider.Google))),
     include(new FacebookProvider(routes, cacheService, oauth2ClientFor(FacebookProvider.Facebook)))
   )
-}
-
-object EMSRuntimeEnvironment {
-  val instance = new EMSRuntimeEnvironment()
 }

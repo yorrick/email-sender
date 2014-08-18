@@ -16,7 +16,7 @@ import ems.models.User
 
 
 @RunWith(classOf[JUnitRunner])
-class UserStoreSpec extends PlaySpecification with WithSecureSocialUtils {
+class UserStoreSpec extends PlaySpecification with WithSecureSocialUtils with WithMongoTestData {
   sequential
 
   lazy val service = UserStore

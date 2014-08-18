@@ -9,12 +9,13 @@ import akka.util.Timeout._
 import akka.util.Timeout
 import play.api.test._
 
-import ems.utils.{WithRedisTestData, WithRedisData}
+import ems.utils.{WithMongoTestData, WithRedisTestData, WithRedisData}
 import ems.utils.securesocial.WithSecureSocialUtils
 
 
 @RunWith(classOf[JUnitRunner])
-class RedisCookieAuthenticationStoreSpec extends PlaySpecification with WithSecureSocialUtils with WithRedisTestData {
+class RedisCookieAuthenticationStoreSpec extends PlaySpecification with WithSecureSocialUtils
+      with WithRedisTestData with WithMongoTestData {
   sequential
 
   implicit lazy val timeout: Timeout = 5.second

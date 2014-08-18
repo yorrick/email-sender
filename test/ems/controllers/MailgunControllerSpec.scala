@@ -1,6 +1,7 @@
 package ems.controllers
 
 
+import ems.backend.Global
 import org.junit.runner.RunWith
 import org.specs2.runner._
 import play.api.test._
@@ -37,7 +38,7 @@ class MailgunControllerSpec extends PlaySpecification with WithMongoTestData {
         "event" -> DELIVERED
       )
 
-      val postResponse = ems.controllers.MailgunController.event(request)
+      val postResponse = Global.getControllerInstance(classOf[MailgunController]).event(request)
       status(postResponse) must equalTo(OK)
       contentAsString(postResponse) must equalTo("")
     }
@@ -50,17 +51,17 @@ class MailgunControllerSpec extends PlaySpecification with WithMongoTestData {
         "body-plain" -> rawEmailContent
       )
 
-      val postResponse = ems.controllers.MailgunController.receive(request)
+      val postResponse = Global.getControllerInstance(classOf[MailgunController]).receive(request)
       status(postResponse) must equalTo(OK)
       contentAsString(postResponse) must equalTo("")
     }
 
     "Extraxt email" in {
-      ems.controllers.MailgunController.extractEmail("Somebody <somebody@example.com>") must beEqualTo(Some("somebody@example.com"))
+      Global.getControllerInstance(classOf[MailgunController]).extractEmail("Somebody <somebody@example.com>") must beEqualTo(Some("somebody@example.com"))
     }
 
     "Extract content properly" in {
-      val result = ems.controllers.MailgunController.extractContent("Re: Sms forwarding", rawEmailContent)
+      val result = Global.getControllerInstance(classOf[MailgunController]).extractContent("Re: Sms forwarding", rawEmailContent)
       result must beEqualTo("hello from email")
 
     }

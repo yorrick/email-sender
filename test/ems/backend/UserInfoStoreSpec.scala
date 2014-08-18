@@ -1,6 +1,6 @@
 package ems.backend
 
-import ems.utils.WithMongoApplication
+import ems.utils.{WithMongoTestData, WithMongoApplication}
 import ems.utils.securesocial.WithSecureSocialUtils
 import org.junit.runner.RunWith
 import org.specs2.runner._
@@ -8,7 +8,7 @@ import play.api.test._
 
 
 @RunWith(classOf[JUnitRunner])
-class UserInfoStoreSpec extends PlaySpecification with WithSecureSocialUtils {
+class UserInfoStoreSpec extends PlaySpecification with WithSecureSocialUtils with WithMongoTestData {
   sequential
 
   "User info store" should {
