@@ -7,10 +7,12 @@ import play.api.test._
 import play.api.mvc.Results.Ok
 
 import ems.utils.WithMongoTestData
+import scaldi.Injectable
+import scaldi.play.ScaldiSupport
 
 
 @RunWith(classOf[JUnitRunner])
-class MailgunSpec extends PlaySpecification with WithMongoTestData {
+class MailgunSpec extends PlaySpecification with WithMongoTestData with Injectable {
   sequential
 
   val resultMailgunId = "<xxxxxxxx@xxxx.mailgun.org>"
@@ -31,7 +33,10 @@ class MailgunSpec extends PlaySpecification with WithMongoTestData {
   "Mailgun" should {
 
     "Send emails" in new WithServer(app = app) {
-      await(Mailgun.sendEmail("5140000000", "nobody@nobody.com", "Some content")) must beEqualTo(resultMailgunId)
+      implicit val injector = app.global.asInstanceOf[ScaldiSupport].injector
+      val mailgun = inject[MailgunService]
+
+      await(mailgun.sendEmail("5140000000", "nobody@nobody.com", "Some content")) must beEqualTo(resultMailgunId)
     }
 
   }

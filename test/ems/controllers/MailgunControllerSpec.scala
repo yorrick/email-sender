@@ -5,7 +5,7 @@ import org.junit.runner.RunWith
 import org.specs2.runner._
 import play.api.test._
 
-import ems.backend.Mailgun._
+import ems.backend.MailgunService._
 import ems.utils.{WithMongoTestData, WithMongoApplication}
 
 

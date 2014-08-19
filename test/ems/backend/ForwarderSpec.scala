@@ -44,7 +44,6 @@ class ForwarderSpec extends PlaySpecification with WithMongoTestData with AkkaIn
       implicit val injector = app.global.asInstanceOf[ScaldiSupport].injector
       val actorRef = injectActorRef[Forwarder]
 
-//      val actorRef = TestActorRef(new Forwarder)
       val forwarding = smsToEmailForwarding.copy(_id = generateId)
 
       val result = await((actorRef ? forwarding).mapTo[Forwarding])

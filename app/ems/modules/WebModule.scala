@@ -11,7 +11,7 @@ import securesocial.core.services.{AuthenticatorService, UserService}
 
 import ems.backend.utils.{EMSCookieAuthenticatorBuilder, RedisCookieAuthenticatorStore, EMSAuthenticatorService, EMSRuntimeEnvironment}
 import ems.models.User
-import ems.backend.{MongoForwardingStore, ForwardingStore, Forwarder, UserStore}
+import ems.backend._
 
 
 class WebModule extends Module {
@@ -24,6 +24,7 @@ class WebModule extends Module {
   bind[AuthenticatorStore[CookieAuthenticator[User]]] to new RedisCookieAuthenticatorStore()
   bind[IdGenerator] to new IdGenerator.Default()
   bind[ForwardingStore] to new MongoForwardingStore
+  bind[MailgunService] to new DefaultMailgunService
 
   // get the underlying play akka system (managed by play)
   bind [ActorSystem] to Akka.system

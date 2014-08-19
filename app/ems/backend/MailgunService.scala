@@ -1,5 +1,7 @@
 package ems.backend
 
+import scaldi.{Injector, Injectable}
+
 import scala.concurrent.Future
 
 import play.api.Logger
@@ -11,27 +13,30 @@ import play.api.http.Status
 
 
 /**
+ * Contains mailgun constants
+ */
+object MailgunService {
+  val DELIVERED = "delivered"
+}
+
+
+trait MailgunService {
+  def sendEmail(from: String, to: String, content: String): Future[String]
+  def emailSource(from: String): String
+}
+
+/**
  * Utility that send emails using mailgun http api.
  */
-object Mailgun {
+class DefaultMailgunService(implicit inj: Injector) extends Injectable with MailgunService {
 
-  val key = current.configuration.getString("mailgun.api.key")
+  val key = inject[String] (identified by "mailgun.api.key")
   // we retrieve the domain from the smtp login since heroku mailgun does not give the domain alone
-  val domain = current.configuration.getString("mailgun.smtp.login").map(_.split("@").last)
-  val apiUrl = current.configuration.getString("mailgun.api.url") match {
-    case some @ Some(url) => some
-    case None =>
-      domain map {domain => s"https://api.mailgun.net/v2/${domain}/messages"}
-  }
+  val domain = inject[String] (identified by "mailgun.smtp.login").split("@").last
+  val url = inject[String] (identified by "mailgun.api.url")
+  val apiUrl = url.format(domain)
 
-  lazy val missingCredentials = new Exception(s"Missing credentials: key ($key) or domain ($domain)")
-
-  val DELIVERED = "delivered"
-
-  def requestHolderOption: Option[WSRequestHolder] = for {
-    key <- key
-    apiUrl <- apiUrl
-  } yield WS.url(apiUrl).withAuth("api", key, WSAuthScheme.BASIC)
+  private def requestHolder: WSRequestHolder = WS.url(apiUrl).withAuth("api", key, WSAuthScheme.BASIC)
 
   /**
    * Mailgun call will never reply with a failure, but with an forwarding that contains the updated status
@@ -49,9 +54,7 @@ object Mailgun {
       "html" -> Seq(content)
     )
 
-    val responseFuture: Future[WSResponse] = requestHolderOption map { requestHolder =>
-      requestHolder.post(postData)
-    } getOrElse Future.failed(missingCredentials)
+    val responseFuture: Future[WSResponse] = requestHolder.post(postData)
 
     val okResponse = responseFuture filter { _.status == Status.OK }
     okResponse flatMap { response => handleMailgunResponse(response.json)}
@@ -62,7 +65,7 @@ object Mailgun {
    * @param from
    * @return
    */
-  def emailSource(from: String) = s"${from}@${domain.get}"
+  def emailSource(from: String) = s"${from}@${domain}"
 
   /**
    * Returns the given mailgunId

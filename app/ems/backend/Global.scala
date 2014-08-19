@@ -56,16 +56,6 @@ trait WithGlobal extends GlobalSettings with ScaldiSupport {
     super.onStop(app)
   }
 
-  override def getControllerInstance[A](controllerClass: Class[A]): A = {
-    try {
-      super.getControllerInstance(controllerClass)
-    } catch {
-      case t: Throwable =>
-        Logger.warn(s"Could not create controller instance $controllerClass: $t")
-        throw t
-    }
-  }
-
   /**
    * Defines scaldi modules
    * @return

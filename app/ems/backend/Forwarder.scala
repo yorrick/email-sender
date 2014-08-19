@@ -14,7 +14,6 @@ import scaldi.{Injectable, Injector}
 
 import ems.backend.utils.LogUtils
 import ems.models._
-import ems.backend.Mailgun._
 import ems.backend.Twilio._
 import ems.backend.WebsocketUpdatesMaster.notifyWebsockets
 
@@ -24,8 +23,9 @@ import ems.backend.WebsocketUpdatesMaster.notifyWebsockets
  */
 class Forwarder(implicit inj: Injector) extends Actor with LogUtils with Injectable {
 
-  val sendToMailgunSleep = current.configuration.getInt("forwarder.mailgun.sleep").getOrElse(2)
+  val sendToMailgunSleep = inject[Int] (identified by "forwarder.mailgun.sleep")
   val forwardingStore = inject[ForwardingStore]
+  val mailgun = inject[MailgunService]
 
   /**
    * Find user with incoming phone number
@@ -56,7 +56,7 @@ class Forwarder(implicit inj: Injector) extends Actor with LogUtils with Injecta
         // add user and email to forwarding
         forwarding <- Future.successful(forwarding.withUserAndEmail(user))
         forwarding <- forwardingStore.save(forwarding) andThen notifyWebsockets
-        mailgunId <- pattern.after(sendToMailgunSleep.second, Akka.system.scheduler)(sendEmail(forwarding.from, user.main.email.get, forwarding.content))
+        mailgunId <- pattern.after(sendToMailgunSleep.second, Akka.system.scheduler)(mailgun.sendEmail(forwarding.from, user.main.email.get, forwarding.content))
         saved <- forwardingStore.updateMailgunIdById(forwarding.id, mailgunId)
         forwarding <- forwardingStore.updateStatusById(forwarding.id, Sending) andThen notifyWebsockets
       } yield forwarding

@@ -2,7 +2,7 @@ package ems.controllers
 
 import akka.actor.ActorSystem
 import ems.backend.mongo.MongoDBUtils
-import ems.backend.{Forwarder, ForwardingStore, Mailgun}
+import ems.backend.{Forwarder, ForwardingStore, MailgunService}
 import ems.models.{Received, Sent, Failed, Forwarding}
 import org.joda.time.DateTime
 
@@ -140,7 +140,7 @@ class MailgunController(implicit inj: Injector) extends Controller with AkkaInje
    * @return
    */
   private def validatedEventForm(event: MailgunEvent): Result = {
-    val status = if (event.event == Mailgun.DELIVERED) Sent else Failed
+    val status = if (event.event == MailgunService.DELIVERED) Sent else Failed
     forwarder ! models.MailgunEvent(event.messageId, status)
 
     Ok

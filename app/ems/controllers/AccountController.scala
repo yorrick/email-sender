@@ -11,11 +11,10 @@ import play.api.data.Form
 import play.api.data.Forms._
 import play.api.data.validation.Constraints._
 import play.api.libs.concurrent.Execution.Implicits._
-import play.api.mvc.{RequestHeader, Flash}
+import play.api.mvc.{RequestHeader}
 
 import ems.models.{PhoneNumber, User}
-import ems.backend.{Mailgun, Twilio, UserInfoStore}
-import ems.views.utils.Helpers._
+import ems.backend.{MailgunService, Twilio, UserInfoStore}
 
 
 object AccountController {
@@ -33,6 +32,7 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
   import AccountController._
 
   override implicit val env = inject [RuntimeEnvironment[User]]
+  val mailgun = inject[MailgunService]
 
   val form = Form(mapping(
     "phoneNumber" -> (text verifying pattern(phoneRegex, "10 digits", "The phone number must have 10 digits"))
@@ -44,7 +44,7 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
    * @return
    */
   def displayResponse(form: Form[PhoneNumber])(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User]) =
-    ems.views.html.auth.account(form, Twilio.apiMainNumber, Mailgun.emailSource(Twilio.apiMainNumber))
+    ems.views.html.auth.account(form, Twilio.apiMainNumber, mailgun.emailSource(Twilio.apiMainNumber))
 
   /**
    * Generates the common redirect response
