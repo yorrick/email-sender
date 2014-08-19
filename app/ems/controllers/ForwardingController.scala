@@ -23,6 +23,7 @@ import ems.models._
 class ForwardingController(implicit inj: Injector) extends SecureSocial[User] with Injectable {
 
   override implicit val env = inject [RuntimeEnvironment[User]]
+  val forwardingStore = inject[ForwardingStore]
 
   /**
    * GET for browser
@@ -35,7 +36,7 @@ class ForwardingController(implicit inj: Injector) extends SecureSocial[User] wi
 
     val result = for {
       userInfo <- UserInfoStore.findUserInfoByUserId(user.id)
-      forwardingList <- ForwardingStore.listForwarding(request.user.id).mapTo[List[Forwarding]]
+      forwardingList <- forwardingStore.listForwarding(request.user.id).mapTo[List[Forwarding]]
     } yield {
       val forwardingDisplayList = forwardingList map {ForwardingDisplay.fromForwarding(_)}
       Ok(ems.views.html.forwarding.list(forwardingDisplayList, user, userInfo))

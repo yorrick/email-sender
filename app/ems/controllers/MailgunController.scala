@@ -1,6 +1,7 @@
 package ems.controllers
 
 import akka.actor.ActorSystem
+import ems.backend.mongo.MongoDBUtils
 import ems.backend.{Forwarder, ForwardingStore, Mailgun}
 import ems.models.{Received, Sent, Failed, Forwarding}
 import org.joda.time.DateTime
@@ -20,7 +21,7 @@ import scaldi.akka.AkkaInjectable
  * Handles all requests comming from mailgun
  * TODO secure this controller to ensure mailgun is making the calls!
  */
-class MailgunController(implicit inj: Injector) extends Controller with AkkaInjectable {
+class MailgunController(implicit inj: Injector) extends Controller with AkkaInjectable with MongoDBUtils {
 
   implicit val system = inject[ActorSystem]
   val forwarder = injectActorRef[Forwarder]
@@ -66,7 +67,7 @@ class MailgunController(implicit inj: Injector) extends Controller with AkkaInje
         Logger.debug(s"Extracted email '$from' from string '${receive.from}'")
 
         // creates a forwarding with no associated user and no destination
-        val forwarding = Forwarding(ForwardingStore.generateId, None, from, None,
+        val forwarding = Forwarding(generateId, None, from, None,
           extractContent(receive.subject, receive.content), DateTime.now, Received, "")
 
         forwarder ! forwarding

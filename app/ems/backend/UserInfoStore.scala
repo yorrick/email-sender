@@ -1,5 +1,6 @@
 package ems.backend
 
+import ems.backend.mongo.MongoDBStore
 import reactivemongo.core.commands.LastError
 
 import scala.concurrent.Future

@@ -1,41 +1,31 @@
 package ems.backend
 
 
-import ems.backend.utils.LogUtils
-import scaldi.Injector
-import scaldi.akka.AkkaInjectable
-
 import scala.concurrent.duration._
 import scala.concurrent.Future
 
 import akka.pattern
-import akka.actor.{Actor, Props}
+import akka.actor.Actor
 import play.api.libs.concurrent.Akka
 import play.api.Play.current
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.Logger
+import scaldi.{Injectable, Injector}
 
+import ems.backend.utils.LogUtils
 import ems.models._
-import ems.backend.ForwardingStore._
 import ems.backend.Mailgun._
 import ems.backend.Twilio._
 import ems.backend.WebsocketUpdatesMaster.notifyWebsockets
 
 
-///**
-// * Instance of the actor that handle forwarding routing
-// */
-//object Forwarder {
-//  val forwarder = Akka.system.actorOf(Props[Forwarder], name="forwarder")
-//}
-
-
 /**
  * Handles forwarding logic
  */
-class Forwarder(implicit inj: Injector) extends Actor with LogUtils with AkkaInjectable {
+class Forwarder(implicit inj: Injector) extends Actor with LogUtils with Injectable {
 
   val sendToMailgunSleep = current.configuration.getInt("forwarder.mailgun.sleep").getOrElse(2)
+  val forwardingStore = inject[ForwardingStore]
 
   /**
    * Find user with incoming phone number
@@ -65,10 +55,10 @@ class Forwarder(implicit inj: Injector) extends Actor with LogUtils with AkkaInj
         user <- findUserByPhoneNumber(forwarding.from)
         // add user and email to forwarding
         forwarding <- Future.successful(forwarding.withUserAndEmail(user))
-        forwarding <- save(forwarding) andThen notifyWebsockets
+        forwarding <- forwardingStore.save(forwarding) andThen notifyWebsockets
         mailgunId <- pattern.after(sendToMailgunSleep.second, Akka.system.scheduler)(sendEmail(forwarding.from, user.main.email.get, forwarding.content))
-        saved <- ForwardingStore.updateMailgunIdById(forwarding.id, mailgunId)
-        forwarding <- updateStatusById(forwarding.id, Sending) andThen notifyWebsockets
+        saved <- forwardingStore.updateMailgunIdById(forwarding.id, mailgunId)
+        forwarding <- forwardingStore.updateStatusById(forwarding.id, Sending) andThen notifyWebsockets
       } yield forwarding
 
       val senderRef = sender()
@@ -86,9 +76,9 @@ class Forwarder(implicit inj: Injector) extends Actor with LogUtils with AkkaInj
         userInfo <- findUserAndUserInfoByEmail(forwarding.from)
         // add user and phone number to forwarding
         forwarding <- Future.successful(forwarding.withUserInfoAndPhone(userInfo))
-        forwarding <- save(forwarding) andThen notifyWebsockets
+        forwarding <- forwardingStore.save(forwarding) andThen notifyWebsockets
         twilioId <- pattern.after(sendToMailgunSleep.second, Akka.system.scheduler)(sendSms(forwarding.to.get, forwarding.content))
-        forwarding <- updateStatusById(forwarding.id, Sent) andThen notifyWebsockets
+        forwarding <- forwardingStore.updateStatusById(forwarding.id, Sent) andThen notifyWebsockets
       } yield forwarding
 
       val senderRef = sender()
@@ -99,6 +89,6 @@ class Forwarder(implicit inj: Injector) extends Actor with LogUtils with AkkaInj
       }
 
     case MailgunEvent(messageId, status) =>
-      updateStatusByMailgunId(messageId, status) andThen notifyWebsockets
+      forwardingStore.updateStatusByMailgunId(messageId, status) andThen notifyWebsockets
   }
 }

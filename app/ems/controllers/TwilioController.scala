@@ -1,7 +1,7 @@
 package ems.controllers
 
 import akka.actor._
-import ems.backend.{Forwarder, ForwardingStore}
+import ems.backend.mongo.MongoDBUtils
 import org.joda.time.DateTime
 
 import play.api.mvc.{Action, Controller}
@@ -9,17 +9,18 @@ import play.api.Logger
 import play.api.data._
 import play.api.data.Forms._
 import play.api.mvc.Result
+import scaldi.akka.AkkaInjectable
+import scaldi.Injector
 
 import ems.models.{Received, Forwarding}
-import scaldi.akka.AkkaInjectable
-import scaldi.{Injector, Injectable}
+import ems.backend.{Forwarder, ForwardingStore}
 
 
 /**
  * Handles all requests comming from twilio
  * TODO secure this controller to ensure Twilio is making the calls!
  */
-class TwilioController(implicit inj: Injector) extends Controller with AkkaInjectable {
+class TwilioController(implicit inj: Injector) extends Controller with AkkaInjectable with MongoDBUtils {
 
   implicit val system = inject[ActorSystem]
   val forwarder = injectActorRef[Forwarder]
@@ -56,7 +57,7 @@ class TwilioController(implicit inj: Injector) extends Controller with AkkaInjec
    */
   private def handleFormValidated(post: TwilioPost): Result = {
     // creates a forwarding with no associated user and destination
-    val forwarding = Forwarding(ForwardingStore.generateId, None, post.from, None, post.content, DateTime.now, Received, "")
+    val forwarding = Forwarding(generateId, None, post.from, None, post.content, DateTime.now, Received, "")
 
     forwarder ! forwarding
     Ok

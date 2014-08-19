@@ -1,6 +1,8 @@
 package ems.backend
 
 
+import ems.backend.mongo.MongoDBStore
+
 import scala.concurrent.Future
 
 import reactivemongo.api.Cursor

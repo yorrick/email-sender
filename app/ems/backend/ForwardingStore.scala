@@ -1,7 +1,7 @@
 package ems.backend
 
 
-import ems.backend.UserStore._
+import ems.backend.mongo.MongoDBStore
 
 import scala.concurrent.Future
 
@@ -14,12 +14,25 @@ import ems.backend.utils.LogUtils
 import ems.models._
 
 
+object ForwardingStore {
+  val collectionName = "forwarding"
+}
+
+trait ForwardingStore {
+  def save(forwarding: Forwarding): Future[Forwarding]
+  def updateStatusById(id: String, status: ForwardingStatus): Future[Forwarding]
+  def updateMailgunIdById(id: String, mailgunId: String): Future[Forwarding]
+  def findForwardingById(id: String): Future[Forwarding]
+  def listForwarding(userId: String): Future[List[Forwarding]]
+  def updateStatusByMailgunId(mailgunId: String, status: ForwardingStatus): Future[Forwarding]
+}
+
 /**
  * Handles forwarding storage in mongodb
  */
-object ForwardingStore extends MongoDBStore with LogUtils {
+class MongoForwardingStore extends MongoDBStore with LogUtils with ForwardingStore {
 
-  override val collectionName = "forwarding"
+  override val collectionName = ForwardingStore.collectionName
 
   /**
    * Save an forwarding
