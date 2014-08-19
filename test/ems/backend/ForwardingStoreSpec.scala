@@ -7,19 +7,19 @@ import play.api.test._
 import scaldi.Injectable
 import scaldi.play.ScaldiSupport
 
-import ems.utils.{WithMongoApplication, WithMongoTestData}
+import ems.utils.{AppInjector, WithMongoApplication, WithMongoTestData}
 import ems.models.{Sending, Sent}
 import ems.backend.mongo.MongoDBUtils
 
 
 @RunWith(classOf[JUnitRunner])
-class ForwardingStoreSpec extends PlaySpecification with WithMongoTestData with MongoDBUtils with Injectable {
+class ForwardingStoreSpec extends PlaySpecification with WithMongoTestData with MongoDBUtils with Injectable with AppInjector {
   sequential
 
   "Forwarding store" should {
 
     "Be able to save a forwarding" in new WithMongoApplication(data) {
-      implicit val injector = app.global.asInstanceOf[ScaldiSupport].injector
+      implicit val injector = appInjector
       val store = inject[ForwardingStore]
 
       val forwardingId = generateId
@@ -30,7 +30,7 @@ class ForwardingStoreSpec extends PlaySpecification with WithMongoTestData with 
     }
 
     "Update status by id" in new WithMongoApplication(data) {
-      implicit val injector = app.global.asInstanceOf[ScaldiSupport].injector
+      implicit val injector = appInjector
       val store = inject[ForwardingStore]
 
       val result = await(store.updateStatusById(smsToEmailForwarding.id, Sending))
@@ -38,7 +38,7 @@ class ForwardingStoreSpec extends PlaySpecification with WithMongoTestData with 
     }
 
     "Set status by mailgunId" in new WithMongoApplication(data) {
-      implicit val injector = app.global.asInstanceOf[ScaldiSupport].injector
+      implicit val injector = appInjector
       val store = inject[ForwardingStore]
 
       val result = await(store.updateStatusByMailgunId(mailgunId, Sent))
@@ -46,7 +46,7 @@ class ForwardingStoreSpec extends PlaySpecification with WithMongoTestData with 
     }
 
     "Set forwarding mailgunId" in new WithMongoApplication(data) {
-      implicit val injector = app.global.asInstanceOf[ScaldiSupport].injector
+      implicit val injector = appInjector
       val store = inject[ForwardingStore]
 
       val newMailgunId = "newMailgunId"
@@ -55,7 +55,7 @@ class ForwardingStoreSpec extends PlaySpecification with WithMongoTestData with 
     }
 
     "List user forwarding" in new WithMongoApplication(data) {
-      implicit val injector = app.global.asInstanceOf[ScaldiSupport].injector
+      implicit val injector = appInjector
       val store = inject[ForwardingStore]
 
       val result = await(store.listForwarding(userMongoId))

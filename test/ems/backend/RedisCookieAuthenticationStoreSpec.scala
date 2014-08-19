@@ -14,13 +14,13 @@ import akka.util.Timeout._
 import akka.util.Timeout
 import play.api.test._
 
-import ems.utils.{WithMongoTestData, WithRedisTestData, WithRedisData}
+import ems.utils.{AppInjector, WithMongoTestData, WithRedisTestData, WithRedisData}
 import ems.utils.securesocial.WithSecureSocialUtils
 
 
 @RunWith(classOf[JUnitRunner])
 class RedisCookieAuthenticationStoreSpec extends PlaySpecification with WithSecureSocialUtils
-      with WithRedisTestData with WithMongoTestData with Injectable {
+      with WithRedisTestData with WithMongoTestData with Injectable with AppInjector {
 
   sequential
 
@@ -28,7 +28,7 @@ class RedisCookieAuthenticationStoreSpec extends PlaySpecification with WithSecu
 
   "Authentication store" should {
     "Return Some when authenticator does exist" in new WithRedisData(redisData) {
-      implicit val injector = app.global.asInstanceOf[ScaldiSupport].injector
+      implicit val injector = appInjector
       val authStore = inject[AuthenticatorStore[CookieAuthenticator[User]]]
 
       val result = await(authStore.find(cookieValue))
@@ -36,7 +36,7 @@ class RedisCookieAuthenticationStoreSpec extends PlaySpecification with WithSecu
     }
 
     "Return None when authenticator does not exist" in new WithRedisData(redisData) {
-      implicit val injector = app.global.asInstanceOf[ScaldiSupport].injector
+      implicit val injector = appInjector
       val authStore = inject[AuthenticatorStore[CookieAuthenticator[User]]]
 
       val result = await(authStore.find("blahblah"))
@@ -44,7 +44,7 @@ class RedisCookieAuthenticationStoreSpec extends PlaySpecification with WithSecu
     }
 
     "Save authenticator" in new WithRedisData(redisData) {
-      implicit val injector = app.global.asInstanceOf[ScaldiSupport].injector
+      implicit val injector = appInjector
       val authStore = inject[AuthenticatorStore[CookieAuthenticator[User]]]
 
       val newId = "67890"
@@ -53,7 +53,7 @@ class RedisCookieAuthenticationStoreSpec extends PlaySpecification with WithSecu
     }
 
     "Delete authenticator" in new WithRedisData(redisData) {
-      implicit val injector = app.global.asInstanceOf[ScaldiSupport].injector
+      implicit val injector = appInjector
       val authStore = inject[AuthenticatorStore[CookieAuthenticator[User]]]
 
       await(authStore.delete(cookieValue))
