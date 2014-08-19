@@ -1,8 +1,8 @@
 package ems.controllers
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorRef, ActorSystem}
 import ems.backend.mongo.MongoDBUtils
-import ems.backend.{Forwarder, ForwardingStore, MailgunService}
+import ems.backend.{ForwarderService, Forwarder, ForwardingStore, MailgunService}
 import ems.models.{Received, Sent, Failed, Forwarding}
 import org.joda.time.DateTime
 
@@ -24,7 +24,7 @@ import scaldi.akka.AkkaInjectable
 class MailgunController(implicit inj: Injector) extends Controller with AkkaInjectable with MongoDBUtils {
 
   implicit val system = inject[ActorSystem]
-  val forwarder = injectActorRef[Forwarder]
+  val forwarder: ActorRef = injectActorRef[ForwarderService]
 
   /**
    * Object used to build forms to validate Mailgun POST requests for email deliveries

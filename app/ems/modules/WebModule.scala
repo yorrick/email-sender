@@ -29,6 +29,6 @@ class WebModule extends Module {
   // get the underlying play akka system (managed by play)
   bind [ActorSystem] to Akka.system
   // always create new instances of actors
-  binding toProvider new Forwarder
+  bind[ForwarderService] toProvider new Forwarder
 
 }

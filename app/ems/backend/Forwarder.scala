@@ -18,10 +18,12 @@ import ems.backend.Twilio._
 import ems.backend.WebsocketUpdatesMaster.notifyWebsockets
 
 
+trait ForwarderService extends Actor
+
 /**
  * Handles forwarding logic
  */
-class Forwarder(implicit inj: Injector) extends Actor with LogUtils with Injectable {
+class Forwarder(implicit inj: Injector) extends ForwarderService with LogUtils with Injectable {
 
   val sendToMailgunSleep = inject[Int] (identified by "forwarder.mailgun.sleep")
   val forwardingStore = inject[ForwardingStore]

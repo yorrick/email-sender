@@ -40,7 +40,7 @@ class ForwarderSpec extends PlaySpecification with WithMongoTestData with AkkaIn
 
     "Forward sms to emails" in new WithMongoServer(data, app) {
       implicit val injector = appInjector
-      val actorRef = injectActorRef[Forwarder]
+      val actorRef = injectActorRef[ForwarderService]
 
       val forwarding = smsToEmailForwarding.copy(_id = generateId)
 
