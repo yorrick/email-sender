@@ -2,7 +2,7 @@ package ems.utils
 
 import _root_.securesocial.core.authenticator.{AuthenticatorStore, CookieAuthenticator}
 import com.github.nscala_time.time.Imports._
-import ems.backend.utils.{RedisAuthenticatorStore, RedisCookieAuthenticatorStore}
+import ems.backend.auth.{RedisCookieAuthenticatorStore, RedisAuthenticatorStore}
 import ems.models.User
 import ems.modules.WebModule
 import ems.utils.securesocial.WithSecureSocialUtils

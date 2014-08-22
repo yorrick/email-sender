@@ -1,7 +1,8 @@
 package ems.controllers
 
 import akka.actor._
-import ems.backend.mongo.MongoDBUtils
+import ems.backend.forwarding.ForwarderServiceActor
+import ems.backend.persistence.mongo.MongoDBUtils
 import org.joda.time.DateTime
 
 import play.api.mvc.{Action, Controller}
@@ -13,7 +14,6 @@ import scaldi.akka.AkkaInjectable
 import scaldi.Injector
 
 import ems.models.{Received, Forwarding}
-import ems.backend.ForwarderServiceActor
 
 
 /**

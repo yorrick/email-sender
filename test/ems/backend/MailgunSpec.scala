@@ -1,5 +1,6 @@
 package ems.backend
 
+import ems.backend.email.MailgunService
 import org.junit.runner.RunWith
 import org.specs2.runner._
 import play.api.mvc.{Handler, Action}

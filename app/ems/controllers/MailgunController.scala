@@ -1,8 +1,9 @@
 package ems.controllers
 
 import akka.actor.{ActorRef, ActorSystem}
-import ems.backend.mongo.MongoDBUtils
-import ems.backend.{ForwarderServiceActor, DefaultForwarderServiceActor, ForwardingStore, MailgunService}
+import ems.backend.email.MailgunService
+import ems.backend.forwarding.ForwarderServiceActor
+import ems.backend.persistence.mongo.MongoDBUtils
 import ems.models.{Received, Sent, Failed, Forwarding}
 import org.joda.time.DateTime
 

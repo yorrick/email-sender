@@ -1,11 +1,12 @@
 package ems.controllers
 
 
+import ems.backend.email.MailgunService
 import org.junit.runner.RunWith
 import org.specs2.runner._
 import play.api.test._
 
-import ems.backend.MailgunService._
+import MailgunService._
 import ems.utils.{WithMongoTestData, WithMongoApplication}
 
 

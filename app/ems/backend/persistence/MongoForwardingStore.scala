@@ -1,31 +1,15 @@
-package ems.backend
+package ems.backend.persistence
 
-
-import ems.backend.mongo.MongoDBStore
+import ems.backend.persistence.mongo.MongoDBStore
+import ems.backend.utils.LogUtils
+import ems.models._
+import play.api.libs.concurrent.Execution.Implicits._
+import play.api.libs.json._
+import reactivemongo.api._
+import play.modules.reactivemongo.json.BSONFormats._
 
 import scala.concurrent.Future
 
-import reactivemongo.api._
-import play.api.libs.json._
-import play.api.libs.concurrent.Execution.Implicits._
-import play.modules.reactivemongo.json.BSONFormats._
-
-import ems.backend.utils.LogUtils
-import ems.models._
-
-
-object ForwardingStore {
-  val collectionName = "forwarding"
-}
-
-trait ForwardingStore {
-  def save(forwarding: Forwarding): Future[Forwarding]
-  def updateStatusById(id: String, status: ForwardingStatus): Future[Forwarding]
-  def updateMailgunIdById(id: String, mailgunId: String): Future[Forwarding]
-  def findForwardingById(id: String): Future[Forwarding]
-  def listForwarding(userId: String): Future[List[Forwarding]]
-  def updateStatusByMailgunId(mailgunId: String, status: ForwardingStatus): Future[Forwarding]
-}
 
 /**
  * Handles forwarding storage in mongodb

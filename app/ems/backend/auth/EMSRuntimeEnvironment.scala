@@ -1,17 +1,15 @@
-package ems.backend.utils
-
-
-import scala.collection.immutable.ListMap
-
-import securesocial.controllers.ViewTemplates
-import securesocial.core.RuntimeEnvironment
-import securesocial.core.providers.{GoogleProvider, FacebookProvider}
-import securesocial.core.services.{UserService, AuthenticatorService}
-import scaldi.{Injector, Injectable}
+package ems.backend.auth
 
 import ems.controllers.EMSViewTemplates
-import ems.models.User
 import ems.controllers.auth.EMSRoutesService
+import ems.models.User
+import scaldi.{Injectable, Injector}
+import securesocial.controllers.ViewTemplates
+import securesocial.core.RuntimeEnvironment
+import securesocial.core.providers.{FacebookProvider, GoogleProvider}
+import securesocial.core.services.{AuthenticatorService, UserService}
+
+import scala.collection.immutable.ListMap
 
 
 /**

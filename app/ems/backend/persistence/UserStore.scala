@@ -1,22 +1,18 @@
-package ems.backend
+package ems.backend.persistence
 
-
-import ems.backend.mongo.MongoDBStore
-
-import scala.concurrent.Future
-
+import ems.backend.auth.ExternalUserService
+import ems.backend.persistence.mongo.MongoDBStore
+import ems.backend.utils.LogUtils
+import ems.models.{User, UserInfo}
+import play.api.Logger
+import play.api.libs.concurrent.Execution.Implicits._
+import play.api.libs.json.{JsObject, Json}
 import reactivemongo.api.Cursor
 import securesocial.core._
 import securesocial.core.services.SaveMode
-import play.api.Logger
 import play.modules.reactivemongo.json.BSONFormats._
-import play.api.libs.concurrent.Execution.Implicits._
-import play.api.libs.json.{JsObject, Json}
 
-import ems.models.{UserInfo, User}
-import ems.backend.utils.{ExternalUserService, LogUtils}
-
-import scala.util.Success
+import scala.concurrent.Future
 
 
 /**

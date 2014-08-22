@@ -1,50 +1,14 @@
-package ems.backend
+package ems.backend.updates
 
+import akka.actor.ActorRef
+import ems.backend.utils.{RedisService, LogUtils}
+import ems.models.{Forwarding, ForwardingDisplay, Signal}
+import play.api.Logger
 import play.api.Play._
+import play.api.libs.concurrent.Execution.Implicits._
+import scaldi.{Injectable, Injector}
 
 import scala.collection.mutable
-import scala.util.{Try, Success}
-
-import scaldi.akka.AkkaInjectable
-import scaldi.{Injector, Injectable}
-import akka.actor.{ActorSystem, Actor, ActorRef}
-import play.api.Logger
-import play.api.libs.concurrent.Execution.Implicits._
-
-import ems.models._
-import ems.backend.utils.LogUtils
-
-
-/**
- * A trait that eases access to UpdatesServiceActor
- */
-trait WithUpdateService extends AkkaInjectable {
-
-  implicit val inj: Injector
-  implicit val system: ActorSystem
-  def updatesServiceActor: ActorRef = injectActorRef[UpdatesServiceActor]
-
-  /**
-   * Helper function that can be used in futures
-   * @return
-   */
-  def notifyWebsockets: PartialFunction[Try[Forwarding], Unit] = {
-    case Success(forwarding) =>
-      updatesServiceActor ! forwarding
-  }
-
-}
-
-
-/**
- * An actor that pushes notifications to clients
- */
-trait UpdatesServiceActor extends Actor
-
-
-case class Connect(user: User, outActor: ActorRef)
-case class Disconnect(user: User, outActor: ActorRef)
-
 
 /**
  * This actor stores all websocket connections to browsers.

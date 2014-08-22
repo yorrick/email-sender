@@ -1,6 +1,8 @@
 package ems.backend
 
 
+import ems.backend.updates.{UpdatesServiceActor, Disconnect, Connect}
+
 import scala.concurrent.duration._
 
 import akka.actor.{ActorSystem, ActorRef}

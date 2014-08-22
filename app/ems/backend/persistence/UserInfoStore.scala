@@ -1,16 +1,14 @@
-package ems.backend
+package ems.backend.persistence
 
-import ems.backend.mongo.MongoDBStore
-import reactivemongo.core.commands.LastError
-
-import scala.concurrent.Future
-
-import play.api.libs.json._
-import play.api.libs.concurrent.Execution.Implicits._
-import play.modules.reactivemongo.json.BSONFormats._
-
+import ems.backend.persistence.mongo.MongoDBStore
 import ems.backend.utils.LogUtils
 import ems.models._
+import play.api.libs.concurrent.Execution.Implicits._
+import play.api.libs.json._
+import reactivemongo.core.commands.LastError
+import play.modules.reactivemongo.json.BSONFormats._
+
+import scala.concurrent.Future
 
 
 /**

@@ -1,5 +1,6 @@
 package ems.backend
 
+import ems.backend.persistence.UserInfoStore
 import ems.utils.{WithMongoTestData, WithMongoApplication}
 import ems.utils.securesocial.WithSecureSocialUtils
 import org.junit.runner.RunWith

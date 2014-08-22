@@ -1,6 +1,6 @@
-package ems.backend
+package ems.backend.updates
 
-import akka.actor.{ActorSystem, Actor, ActorRef, Props}
+import akka.actor.{Actor, ActorRef, ActorSystem}
 import ems.models.User
 import scaldi.Injector
 import scaldi.akka.AkkaInjectable

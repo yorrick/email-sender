@@ -1,6 +1,7 @@
 package ems.backend
 
 
+import ems.backend.persistence.ForwardingStore
 import org.junit.runner.RunWith
 import org.specs2.runner._
 import play.api.test._
@@ -9,7 +10,7 @@ import scaldi.play.ScaldiSupport
 
 import ems.utils.{AppInjector, WithMongoApplication, WithMongoTestData}
 import ems.models.{Sending, Sent}
-import ems.backend.mongo.MongoDBUtils
+import ems.backend.persistence.mongo.MongoDBUtils
 
 
 @RunWith(classOf[JUnitRunner])

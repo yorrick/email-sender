@@ -1,7 +1,10 @@
 package ems.controllers
 
 
-import ems.backend.UserInfoStore.UserInfoStoreException
+import ems.backend.email.MailgunService
+import ems.backend.persistence.UserInfoStore
+import UserInfoStore.UserInfoStoreException
+import ems.backend.sms.Twilio
 import scaldi.{Injectable, Injector}
 
 import scala.concurrent.Future
@@ -14,7 +17,6 @@ import play.api.libs.concurrent.Execution.Implicits._
 import play.api.mvc.{RequestHeader}
 
 import ems.models.{PhoneNumber, User}
-import ems.backend.{MailgunService, Twilio, UserInfoStore}
 
 
 object AccountController {

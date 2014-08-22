@@ -1,26 +1,25 @@
-package ems.backend
+package ems.backend.forwarding
 
-
-import scala.concurrent.duration._
-import scala.concurrent.Future
-
+import akka.actor.ActorSystem
 import akka.pattern
-import akka.actor.{ActorSystem, Actor}
-import play.api.libs.concurrent.Akka
-import play.api.Play.current
-import play.api.libs.concurrent.Execution.Implicits._
-import play.api.Logger
-import scaldi.{Injectable, Injector}
-
+import ems.backend.email.MailgunService
+import ems.backend.persistence.{ForwardingStore, UserInfoStore, UserStore}
+import ems.backend.sms.Twilio
+import ems.backend.sms.Twilio._
+import ems.backend.updates.WithUpdateService
 import ems.backend.utils.LogUtils
 import ems.models._
-import ems.backend.Twilio._
+import play.api.Logger
+import play.api.Play.current
+import play.api.libs.concurrent.Akka
+import play.api.libs.concurrent.Execution.Implicits._
+import scaldi.{Injectable, Injector}
+
+import scala.concurrent.Future
+import scala.concurrent.duration._
 
 
-/**
- * An actor that forwards messages
- */
-trait ForwarderServiceActor extends Actor
+
 
 /**
  * Handles forwarding logic

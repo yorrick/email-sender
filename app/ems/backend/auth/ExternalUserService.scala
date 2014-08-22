@@ -1,4 +1,4 @@
-package ems.backend.utils
+package ems.backend.auth
 
 import ems.models.User
 import securesocial.core.providers.MailToken

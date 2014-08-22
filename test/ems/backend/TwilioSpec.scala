@@ -1,6 +1,7 @@
 package ems.backend
 
 
+import ems.backend.sms.Twilio
 import org.junit.runner.RunWith
 import org.specs2.runner._
 import play.api.mvc.{Handler, Action}

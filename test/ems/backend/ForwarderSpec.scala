@@ -1,6 +1,8 @@
 package ems.backend
 
 
+import ems.backend.forwarding.ForwarderServiceActor
+
 import scala.concurrent.duration._
 
 import play.api.mvc.{Action, Handler}

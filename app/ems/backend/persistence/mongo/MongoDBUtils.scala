@@ -1,4 +1,4 @@
-package ems.backend.mongo
+package ems.backend.persistence.mongo
 
 import play.api.Play.current
 import play.api.libs.concurrent.Execution.Implicits._

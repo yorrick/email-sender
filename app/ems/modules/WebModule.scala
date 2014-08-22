@@ -1,6 +1,12 @@
 package ems.modules
 
 import akka.actor.ActorSystem
+import ems.backend.auth.{RedisCookieAuthenticatorStore, RedisAuthenticatorStore, EMSRuntimeEnvironment}
+import ems.backend.email.{MailgunService, DefaultMailgunService}
+import ems.backend.forwarding.{DefaultForwarderServiceActor, ForwarderServiceActor}
+import ems.backend.persistence.{ForwardingStore, MongoForwardingStore, UserStore}
+import ems.backend.updates.{WebsocketUpdatesServiceActor, UpdatesServiceActor}
+import ems.backend.utils.{DefaultRedisService, RedisService, DefaultAkkaServices, AkkaServices}
 import play.api.libs.concurrent.Akka
 import play.api.Play.current
 import scaldi.Module
@@ -8,8 +14,6 @@ import scaldi.play.condition._
 import securesocial.core.RuntimeEnvironment
 import securesocial.core.authenticator.{CookieAuthenticatorBuilder, IdGenerator, CookieAuthenticator, AuthenticatorStore}
 import securesocial.core.services.{AuthenticatorService, UserService}
-
-import ems.backend.utils.{RedisAuthenticatorStore, RedisCookieAuthenticatorStore, EMSRuntimeEnvironment}
 import ems.models.User
 import ems.backend._
 
@@ -25,7 +29,7 @@ class WebModule extends Module {
   bind[IdGenerator] to new IdGenerator.Default()
   bind[ForwardingStore] to new MongoForwardingStore
   bind[MailgunService] to new DefaultMailgunService
-  bind[AkkaServices] to new AkkaServices
+  bind[AkkaServices] to new DefaultAkkaServices initWith(_.scheduleAkkaEvents)
   bind[RedisService] to new DefaultRedisService initWith(_.openConnections) destroyWith(_.closeConnections)
 
   // get the underlying play akka system (managed by play)

@@ -2,6 +2,7 @@ package ems.backend
 
 
 import com.github.nscala_time.time.Imports._
+import ems.backend.persistence.UserStore
 import play.api.libs.json.JsValue
 import securesocial.core.providers.MailToken
 import securesocial.core.PasswordInfo

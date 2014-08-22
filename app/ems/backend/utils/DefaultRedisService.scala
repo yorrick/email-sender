@@ -1,37 +1,20 @@
-package ems.backend
+package ems.backend.utils
 
+import akka.pattern.gracefulStop
+import play.api.Logger
+import play.api.Play.current
+import play.api.libs.concurrent.Execution.Implicits._
+import play.libs.Akka
+import play.modules.rediscala.RedisPlugin
+import redis.api.pubsub.Message
+import redis.{RedisClient, RedisPubSub}
+import scaldi.{Injectable, Injector}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-import akka.pattern.gracefulStop
-import play.api.Logger
-import play.libs.Akka
-import play.modules.rediscala.RedisPlugin
-import play.api.Play.current
-import play.api.libs.concurrent.Execution.Implicits._
-import redis.api.pubsub.Message
-import redis.{RedisPubSub, RedisClient}
-import scaldi.{Injector, Injectable}
 
 
-trait RedisService {
-  /**
-   * Returns a client to interoperate with redis
-   * @return
-   */
-  def client: RedisClient
-
-  /**
-   * Blocks until connections are open
-   */
-  def openConnections: Unit
-
-  /**
-   * Blocks until connections are closed
-   */
-  def closeConnections: Unit
-}
 
 /**
  * Simple redis service: one client connection, one subscriber allowed
@@ -40,7 +23,7 @@ class DefaultRedisService(implicit inj: Injector) extends RedisService with Inje
 
   // since this service is injected at startup by scaldi Module, we cannot use scaldi's play config injection...
   val channels: Seq[String] = Seq(current.configuration.getString("notifications.redis.channel").get)
-  val onMessage: Message => Unit = inject[AkkaServices].onMessage
+  val onMessage: Message => Unit = inject[AkkaServices].onRedisMessage
 
   implicit val system = Akka.system
 

@@ -1,7 +1,6 @@
 package ems.utils.securesocial
 
-
-import ems.backend.utils.ExternalUserService
+import ems.backend.auth.ExternalUserService
 import securesocial.core.services.SaveMode
 import securesocial.core.BasicProfile
 

@@ -1,29 +1,14 @@
-package ems.backend
-
-import scaldi.{Injector, Injectable}
-
-import scala.concurrent.Future
+package ems.backend.email
 
 import play.api.Logger
-import play.api.Play.current
-import play.api.libs.json._
-import play.api.libs.concurrent.Execution.Implicits._
-import play.api.libs.ws.{WSResponse, WSAuthScheme, WS, WSRequestHolder}
 import play.api.http.Status
+import play.api.libs.json.{JsError, JsSuccess, JsValue}
+import play.api.libs.ws.{WS, WSAuthScheme, WSRequestHolder, WSResponse}
+import play.api.Play.current
+import play.api.libs.concurrent.Execution.Implicits._
+import scaldi.{Injectable, Injector}
 
-
-/**
- * Contains mailgun constants
- */
-object MailgunService {
-  val DELIVERED = "delivered"
-}
-
-
-trait MailgunService {
-  def sendEmail(from: String, to: String, content: String): Future[String]
-  def emailSource(from: String): String
-}
+import scala.concurrent.Future
 
 /**
  * Utility that send emails using mailgun http api.

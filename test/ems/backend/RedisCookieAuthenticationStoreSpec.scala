@@ -1,7 +1,6 @@
 package ems.backend
 
-
-import ems.backend.utils.RedisAuthenticatorStore
+import ems.backend.auth.RedisAuthenticatorStore
 import ems.models.User
 import scaldi.Injectable
 import securesocial.core.authenticator.{CookieAuthenticator}

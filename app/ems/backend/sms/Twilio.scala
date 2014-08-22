@@ -1,17 +1,14 @@
-package ems.backend
-
-
-import play.api.Logger
-import play.api.libs.json.{JsError, JsSuccess, JsValue}
-
-import scala.concurrent.Future
-
-import play.api.Play.current
-import play.api.http.Status
-import play.api.libs.ws.{WSAuthScheme, WS, WSRequestHolder, WSResponse}
-import play.api.libs.concurrent.Execution.Implicits._
+package ems.backend.sms
 
 import ems.backend.utils.LogUtils
+import play.api.Logger
+import play.api.Play.current
+import play.api.http.Status
+import play.api.libs.concurrent.Execution.Implicits._
+import play.api.libs.json.{JsError, JsSuccess, JsValue}
+import play.api.libs.ws.{WS, WSAuthScheme, WSRequestHolder, WSResponse}
+
+import scala.concurrent.Future
 
 
 /**
