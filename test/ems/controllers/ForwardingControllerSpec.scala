@@ -16,24 +16,23 @@ class ForwardingControllerSpec extends PlaySpecification with WithSecureSocialUt
   sequential
 //  isolated
 
-  val forwardingController = createController(classOf[ForwardingController])
-
   step {
     Logger.info("Before class")
   }
 
   "Forwarding controller" should {
 
-    "render the forwarding list page" in new WithMongoApplication(data) {
-      val response = forwardingController.list(FakeRequest().withCookies(cookie))
+    "render the forwarding list page" in new WithMongoApplication(data, app) {
+
+      val response = app.global.getControllerInstance(classOf[ForwardingController]).list(FakeRequest().withCookies(cookie))
 
       status(response) must equalTo(OK)
       contentType(response) must beSome.which(_ == "text/html")
       contentAsString(response) must contain ("some text")
     }
 
-    "block access to non logged users" in new WithMongoApplication(data) {
-      val response = forwardingController.list(FakeRequest().withHeaders(HeaderNames.ACCEPT -> MimeTypes.HTML))
+    "block access to non logged users" in new WithMongoApplication(data, app) {
+      val response = app.global.getControllerInstance(classOf[ForwardingController]).list(FakeRequest().withHeaders(HeaderNames.ACCEPT -> MimeTypes.HTML))
 
       status(response) must equalTo(SEE_OTHER)
     }

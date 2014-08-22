@@ -5,12 +5,12 @@ import org.junit.runner.RunWith
 import org.specs2.runner._
 import play.api.test._
 
-import ems.backend.Mailgun._
-import ems.utils.{WithMongoTestData, WithMongoApplication}
+import ems.utils.{AppInjector, WithMongoTestData, WithMongoApplication}
+import scaldi.Injectable
 
 
 @RunWith(classOf[JUnitRunner])
-class MailgunControllerSpec extends PlaySpecification with WithMongoTestData {
+class MailgunControllerSpec extends PlaySpecification with WithMongoTestData with Injectable with AppInjector {
   sequential
 
   val rawEmailContent =
@@ -32,12 +32,15 @@ class MailgunControllerSpec extends PlaySpecification with WithMongoTestData {
   "Mailgun controller" should {
 
     "Accept post data for delivery ack" in new WithMongoApplication(data) {
+      implicit val injector = appInjector
+      val delivered = inject[String] (identified by "mailgun.service.delivered")
+
       val request = FakeRequest(POST, "").withFormUrlEncodedBody(
         "Message-Id" -> forwardingId,
-        "event" -> DELIVERED
+        "event" -> delivered
       )
 
-      val postResponse = ems.controllers.MailgunController.event(request)
+      val postResponse = app.global.getControllerInstance(classOf[MailgunController]).event(request)
       status(postResponse) must equalTo(OK)
       contentAsString(postResponse) must equalTo("")
     }
@@ -50,17 +53,18 @@ class MailgunControllerSpec extends PlaySpecification with WithMongoTestData {
         "body-plain" -> rawEmailContent
       )
 
-      val postResponse = ems.controllers.MailgunController.receive(request)
+      val postResponse = app.global.getControllerInstance(classOf[MailgunController]).receive(request)
       status(postResponse) must equalTo(OK)
       contentAsString(postResponse) must equalTo("")
     }
 
-    "Extraxt email" in {
-      ems.controllers.MailgunController.extractEmail("Somebody <somebody@example.com>") must beEqualTo(Some("somebody@example.com"))
+    "Extract email" in new WithMongoApplication(data) {
+      val result = app.global.getControllerInstance(classOf[MailgunController]).extractEmail("Somebody <somebody@example.com>")
+      result must beSome.which(_ == "somebody@example.com")
     }
 
-    "Extract content properly" in {
-      val result = ems.controllers.MailgunController.extractContent("Re: Sms forwarding", rawEmailContent)
+    "Extract content properly" in new WithMongoApplication(data) {
+      val result = app.global.getControllerInstance(classOf[MailgunController]).extractContent("Re: Sms forwarding", rawEmailContent)
       result must beEqualTo("hello from email")
 
     }

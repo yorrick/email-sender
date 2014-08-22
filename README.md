@@ -4,8 +4,8 @@ email-sender
 Sms <-> Email bridge application - developped with [scala](http://www.scala-lang.org/) and [play2](http://www.playframework.com/).
 
 
-[![Build Status](https://travis-ci.org/yorrick/email-sender.svg?branch=master)](https://travis-ci.org/yorrick/email-sender)
-[![Coverage Status](https://coveralls.io/repos/yorrick/email-sender/badge.png?branch=master)](https://coveralls.io/r/yorrick/email-sender?branch=master)
+[![Build Status](https://travis-ci.org/yorrick/email-sender.svg?branch=26-dependency-injection)](https://travis-ci.org/yorrick/email-sender)
+[![Coverage Status](https://coveralls.io/repos/yorrick/email-sender/badge.png?branch=26-dependency-injection)](https://coveralls.io/r/yorrick/email-sender?branch=26-dependency-injection)
 
 
 #### This app is based on a fully async stack
@@ -21,6 +21,7 @@ Sms <-> Email bridge application - developped with [scala](http://www.scala-lang
  * use [google Oauth2 SSO](https://developers.google.com/accounts/docs/OAuth2) and [facebook Oauth2 SSO](https://developers.facebook.com/docs/facebook-login/v2.1) to allow users to login
  * deploy the app on [heroku](https://www.heroku.com/) using [a custom scala buildpack](https://github.com/yorrick/heroku-buildpack-scala)
  * use [newrelic](http://newrelic.com/) and [papertrail](https://papertrailapp.com/) for monitoring and logging
+ * use [scaldi](http://scaldi.org/) dependency injection framework
 
 #### Architecture evolution
  * to be able to scale out, web UI, api endpoints and forwarding jobs should be split into different nodes

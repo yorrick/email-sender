@@ -1,25 +1,30 @@
 package ems.controllers
 
-import akka.actor._
-import ems.backend.{ForwardingStore, Mailgun}
-import ems.models.{Received, Sent, Failed, Forwarding}
+import akka.actor.{ActorRef, ActorSystem}
 import org.joda.time.DateTime
-
 import play.api.mvc.{Action, Controller}
 import play.api.Logger
 import play.api.data._
 import play.api.data.Forms._
 import play.api.mvc.Result
+import scaldi.Injector
+import scaldi.akka.AkkaInjectable
 
-import ems.backend.Forwarder.forwarder
 import ems.models
+import ems.backend.forwarding.ForwarderServiceActor
+import ems.backend.persistence.mongo.MongoDBUtils
+import ems.models.{Received, Sent, Failed, Forwarding}
 
 
 /**
  * Handles all requests comming from mailgun
  * TODO secure this controller to ensure mailgun is making the calls!
  */
-object MailgunController extends Controller {
+class MailgunController(implicit inj: Injector) extends Controller with AkkaInjectable with MongoDBUtils {
+
+  implicit val system = inject[ActorSystem]
+  val forwarder: ActorRef = injectActorRef[ForwarderServiceActor]
+  val delivered = inject[String] (identified by "mailgun.service.delivered")
 
   /**
    * Object used to build forms to validate Mailgun POST requests for email deliveries
@@ -62,7 +67,7 @@ object MailgunController extends Controller {
         Logger.debug(s"Extracted email '$from' from string '${receive.from}'")
 
         // creates a forwarding with no associated user and no destination
-        val forwarding = Forwarding(ForwardingStore.generateId, None, from, None,
+        val forwarding = Forwarding(generateId, None, from, None,
           extractContent(receive.subject, receive.content), DateTime.now, Received, "")
 
         forwarder ! forwarding
@@ -135,7 +140,7 @@ object MailgunController extends Controller {
    * @return
    */
   private def validatedEventForm(event: MailgunEvent): Result = {
-    val status = if (event.event == Mailgun.DELIVERED) Sent else Failed
+    val status = if (event.event == delivered) Sent else Failed
     forwarder ! models.MailgunEvent(event.messageId, status)
 
     Ok

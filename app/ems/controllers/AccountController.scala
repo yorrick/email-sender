@@ -1,7 +1,11 @@
 package ems.controllers
 
 
-import ems.backend.UserInfoStore.UserInfoStoreException
+import ems.backend.email.MailgunService
+import ems.backend.persistence.{UserInfoStoreException, UserInfoStore}
+import ems.backend.sms.TwilioService
+import play.api.mvc.RequestHeader
+import scaldi.{Injectable, Injector}
 
 import scala.concurrent.Future
 
@@ -10,27 +14,24 @@ import play.api.data.Form
 import play.api.data.Forms._
 import play.api.data.validation.Constraints._
 import play.api.libs.concurrent.Execution.Implicits._
-import play.api.mvc.{RequestHeader, Flash}
 import play.api.Logger
 
 import ems.models.{PhoneNumber, User}
-import ems.backend.{Mailgun, Twilio, UserInfoStore}
-import ems.views.utils.Helpers._
-
-
-object AccountController {
-  // regex for north american phone number
-  val phoneRegex = """[0-9.+]{10}""".r
-  // north american phone prefix
-  val phonePrefix = "+1"
-}
 
 
 /**
  * Handles authentication custom views
  */
-class AccountController(override implicit val env: RuntimeEnvironment[User]) extends SecureSocial[User] {
-  import AccountController._
+class AccountController(implicit inj: Injector) extends SecureSocial[User] with Injectable {
+  // regex for north american phone number
+  val phoneRegex = """[0-9.+]{10}""".r
+  // north american phone prefix
+  val phonePrefix = "+1"
+
+  override implicit val env = inject [RuntimeEnvironment[User]]
+  val mailgun = inject[MailgunService]
+  val userInfoStore = inject[UserInfoStore]
+  val twilioService = inject[TwilioService]
 
   val form = Form(mapping(
     "phoneNumber" -> (text verifying pattern(phoneRegex, "10 digits", "The phone number must have 10 digits"))
@@ -42,7 +43,7 @@ class AccountController(override implicit val env: RuntimeEnvironment[User]) ext
    * @return
    */
   def displayResponse(form: Form[PhoneNumber])(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User]) =
-    ems.views.html.auth.account(form, Twilio.apiMainNumber, Mailgun.emailSource(Twilio.apiMainNumber))
+    ems.views.html.auth.account(form, twilioService.apiMainNumber, mailgun.emailSource(twilioService.apiMainNumber))
 
   /**
    * Generates the common redirect response
@@ -76,15 +77,15 @@ class AccountController(override implicit val env: RuntimeEnvironment[User]) ext
       phoneNumber => {
         val phoneNumberToSave = s"$phonePrefix${phoneNumber.value}"
 
-        UserInfoStore.findUserInfoByUserId(user.id) flatMap { userInfo =>
+        userInfoStore.findUserInfoByUserId(user.id) flatMap { userInfo =>
           Logger.debug(s"Existing user info $userInfo, phoneNumberToSave $phoneNumberToSave")
 
-          if (phoneNumberToSave != userInfo.phoneNumber) {
+          if (phoneNumberToSave != userInfo.phoneNumber.getOrElse("")) {
             // update the phone number in mongo
-            UserInfoStore.savePhoneNumber(user.id, phoneNumberToSave) map { userInfo =>
+            userInfoStore.savePhoneNumber(user.id, phoneNumberToSave) map { userInfo =>
 
               // send a confirmation to the given phone number, but do not wait for the reply
-              Twilio.sendConfirmationSms(phoneNumberToSave)
+              twilioService.sendConfirmationSms(phoneNumberToSave)
 
               redirectResponse("Phone number saved!")
             } recover {
@@ -103,7 +104,7 @@ class AccountController(override implicit val env: RuntimeEnvironment[User]) ext
   }
 
   def userForm(implicit user: User): Future[Form[PhoneNumber]] = {
-    UserInfoStore.findUserInfoByUserId(user.id) map { userInfo =>
+    userInfoStore.findUserInfoByUserId(user.id) map { userInfo =>
       val phoneNumber = userInfo.phoneNumber map { _.stripPrefix(phonePrefix)}
       form.fill(PhoneNumber(phoneNumber.getOrElse("")))
     }
