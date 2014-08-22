@@ -18,7 +18,7 @@ import ems.utils.securesocial.WithSecureSocialUtils
 
 
 @RunWith(classOf[JUnitRunner])
-class RedisCookieAuthenticationStoreSpec extends PlaySpecification with WithSecureSocialUtils
+class RedisAuthenticatorStoreSpec extends PlaySpecification with WithSecureSocialUtils
       with WithRedisTestData with Injectable with AppInjector {
 
   sequential

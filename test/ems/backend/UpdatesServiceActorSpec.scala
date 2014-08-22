@@ -14,7 +14,7 @@ import scaldi.akka.AkkaInjectable
 import ems.utils.{AppInjector, WithMongoTestData}
 
 
-class WebsocketUpdatesServiceSpec extends PlaySpecification with WithMongoTestData with AkkaInjectable with AppInjector {
+class UpdatesServiceActorSpec extends PlaySpecification with WithMongoTestData with AkkaInjectable with AppInjector {
 
   implicit val system = ActorSystem("TestActorSystem")
   implicit val timeout = Timeout(1.second)

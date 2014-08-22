@@ -17,7 +17,7 @@ import ems.models.{Sending, Forwarding}
 import ems.utils.{AppInjector, WithMongoServer, WithMongoTestData}
 
 
-class ForwarderSpec extends PlaySpecification with WithMongoTestData with AkkaInjectable with AppInjector {
+class ForwarderServiceActorSpec extends PlaySpecification with WithMongoTestData with AkkaInjectable with AppInjector {
 
   implicit val system = ActorSystem("TestActorSystem")
   implicit val timeout = Timeout(2.second)

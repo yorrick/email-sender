@@ -3,7 +3,7 @@ package ems.controllers
 
 import ems.backend.email.MailgunService
 import ems.backend.persistence.{UserInfoStoreException, UserInfoStore}
-import ems.backend.sms.Twilio
+import ems.backend.sms.TwilioService
 import scaldi.{Injectable, Injector}
 
 import scala.concurrent.Future
@@ -30,6 +30,7 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
   override implicit val env = inject [RuntimeEnvironment[User]]
   val mailgun = inject[MailgunService]
   val userInfoStore = inject[UserInfoStore]
+  val twilioService = inject[TwilioService]
 
   val form = Form(mapping(
     "phoneNumber" -> (text verifying pattern(phoneRegex, "10 digits", "The phone number must have 10 digits"))
@@ -41,7 +42,7 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
    * @return
    */
   def displayResponse(form: Form[PhoneNumber])(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User]) =
-    ems.views.html.auth.account(form, Twilio.apiMainNumber, mailgun.emailSource(Twilio.apiMainNumber))
+    ems.views.html.auth.account(form, twilioService.apiMainNumber, mailgun.emailSource(twilioService.apiMainNumber))
 
   /**
    * Generates the common redirect response
@@ -81,7 +82,7 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
             userInfoStore.savePhoneNumber(user.id, phoneNumberToSave) map { userInfo =>
 
               // send a confirmation to the given phone number, but do not wait for the reply
-              Twilio.sendConfirmationSms(phoneNumberToSave)
+              twilioService.sendConfirmationSms(phoneNumberToSave)
 
               redirectResponse("Phone number saved!")
             } recover {

@@ -7,6 +7,7 @@ import play.api.http.Status
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json.{JsError, JsSuccess, JsValue}
 import play.api.libs.ws.{WS, WSAuthScheme, WSRequestHolder, WSResponse}
+import scaldi.{Injector, Injectable}
 
 import scala.concurrent.Future
 
@@ -14,23 +15,18 @@ import scala.concurrent.Future
 /**
  * Contains utilities to connect to Twilio
  */
-object Twilio extends LogUtils {
+class DefaultTwilioService(implicit inj: Injector) extends LogUtils with TwilioService with Injectable {
 
-  val apiMainNumber = current.configuration.getString("twilio.api.mainNumber").get
-  val apiUrl = current.configuration.getString("twilio.api.url")
-  val apiSid = current.configuration.getString("twilio.api.sid")
-  val apiToken = current.configuration.getString("twilio.api.token")
-  lazy val missingCredentials = new Exception(s"Missing credentials: url ($apiUrl) or key ($apiSid) or domain ($apiToken)")
+  val apiMainNumber = inject[String] (identified by "twilio.api.mainNumber")
+  val apiUrl = inject[String] (identified by "twilio.api.url")
+  val apiSid = inject[String] (identified by "twilio.api.sid")
+  val apiToken = inject[String] (identified by "twilio.api.token")
 
   /**
    * Builds a request holder object
    * @return
    */
-  def requestHolderOption: Option[WSRequestHolder] = for {
-    apiUrl <- apiUrl
-    apiSid <- apiSid
-    apiToken <- apiToken
-  } yield WS.url(apiUrl).withAuth(apiSid, apiToken, WSAuthScheme.BASIC)
+  def requestHolder = WS.url(apiUrl).withAuth(apiSid, apiToken, WSAuthScheme.BASIC)
 
   val confirmationMessage = s"Welcome to email-sender! You can start using this service by sending sms to ${apiMainNumber}"
 
@@ -57,10 +53,7 @@ object Twilio extends LogUtils {
       "Body" -> Seq(content)
     )
 
-    val responseFuture: Future[WSResponse] = requestHolderOption map { requestHolder =>
-      requestHolder.post(postData)
-    } getOrElse Future.failed(missingCredentials)
-
+    val responseFuture: Future[WSResponse] = requestHolder.post(postData)
     val okResponse = responseFuture andThen logResult("twilioResponse", extractor = {r => s"${r.status}: ${r.body}"}) filter { _.status == Status.CREATED }
     okResponse flatMap { response => handleTwilioResponse(response.json)}
   }

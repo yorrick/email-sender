@@ -1,18 +1,19 @@
 package ems.backend
 
 
-import ems.backend.sms.Twilio
+import ems.backend.sms.TwilioService
 import org.junit.runner.RunWith
 import org.specs2.runner._
 import play.api.mvc.{Handler, Action}
 import play.api.test._
 import play.api.mvc.Results.Created
 
-import ems.utils.WithMongoTestData
+import ems.utils.{AppInjector, WithMongoTestData}
+import scaldi.Injectable
 
 
 @RunWith(classOf[JUnitRunner])
-class TwilioSpec extends PlaySpecification with WithMongoTestData {
+class TwilioServiceSpec extends PlaySpecification with WithMongoTestData with AppInjector with Injectable {
   sequential
 
   val resultTwilioId = "SMa3491ba7cff849649150a1aea8aa3575"
@@ -54,7 +55,10 @@ class TwilioSpec extends PlaySpecification with WithMongoTestData {
   "Twilio" should {
 
     "Send confirmation sms" in new WithServer(app = app) {
-      await(Twilio.sendConfirmationSms("+15140000000")) must beEqualTo(resultTwilioId)
+      implicit val injector = appInjector
+      val service = inject[TwilioService]
+
+      await(service.sendConfirmationSms("+15140000000")) must beEqualTo(resultTwilioId)
     }
 
   }

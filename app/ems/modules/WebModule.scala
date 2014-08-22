@@ -5,6 +5,7 @@ import ems.backend.auth.{RedisCookieAuthenticatorStore, RedisAuthenticatorStore,
 import ems.backend.email.{MailgunService, DefaultMailgunService}
 import ems.backend.forwarding.{DefaultForwarderServiceActor, ForwarderServiceActor}
 import ems.backend.persistence._
+import ems.backend.sms.{DefaultTwilioService, TwilioService}
 import ems.backend.updates.{UpdateService, WebsocketUpdatesServiceActor, UpdatesServiceActor}
 import ems.backend.utils.{DefaultRedisService, RedisService, DefaultAkkaServices, AkkaServices}
 import play.api.libs.concurrent.Akka
@@ -28,6 +29,7 @@ class WebModule extends Module {
   bind[IdGenerator] to new IdGenerator.Default()
   bind[ForwardingStore] to new MongoForwardingStore
   bind[UserInfoStore] to new MongoUserInfoStore
+  bind[TwilioService] to new DefaultTwilioService
   bind[MailgunService] to new DefaultMailgunService
   bind[AkkaServices] to new DefaultAkkaServices initWith(_.scheduleAkkaEvents)
   bind[RedisService] to new DefaultRedisService initWith(_.openConnections) destroyWith(_.closeConnections)

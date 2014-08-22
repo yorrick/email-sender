@@ -4,8 +4,7 @@ import akka.actor.ActorSystem
 import akka.pattern
 import ems.backend.email.MailgunService
 import ems.backend.persistence.{ForwardingStore, UserInfoStore, UserStore}
-import ems.backend.sms.Twilio
-import ems.backend.sms.Twilio._
+import ems.backend.sms.TwilioService
 import ems.backend.updates.WithUpdateService
 import ems.backend.utils.LogUtils
 import ems.models._
@@ -14,7 +13,6 @@ import play.api.Play.current
 import play.api.libs.concurrent.Akka
 import play.api.libs.concurrent.Execution.Implicits._
 import scaldi.{Injectable, Injector}
-import securesocial.core.services.UserService
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -34,6 +32,7 @@ class DefaultForwarderServiceActor(implicit val inj: Injector) extends Forwarder
   val mailgun = inject[MailgunService]
   val userInfoStore = inject[UserInfoStore]
   val userStore = inject[UserStore]
+  val twilioService = inject[TwilioService]
 
   /**
    * Find user with incoming phone number
@@ -85,7 +84,7 @@ class DefaultForwarderServiceActor(implicit val inj: Injector) extends Forwarder
         // add user and phone number to forwarding
         forwarding <- Future.successful(forwarding.withUserInfoAndPhone(userInfo))
         forwarding <- forwardingStore.save(forwarding) andThen notifyWebsockets
-        twilioId <- pattern.after(sendToMailgunSleep.second, Akka.system.scheduler)(sendSms(forwarding.to.get, forwarding.content))
+        twilioId <- pattern.after(sendToMailgunSleep.second, Akka.system.scheduler)(twilioService.sendSms(forwarding.to.get, forwarding.content))
         forwarding <- forwardingStore.updateStatusById(forwarding.id, Sent) andThen notifyWebsockets
       } yield forwarding
 
