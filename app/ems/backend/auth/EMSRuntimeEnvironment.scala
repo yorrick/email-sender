@@ -1,5 +1,6 @@
 package ems.backend.auth
 
+import ems.backend.persistence.UserStore
 import ems.controllers.EMSViewTemplates
 import ems.controllers.auth.EMSRoutesService
 import ems.models.User
@@ -7,7 +8,7 @@ import scaldi.{Injectable, Injector}
 import securesocial.controllers.ViewTemplates
 import securesocial.core.RuntimeEnvironment
 import securesocial.core.providers.{FacebookProvider, GoogleProvider}
-import securesocial.core.services.{AuthenticatorService, UserService}
+import securesocial.core.services.{AuthenticatorService}
 
 import scala.collection.immutable.ListMap
 
@@ -18,7 +19,7 @@ import scala.collection.immutable.ListMap
 class EMSRuntimeEnvironment(implicit inj: Injector) extends RuntimeEnvironment.Default[User] with Injectable {
   override lazy val routes = new EMSRoutesService()
 
-  override lazy val userService = inject[UserService[User]]
+  override lazy val userService = inject[UserStore]
   override lazy val authenticatorService = inject[AuthenticatorService[User]]
 
   // override authentication views

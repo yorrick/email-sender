@@ -14,6 +14,7 @@ import play.api.Play.current
 import play.api.libs.concurrent.Akka
 import play.api.libs.concurrent.Execution.Implicits._
 import scaldi.{Injectable, Injector}
+import securesocial.core.services.UserService
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -31,6 +32,8 @@ class DefaultForwarderServiceActor(implicit val inj: Injector) extends Forwarder
   val sendToMailgunSleep = inject[Int] (identified by "forwarder.mailgun.sleep")
   val forwardingStore = inject[ForwardingStore]
   val mailgun = inject[MailgunService]
+  val userInfoStore = inject[UserInfoStore]
+  val userStore = inject[UserStore]
 
   /**
    * Find user with incoming phone number
@@ -39,15 +42,15 @@ class DefaultForwarderServiceActor(implicit val inj: Injector) extends Forwarder
    */
   def findUserByPhoneNumber(phoneNumber: String): Future[User] = {
     for {
-      userInfo <- UserInfoStore.findUserInfoByPhoneNumber(phoneNumber)
-      user <- UserStore.findUserById(userInfo.id)
+      userInfo <- userInfoStore.findUserInfoByPhoneNumber(phoneNumber)
+      user <- userStore.findUserById(userInfo.id)
     } yield user
   }
 
   def findUserAndUserInfoByEmail(email: String): Future[UserInfo] = {
     for {
-      user <- UserStore.findByEmail(email) andThen logResult("findByEmail")
-      userInfo <- UserInfoStore.findUserInfoByUserId(user.id)
+      user <- userStore.findByEmail(email) andThen logResult("findByEmail")
+      userInfo <- userInfoStore.findUserInfoByUserId(user.id)
     } yield userInfo
   }
 

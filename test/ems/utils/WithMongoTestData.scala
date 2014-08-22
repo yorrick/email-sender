@@ -18,8 +18,8 @@ trait WithMongoTestData extends MongoDBUtils {
 
   lazy val data = Seq(
     ("forwarding", forwardingJson),
-    (UserStore.collectionName, userJson),
-    (UserInfoStore.collectionName, userInfoJson)
+    ("user", userJson),
+    ("userInfo", userInfoJson)
   )
 
   // forwarding data

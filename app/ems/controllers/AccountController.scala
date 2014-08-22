@@ -2,8 +2,7 @@ package ems.controllers
 
 
 import ems.backend.email.MailgunService
-import ems.backend.persistence.UserInfoStore
-import UserInfoStore.UserInfoStoreException
+import ems.backend.persistence.{UserInfoStoreException, UserInfoStore}
 import ems.backend.sms.Twilio
 import scaldi.{Injectable, Injector}
 
@@ -19,22 +18,18 @@ import play.api.mvc.{RequestHeader}
 import ems.models.{PhoneNumber, User}
 
 
-object AccountController {
-  // regex for north american phone number
-  val phoneRegex = """[0-9.+]{10}""".r
-  // north american phone prefix
-  val phonePrefix = "+1"
-}
-
-
 /**
  * Handles authentication custom views
  */
 class AccountController(implicit inj: Injector) extends SecureSocial[User] with Injectable {
-  import AccountController._
+  // regex for north american phone number
+  val phoneRegex = """[0-9.+]{10}""".r
+  // north american phone prefix
+  val phonePrefix = "+1"
 
   override implicit val env = inject [RuntimeEnvironment[User]]
   val mailgun = inject[MailgunService]
+  val userInfoStore = inject[UserInfoStore]
 
   val form = Form(mapping(
     "phoneNumber" -> (text verifying pattern(phoneRegex, "10 digits", "The phone number must have 10 digits"))
@@ -80,10 +75,10 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
       phoneNumber => {
         val phoneNumberToSave = s"$phonePrefix${phoneNumber.value}"
 
-        UserInfoStore.findUserInfoByUserId(user.id) flatMap { userInfo =>
+        userInfoStore.findUserInfoByUserId(user.id) flatMap { userInfo =>
           if (phoneNumberToSave != userInfo.phoneNumber) {
             // update the phone number in mongo
-            UserInfoStore.savePhoneNumber(user.id, phoneNumberToSave) map { userInfo =>
+            userInfoStore.savePhoneNumber(user.id, phoneNumberToSave) map { userInfo =>
 
               // send a confirmation to the given phone number, but do not wait for the reply
               Twilio.sendConfirmationSms(phoneNumberToSave)
@@ -105,7 +100,7 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
   }
 
   def userForm(implicit user: User): Future[Form[PhoneNumber]] = {
-    UserInfoStore.findUserInfoByUserId(user.id) map { userInfo =>
+    userInfoStore.findUserInfoByUserId(user.id) map { userInfo =>
       val phoneNumber = userInfo.phoneNumber map { _.stripPrefix(phonePrefix)}
       form.fill(PhoneNumber(phoneNumber.getOrElse("")))
     }

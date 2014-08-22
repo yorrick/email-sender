@@ -27,6 +27,7 @@ class ForwardingController(implicit inj: Injector) extends SecureSocial[User] wi
 
   override implicit val env = inject [RuntimeEnvironment[User]]
   val forwardingStore = inject[ForwardingStore]
+  val userInfoStore = inject[UserInfoStore]
 
   /**
    * GET for browser
@@ -38,7 +39,7 @@ class ForwardingController(implicit inj: Injector) extends SecureSocial[User] wi
     val user = request.user
 
     val result = for {
-      userInfo <- UserInfoStore.findUserInfoByUserId(user.id)
+      userInfo <- userInfoStore.findUserInfoByUserId(user.id)
       forwardingList <- forwardingStore.listForwarding(request.user.id).mapTo[List[Forwarding]]
     } yield {
       val forwardingDisplayList = forwardingList map {ForwardingDisplay.fromForwarding(_)}
