@@ -4,24 +4,23 @@ import scala.concurrent.duration._
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.util.ByteString
-import ems.backend.updates.UpdatesServiceActor
+import ems.backend.updates.UpdateService
 import ems.models.{Ping, ForwardingDisplay}
 import play.api.Logger
 import play.api.libs.concurrent.Akka
 import play.api.Play.current
 import play.api.libs.concurrent.Execution.Implicits._
 import redis.api.pubsub.Message
-import scaldi.Injector
-import scaldi.akka.AkkaInjectable
+import scaldi.{Injectable, Injector}
 
 
 /**
  * Stores the akka related callbacks
  */
-class DefaultAkkaServices(implicit inj: Injector) extends AkkaInjectable with AkkaServices {
+class DefaultAkkaServices(implicit inj: Injector) extends Injectable with AkkaServices {
 
   implicit val system = inject[ActorSystem]
-  val updatesServiceActor: ActorRef = injectActorRef[UpdatesServiceActor]
+  val updatesServiceActor: ActorRef = inject[UpdateService].updatesServiceActor
 
   /**
    * Consumes messages from redis, and give them to the websocketUpdatesMaster
@@ -35,7 +34,7 @@ class DefaultAkkaServices(implicit inj: Injector) extends AkkaInjectable with Ak
 
   def scheduleAkkaEvents {
     // we periodically ping the client so the websocket connections do not close
-    Akka.system.scheduler.schedule(30.second, 30.second, injectActorRef[UpdatesServiceActor], Ping)
+    Akka.system.scheduler.schedule(30.second, 30.second, updatesServiceActor, Ping)
   }
 
 }

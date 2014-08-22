@@ -7,6 +7,7 @@ import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json._
 import reactivemongo.api._
 import play.modules.reactivemongo.json.BSONFormats._
+import scaldi.{Injector, Injectable}
 
 import scala.concurrent.Future
 
@@ -14,9 +15,9 @@ import scala.concurrent.Future
 /**
  * Handles forwarding storage in mongodb
  */
-class MongoForwardingStore extends MongoDBStore with LogUtils with ForwardingStore {
+class MongoForwardingStore(implicit inj: Injector) extends MongoDBStore with LogUtils with ForwardingStore with Injectable {
 
-  override val collectionName = ForwardingStore.collectionName
+  override val collectionName = inject[String] (identified by "store.forwarding.collectionName")
 
   /**
    * Save an forwarding

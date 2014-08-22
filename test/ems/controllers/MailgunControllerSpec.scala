@@ -1,17 +1,16 @@
 package ems.controllers
 
 
-import ems.backend.email.MailgunService
 import org.junit.runner.RunWith
 import org.specs2.runner._
 import play.api.test._
 
-import MailgunService._
-import ems.utils.{WithMongoTestData, WithMongoApplication}
+import ems.utils.{AppInjector, WithMongoTestData, WithMongoApplication}
+import scaldi.Injectable
 
 
 @RunWith(classOf[JUnitRunner])
-class MailgunControllerSpec extends PlaySpecification with WithMongoTestData {
+class MailgunControllerSpec extends PlaySpecification with WithMongoTestData with Injectable with AppInjector {
   sequential
 
   val rawEmailContent =
@@ -33,9 +32,12 @@ class MailgunControllerSpec extends PlaySpecification with WithMongoTestData {
   "Mailgun controller" should {
 
     "Accept post data for delivery ack" in new WithMongoApplication(data) {
+      implicit val injector = appInjector
+      val delivered = inject[String] (identified by "mailgun.service.delivered")
+
       val request = FakeRequest(POST, "").withFormUrlEncodedBody(
         "Message-Id" -> forwardingId,
-        "event" -> DELIVERED
+        "event" -> delivered
       )
 
       val postResponse = app.global.getControllerInstance(classOf[MailgunController]).event(request)

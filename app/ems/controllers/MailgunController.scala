@@ -1,21 +1,19 @@
 package ems.controllers
 
 import akka.actor.{ActorRef, ActorSystem}
-import ems.backend.email.MailgunService
-import ems.backend.forwarding.ForwarderServiceActor
-import ems.backend.persistence.mongo.MongoDBUtils
-import ems.models.{Received, Sent, Failed, Forwarding}
 import org.joda.time.DateTime
-
 import play.api.mvc.{Action, Controller}
 import play.api.Logger
 import play.api.data._
 import play.api.data.Forms._
 import play.api.mvc.Result
-
-import ems.models
 import scaldi.Injector
 import scaldi.akka.AkkaInjectable
+
+import ems.models
+import ems.backend.forwarding.ForwarderServiceActor
+import ems.backend.persistence.mongo.MongoDBUtils
+import ems.models.{Received, Sent, Failed, Forwarding}
 
 
 /**
@@ -26,6 +24,7 @@ class MailgunController(implicit inj: Injector) extends Controller with AkkaInje
 
   implicit val system = inject[ActorSystem]
   val forwarder: ActorRef = injectActorRef[ForwarderServiceActor]
+  val delivered = inject[String] (identified by "mailgun.service.delivered")
 
   /**
    * Object used to build forms to validate Mailgun POST requests for email deliveries
@@ -141,7 +140,7 @@ class MailgunController(implicit inj: Injector) extends Controller with AkkaInje
    * @return
    */
   private def validatedEventForm(event: MailgunEvent): Result = {
-    val status = if (event.event == MailgunService.DELIVERED) Sent else Failed
+    val status = if (event.event == delivered) Sent else Failed
     forwarder ! models.MailgunEvent(event.messageId, status)
 
     Ok

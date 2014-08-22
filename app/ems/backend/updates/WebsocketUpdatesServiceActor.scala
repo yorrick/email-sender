@@ -21,6 +21,8 @@ class WebsocketUpdatesServiceActor(implicit inj: Injector) extends UpdatesServic
   val channels: Seq[String] = Seq(current.configuration.getString("notifications.redis.channel").get)
   val redisChannel = "forwardingList"
 
+  val logger: Logger = Logger("application.WebsocketUpdatesServiceActor")
+
   /**
    * userId -> list of websocket connections
    */
@@ -28,19 +30,20 @@ class WebsocketUpdatesServiceActor(implicit inj: Injector) extends UpdatesServic
 
   def receive = {
     case Connect(user, actor) =>
-      Logger.debug("Opened a websocket connection")
+      logger.debug("Opened a websocket connection")
+      logger.debug(s"Actor hashCode: ${hashCode}")
 
       webSocketOutActors.get(user.id) match {
         case Some(websocketOutList) => websocketOutList += actor
         case None => webSocketOutActors(user.id) = mutable.ListBuffer(actor)
       }
 
-      Logger.debug(s"webSocketOutActors: $webSocketOutActors")
+      logger.debug(s"webSocketOutActors: $webSocketOutActors")
 
       sender ! webSocketOutActors.toMap
 
     case Disconnect(user, actor) =>
-      Logger.debug("Websocket connection has closed")
+      logger.debug("Websocket connection has closed")
 
       webSocketOutActors.get(user.id) match {
         case Some(websocketOutList) => websocketOutList -= actor
@@ -48,23 +51,29 @@ class WebsocketUpdatesServiceActor(implicit inj: Injector) extends UpdatesServic
       }
 
       webSocketOutActors.remove(user.id)
-      Logger.debug(s"webSocketOutActors: $webSocketOutActors")
+      logger.debug(s"webSocketOutActors: $webSocketOutActors")
 
       sender ! webSocketOutActors.toMap
 
     case forwarding: Forwarding =>
+      logger.debug(s"Sending message to redis pubsub $forwarding")
+      logger.debug(s"Actor hashCode: ${hashCode}")
       // send notification to redis
       redisService.client.publish(redisChannel, ForwardingDisplay.fromForwarding(forwarding)) andThen logResult(s"Publish forwarding $forwarding in redis")
 
     case signal: Signal =>
-      webSocketOutActors.values.flatMap(identity) foreach {
-        _ ! Signal.signalFormat.writes(signal)}
+      webSocketOutActors.values.flatMap(identity) foreach {_ ! Signal.signalFormat.writes(signal)}
 
     case forwardingDisplay: ForwardingDisplay =>
-      Logger.debug(s"Broadcast forwardingDisplay $forwardingDisplay")
+      logger.debug(s"Broadcast forwardingDisplay $forwardingDisplay")
+      logger.debug(s"Actor hashCode: ${hashCode}")
+      logger.debug(s"webSocketOutActors: $webSocketOutActors")
 
       webSocketOutActors.get(forwardingDisplay.userId) map {
-        _ foreach { outActor => outActor ! ForwardingDisplay.forwardingDisplayFormat.writes(forwardingDisplay)}
+        _ foreach { outActor =>
+          val json = ForwardingDisplay.forwardingDisplayFormat.writes(forwardingDisplay)
+          outActor ! json
+        }
       }
   }
 

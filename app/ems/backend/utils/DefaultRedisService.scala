@@ -14,8 +14,6 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
 
-
-
 /**
  * Simple redis service: one client connection, one subscriber allowed
  */
@@ -37,6 +35,7 @@ class DefaultRedisService(implicit inj: Injector) extends RedisService with Inje
 
 
   def openConnections {
+    Logger.info("Opening application's redis connections...")
     internalClient = Some(RedisPlugin.client())
     internalPubSub = Some(RedisPlugin.pubsub(channels = channels, patterns = Seq[String](), onMessage = onMessage))
   }

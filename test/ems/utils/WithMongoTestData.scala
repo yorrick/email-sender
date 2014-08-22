@@ -17,7 +17,7 @@ import ems.models.{UserInfo, User, Received, Forwarding}
 trait WithMongoTestData extends MongoDBUtils {
 
   lazy val data = Seq(
-    (ForwardingStore.collectionName, forwardingJson),
+    ("forwarding", forwardingJson),
     (UserStore.collectionName, userJson),
     (UserInfoStore.collectionName, userInfoJson)
   )

@@ -5,10 +5,6 @@ import ems.models.{ForwardingStatus, Forwarding}
 import scala.concurrent.Future
 
 
-object ForwardingStore {
-  val collectionName = "forwarding"
-}
-
 trait ForwardingStore {
   def save(forwarding: Forwarding): Future[Forwarding]
   def updateStatusById(id: String, status: ForwardingStatus): Future[Forwarding]

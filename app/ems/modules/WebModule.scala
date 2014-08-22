@@ -5,7 +5,7 @@ import ems.backend.auth.{RedisCookieAuthenticatorStore, RedisAuthenticatorStore,
 import ems.backend.email.{MailgunService, DefaultMailgunService}
 import ems.backend.forwarding.{DefaultForwarderServiceActor, ForwarderServiceActor}
 import ems.backend.persistence.{ForwardingStore, MongoForwardingStore, UserStore}
-import ems.backend.updates.{WebsocketUpdatesServiceActor, UpdatesServiceActor}
+import ems.backend.updates.{UpdateService, WebsocketUpdatesServiceActor, UpdatesServiceActor}
 import ems.backend.utils.{DefaultRedisService, RedisService, DefaultAkkaServices, AkkaServices}
 import play.api.libs.concurrent.Akka
 import play.api.Play.current
@@ -31,6 +31,7 @@ class WebModule extends Module {
   bind[MailgunService] to new DefaultMailgunService
   bind[AkkaServices] to new DefaultAkkaServices initWith(_.scheduleAkkaEvents)
   bind[RedisService] to new DefaultRedisService initWith(_.openConnections) destroyWith(_.closeConnections)
+  bind[UpdateService] to new UpdateService
 
   // get the underlying play akka system (managed by play)
   bind [ActorSystem] to Akka.system
