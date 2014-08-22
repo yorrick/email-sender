@@ -3,6 +3,7 @@ package ems.backend
 import akka.util.ByteString
 import ems.backend.utils.LogUtils
 import redis.api.pubsub.Message
+import scaldi.{Injector, Injectable}
 
 import scala.collection.mutable
 import scala.util.{Try, Failure, Success}
@@ -20,13 +21,13 @@ import ems.models._
 /**
  * Instance of the actor used to push messages to browsers
  */
-object WebsocketUpdatesMaster {
+object WebsocketUpdatesService {
 
   case class Connect(user: User, outActor: ActorRef)
   case class Disconnect(user: User, outActor: ActorRef)
 
   // create the master actor once
-  val websocketUpdatesMaster = Akka.system.actorOf(Props[WebsocketUpdatesMaster], name="websocketUpdatesMaster")
+  val websocketUpdatesMaster = Akka.system.actorOf(Props[WebsocketUpdatesService], name="websocketUpdatesMaster")
   val redisChannel = "forwardingList"
 
   // we periodically ping the client so the websocket connections do not close
@@ -54,11 +55,18 @@ object WebsocketUpdatesMaster {
 
 
 /**
+ * An actor that pushes notifications to clients
+ */
+trait UpdatesService extends Actor
+
+/**
  * This actor stores all websocket connections to browsers.
  * Each user can have multiple connections at the same time.
  */
-class WebsocketUpdatesMaster extends Actor with LogUtils {
-  import WebsocketUpdatesMaster._
+class WebsocketUpdatesService(implicit inj: Injector) extends Actor with LogUtils with Injectable {
+  import WebsocketUpdatesService._
+
+  val redisService = inject[RedisService]
 
   /**
    * userId -> list of websocket connections
@@ -93,7 +101,7 @@ class WebsocketUpdatesMaster extends Actor with LogUtils {
 
     case forwarding: Forwarding =>
       // send notification to redis
-      Redis.instance.redisClient.publish(WebsocketUpdatesMaster.redisChannel, ForwardingDisplay.fromForwarding(forwarding)) andThen logResult(s"Publish forwarding $forwarding in redis")
+      redisService.client.publish(WebsocketUpdatesService.redisChannel, ForwardingDisplay.fromForwarding(forwarding)) andThen logResult(s"Publish forwarding $forwarding in redis")
 
     case signal: Signal =>
       webSocketOutActors.values.flatMap(identity) foreach {

@@ -44,17 +44,17 @@ trait WithGlobal extends GlobalSettings with ScaldiSupport {
     super.onLoadConfig(loadedConfig ++ overrideConfig, path, classloader, mode)
   }
 
-  override def onStart(app: Application) {
-    Redis.openConnections
-    super.onStart(app)
-    Logger.info("Application has started")
-  }
-
-  override def onStop(app: Application) {
-    Redis.closeConnections
-    Logger.info("Application shutdown...")
-    super.onStop(app)
-  }
+//  override def onStart(app: Application) {
+//    Redis.openConnections
+//    super.onStart(app)
+//    Logger.info("Application has started")
+//  }
+//
+//  override def onStop(app: Application) {
+//    Redis.closeConnections
+//    Logger.info("Application shutdown...")
+//    super.onStop(app)
+//  }
 
   /**
    * Defines scaldi modules

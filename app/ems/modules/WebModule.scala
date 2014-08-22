@@ -25,6 +25,9 @@ class WebModule extends Module {
   bind[IdGenerator] to new IdGenerator.Default()
   bind[ForwardingStore] to new MongoForwardingStore
   bind[MailgunService] to new DefaultMailgunService
+  bind[RedisService] to new DefaultRedisService(
+    Seq(WebsocketUpdatesMaster.redisChannel),
+    WebsocketUpdatesMaster.onMessage) initWith(_.openConnections) destroyWith(_.closeConnections)
 
   // get the underlying play akka system (managed by play)
   bind [ActorSystem] to Akka.system

@@ -1,13 +1,14 @@
 package ems.backend.utils
 
 import akka.util.ByteString
-import ems.backend.Redis
+import ems.backend.RedisService
 import ems.models.User
 import org.joda.time.DateTime
 import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json._
-import redis.ByteStringFormatter
+import redis.{RedisClient, ByteStringFormatter}
+import scaldi.{Injector, Injectable}
 import securesocial.core.authenticator.{Authenticator, AuthenticatorStore, CookieAuthenticator}
 
 import scala.concurrent.Future
@@ -26,6 +27,8 @@ abstract class RedisAuthenticatorStore[A <: Authenticator[_]] extends Authentica
 
   def logResult(msg: String) = super.logResult(msg, logger)
 
+  def redisClient: RedisClient
+
   /**
    * Retrieves an Authenticator from the cache
    *
@@ -34,7 +37,7 @@ abstract class RedisAuthenticatorStore[A <: Authenticator[_]] extends Authentica
    * @return an optional future Authenticator
    */
   override def find(id: String)(implicit ct: ClassTag[A]): Future[Option[A]] = {
-    Redis.instance.redisClient.get[A](id) andThen logResult(s"REDIS: find for id $id")
+    redisClient.get[A](id) andThen logResult(s"REDIS: find for id $id")
   }
 
   /**
@@ -45,7 +48,7 @@ abstract class RedisAuthenticatorStore[A <: Authenticator[_]] extends Authentica
    * @return the saved authenticator
    */
   override def save(authenticator: A, timeoutInSeconds: Int): Future[A] = {
-    Redis.instance.redisClient.set(authenticator.id, authenticator) andThen logResult(s"REDIS: save authenticator: $authenticator") map { _ => authenticator}
+    redisClient.set(authenticator.id, authenticator) andThen logResult(s"REDIS: save authenticator: $authenticator") map { _ => authenticator}
   }
 
   /**
@@ -55,7 +58,7 @@ abstract class RedisAuthenticatorStore[A <: Authenticator[_]] extends Authentica
    * @return a future of Unit
    */
   override def delete(id: String): Future[Unit] ={
-    Redis.instance.redisClient.del(id) andThen logResult(s"REDIS: del for id $id") map { _ => Unit}
+    redisClient.del(id) andThen logResult(s"REDIS: del for id $id") map { _ => Unit}
   }
 }
 
@@ -63,9 +66,12 @@ abstract class RedisAuthenticatorStore[A <: Authenticator[_]] extends Authentica
 /**
  * Implementation for CookieAuthenticator
  */
-class RedisCookieAuthenticatorStore
-    extends RedisAuthenticatorStore[CookieAuthenticator[User]] {
+class RedisCookieAuthenticatorStore(implicit inj: Injector)
+    extends RedisAuthenticatorStore[CookieAuthenticator[User]] with Injectable {
+
   override val byteStringFormatter = new CookieAuthenticatorFormatter(this)
+
+  val redisClient = inject[RedisService].client
 }
 
 
