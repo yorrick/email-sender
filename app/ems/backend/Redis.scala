@@ -1,7 +1,5 @@
 package ems.backend
 
-import redis.api.pubsub.Message
-import redis.{RedisPubSub, RedisClient}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -12,36 +10,9 @@ import play.libs.Akka
 import play.modules.rediscala.RedisPlugin
 import play.api.Play.current
 import play.api.libs.concurrent.Execution.Implicits._
-
-
-///**
-// * Store redis client connections
-// */
-//object Redis {
-//  private var instanceOption: Option[Redis] = None
-//
-//  /**
-//   * Returns an instance that manages the connections
-//   * @return
-//   */
-//  def instance = instanceOption.get
-//
-//  /**
-//   * Opens connections to redis
-//   */
-//  def openConnections {
-//    Logger.info("Opening redis connections")
-//    instanceOption = Some(new Redis())
-//  }
-//
-//  /**
-//   * Blocks until connections are closed
-//   */
-//  def closeConnections {
-//    Logger.info("Closing redis connections")
-//    instanceOption map { _.closeConnections() }
-//  }
-//}
+import redis.api.pubsub.Message
+import redis.{RedisPubSub, RedisClient}
+import scaldi.{Injector, Injectable}
 
 
 trait RedisService {
@@ -65,13 +36,18 @@ trait RedisService {
 /**
  * Simple redis service: one client connection, one subscriber allowed
  */
-class DefaultRedisService(channels: Seq[String], onMessage: Message => Unit) extends RedisService {
+class DefaultRedisService(implicit inj: Injector) extends RedisService with Injectable {
+
+  // since this service is injected at startup by scaldi Module, we cannot use scaldi's play config injection...
+  val channels: Seq[String] = Seq(current.configuration.getString("notifications.redis.channel").get)
+  val onMessage: Message => Unit = inject[AkkaServices].onMessage
+
   implicit val system = Akka.system
 
   private var internalClient: Option[RedisClient] = None
   private var internalPubSub: Option[RedisPubSub] = None
 
-  val client = internalClient.get
+  def client = internalClient.get
 
   def subscribe(channels: Seq[String], onMessage: Message => Unit) =
     RedisPlugin.pubsub(channels = channels, patterns = Seq[String](), onMessage = onMessage)

@@ -1,37 +1,28 @@
 package ems.backend
 
-import akka.util.ByteString
-import ems.backend.utils.LogUtils
-import redis.api.pubsub.Message
-import scaldi.{Injector, Injectable}
+import play.api.Play._
 
 import scala.collection.mutable
-import scala.util.{Try, Failure, Success}
-import scala.concurrent.duration._
+import scala.util.{Try, Success}
 
-import akka.actor.{Actor, Props, ActorRef}
+import scaldi.akka.AkkaInjectable
+import scaldi.{Injector, Injectable}
+import akka.actor.{ActorSystem, Actor, ActorRef}
 import play.api.Logger
-import play.api.libs.concurrent.Akka
-import play.api.Play.current
 import play.api.libs.concurrent.Execution.Implicits._
 
 import ems.models._
+import ems.backend.utils.LogUtils
 
 
 /**
- * Instance of the actor used to push messages to browsers
+ * A trait that eases access to UpdatesServiceActor
  */
-object WebsocketUpdatesService {
+trait WithUpdateService extends AkkaInjectable {
 
-  case class Connect(user: User, outActor: ActorRef)
-  case class Disconnect(user: User, outActor: ActorRef)
-
-  // create the master actor once
-  val websocketUpdatesMaster = Akka.system.actorOf(Props[WebsocketUpdatesService], name="websocketUpdatesMaster")
-  val redisChannel = "forwardingList"
-
-  // we periodically ping the client so the websocket connections do not close
-  Akka.system.scheduler.schedule(30.second, 30.second, websocketUpdatesMaster, Ping)
+  implicit val inj: Injector
+  implicit val system: ActorSystem
+  def updatesServiceActor: ActorRef = injectActorRef[UpdatesServiceActor]
 
   /**
    * Helper function that can be used in futures
@@ -39,34 +30,32 @@ object WebsocketUpdatesService {
    */
   def notifyWebsockets: PartialFunction[Try[Forwarding], Unit] = {
     case Success(forwarding) =>
-      websocketUpdatesMaster ! forwarding
+      updatesServiceActor ! forwarding
   }
 
-  /**
-   * Consumes messages from redis, and give them to the websocketUpdatesMaster
-   * @param message
-   */
-  def onMessage(message: Message) {
-    Logger.debug(s"message received: $message")
-    val forwardingDisplay = ForwardingDisplay.forwardingDisplayByteStringFormatter.deserialize(ByteString(message.data))
-    websocketUpdatesMaster ! forwardingDisplay
-  }
 }
 
 
 /**
  * An actor that pushes notifications to clients
  */
-trait UpdatesService extends Actor
+trait UpdatesServiceActor extends Actor
+
+
+case class Connect(user: User, outActor: ActorRef)
+case class Disconnect(user: User, outActor: ActorRef)
+
 
 /**
  * This actor stores all websocket connections to browsers.
  * Each user can have multiple connections at the same time.
  */
-class WebsocketUpdatesService(implicit inj: Injector) extends Actor with LogUtils with Injectable {
-  import WebsocketUpdatesService._
+class WebsocketUpdatesServiceActor(implicit inj: Injector) extends UpdatesServiceActor with LogUtils with Injectable {
 
   val redisService = inject[RedisService]
+  // since this service is injected at startup by scaldi Module, we cannot use scaldi's play config injection...
+  val channels: Seq[String] = Seq(current.configuration.getString("notifications.redis.channel").get)
+  val redisChannel = "forwardingList"
 
   /**
    * userId -> list of websocket connections
@@ -101,7 +90,7 @@ class WebsocketUpdatesService(implicit inj: Injector) extends Actor with LogUtil
 
     case forwarding: Forwarding =>
       // send notification to redis
-      redisService.client.publish(WebsocketUpdatesService.redisChannel, ForwardingDisplay.fromForwarding(forwarding)) andThen logResult(s"Publish forwarding $forwarding in redis")
+      redisService.client.publish(redisChannel, ForwardingDisplay.fromForwarding(forwarding)) andThen logResult(s"Publish forwarding $forwarding in redis")
 
     case signal: Signal =>
       webSocketOutActors.values.flatMap(identity) foreach {

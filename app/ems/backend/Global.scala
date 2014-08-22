@@ -4,8 +4,8 @@ import java.io.File
 import scala.sys.SystemProperties
 
 import com.typesafe.config.ConfigFactory
-import play.api._
 import scaldi.play.{ControllerInjector, ScaldiSupport}
+import play.api._
 
 import ems.modules.WebModule
 
@@ -44,17 +44,20 @@ trait WithGlobal extends GlobalSettings with ScaldiSupport {
     super.onLoadConfig(loadedConfig ++ overrideConfig, path, classloader, mode)
   }
 
-//  override def onStart(app: Application) {
-//    Redis.openConnections
-//    super.onStart(app)
-//    Logger.info("Application has started")
-//  }
-//
-//  override def onStop(app: Application) {
-//    Redis.closeConnections
-//    Logger.info("Application shutdown...")
-//    super.onStop(app)
-//  }
+  override def onStart(app: Application) {
+    super.onStart(app)
+
+    // we periodically ping the client so the websocket connections do not close
+    // TODO move this into a service
+//    Akka.system.scheduler.schedule(30.second, 30.second, injectActorRef[UpdatesServiceActor], Ping)
+
+    Logger.info("Application has started")
+  }
+
+  override def onStop(app: Application) {
+    Logger.info("Application shutdown...")
+    super.onStop(app)
+  }
 
   /**
    * Defines scaldi modules

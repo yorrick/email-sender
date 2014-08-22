@@ -1,6 +1,9 @@
 package ems.controllers
 
 
+import akka.actor.{Props, ActorRef}
+import scaldi.akka.AkkaInjectable
+
 import scala.concurrent.duration._
 
 import akka.util.Timeout
@@ -56,7 +59,8 @@ class ForwardingController(implicit inj: Injector) extends SecureSocial[User] wi
   def updatesSocket = WebSocket.tryAcceptWithActor[JsValue, JsValue] { implicit request =>
     SecureSocial.currentUser[User] map {
       case Some(user) => Right { outActor =>
-        WebsocketInputActor(user, outActor)
+        // here we create props by hand, since scaldi does not support custom parameters injection
+        Props(classOf[WebsocketInputActor], user, outActor, inj)
       }
       case None => Left(Forbidden)
     }

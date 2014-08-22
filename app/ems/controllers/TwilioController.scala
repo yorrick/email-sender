@@ -13,7 +13,7 @@ import scaldi.akka.AkkaInjectable
 import scaldi.Injector
 
 import ems.models.{Received, Forwarding}
-import ems.backend.{Forwarder, ForwardingStore}
+import ems.backend.ForwarderServiceActor
 
 
 /**
@@ -23,7 +23,7 @@ import ems.backend.{Forwarder, ForwardingStore}
 class TwilioController(implicit inj: Injector) extends Controller with AkkaInjectable with MongoDBUtils {
 
   implicit val system = inject[ActorSystem]
-  val forwarder = injectActorRef[Forwarder]
+  val forwarder = injectActorRef[ForwarderServiceActor]
 
   /**
    * Object used to build forms to validate Twilio POST requests

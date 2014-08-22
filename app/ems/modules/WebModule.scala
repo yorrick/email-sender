@@ -9,7 +9,7 @@ import securesocial.core.RuntimeEnvironment
 import securesocial.core.authenticator.{CookieAuthenticatorBuilder, IdGenerator, CookieAuthenticator, AuthenticatorStore}
 import securesocial.core.services.{AuthenticatorService, UserService}
 
-import ems.backend.utils.{RedisCookieAuthenticatorStore, EMSRuntimeEnvironment}
+import ems.backend.utils.{RedisAuthenticatorStore, RedisCookieAuthenticatorStore, EMSRuntimeEnvironment}
 import ems.models.User
 import ems.backend._
 
@@ -20,18 +20,18 @@ class WebModule extends Module {
   bind[UserService[User]] to UserStore
   // use real AuthenticatorService in dev and prod
   bind[AuthenticatorService[User]] when (inDevMode or inProdMode) to new AuthenticatorService(inject[CookieAuthenticatorBuilder[User]])
-  bind[CookieAuthenticatorBuilder[User]] to new CookieAuthenticatorBuilder[User](inject[AuthenticatorStore[CookieAuthenticator[User]]], inject[IdGenerator])
-  bind[AuthenticatorStore[CookieAuthenticator[User]]] to new RedisCookieAuthenticatorStore()
+  bind[CookieAuthenticatorBuilder[User]] to new CookieAuthenticatorBuilder[User](inject[RedisAuthenticatorStore[CookieAuthenticator[User]]], inject[IdGenerator])
+  bind[RedisAuthenticatorStore[CookieAuthenticator[User]]] to new RedisCookieAuthenticatorStore()
   bind[IdGenerator] to new IdGenerator.Default()
   bind[ForwardingStore] to new MongoForwardingStore
   bind[MailgunService] to new DefaultMailgunService
-  bind[RedisService] to new DefaultRedisService(
-    Seq(WebsocketUpdatesMaster.redisChannel),
-    WebsocketUpdatesMaster.onMessage) initWith(_.openConnections) destroyWith(_.closeConnections)
+  bind[AkkaServices] to new AkkaServices
+  bind[RedisService] to new DefaultRedisService initWith(_.openConnections) destroyWith(_.closeConnections)
 
   // get the underlying play akka system (managed by play)
   bind [ActorSystem] to Akka.system
   // always create new instances of actors
-  bind[ForwarderService] toProvider new Forwarder
+  bind[ForwarderServiceActor] toProvider new DefaultForwarderServiceActor
+  bind[UpdatesServiceActor] toProvider new WebsocketUpdatesServiceActor
 
 }

@@ -1,24 +1,19 @@
 package ems.backend
 
-import akka.actor.{Actor, ActorRef, Props}
+import akka.actor.{ActorSystem, Actor, ActorRef, Props}
 import ems.models.User
-
-
-/**
- * Allows easy Props creation
- */
-object WebsocketInputActor {
-  def apply(user: User, outActor: ActorRef) = Props(classOf[WebsocketInputActor], user, outActor)
-}
+import scaldi.Injector
+import scaldi.akka.AkkaInjectable
 
 
 /**
  * Actor given to play to handle websocket input
  * @param outActor
  */
-class WebsocketInputActor(val user: User, val outActor: ActorRef) extends Actor {
+class WebsocketInputActor(val user: User, val outActor: ActorRef, implicit val inj: Injector) extends Actor with AkkaInjectable {
 
-  import ems.backend.WebsocketUpdatesMaster._
+  implicit val system: ActorSystem = inject[ActorSystem]
+  val updatesServiceActor: ActorRef = injectActorRef[UpdatesServiceActor]
 
   /**
    * For now we do not expect anything from the browsers
@@ -29,11 +24,11 @@ class WebsocketInputActor(val user: User, val outActor: ActorRef) extends Actor 
   }
 
   override def preStart() = {
-    websocketUpdatesMaster ! Connect(user, outActor)
+    updatesServiceActor ! Connect(user, outActor)
   }
 
   override def postStop() = {
-    websocketUpdatesMaster ! Disconnect(user, outActor)
+    updatesServiceActor ! Disconnect(user, outActor)
   }
 }
 

@@ -18,7 +18,7 @@ import ems.utils.{AppInjector, WithMongoServer, WithMongoTestData}
 class ForwarderSpec extends PlaySpecification with WithMongoTestData with AkkaInjectable with AppInjector {
 
   implicit val system = ActorSystem("TestActorSystem")
-  implicit val timeout = Timeout(10.second)
+  implicit val timeout = Timeout(2.second)
 
   val resultMailgunId = "<xxxxxxxx@xxxx.mailgun.org>"
 
@@ -40,7 +40,7 @@ class ForwarderSpec extends PlaySpecification with WithMongoTestData with AkkaIn
 
     "Forward sms to emails" in new WithMongoServer(data, app) {
       implicit val injector = appInjector
-      val actorRef = injectActorRef[ForwarderService]
+      val actorRef = injectActorRef[ForwarderServiceActor]
 
       val forwarding = smsToEmailForwarding.copy(_id = generateId)
 

@@ -5,7 +5,7 @@ import scala.concurrent.duration._
 import scala.concurrent.Future
 
 import akka.pattern
-import akka.actor.Actor
+import akka.actor.{ActorSystem, Actor}
 import play.api.libs.concurrent.Akka
 import play.api.Play.current
 import play.api.libs.concurrent.Execution.Implicits._
@@ -15,15 +15,19 @@ import scaldi.{Injectable, Injector}
 import ems.backend.utils.LogUtils
 import ems.models._
 import ems.backend.Twilio._
-import ems.backend.WebsocketUpdatesMaster.notifyWebsockets
 
 
-trait ForwarderService extends Actor
+/**
+ * An actor that forwards messages
+ */
+trait ForwarderServiceActor extends Actor
 
 /**
  * Handles forwarding logic
  */
-class Forwarder(implicit inj: Injector) extends ForwarderService with LogUtils with Injectable {
+class DefaultForwarderServiceActor(implicit val inj: Injector) extends ForwarderServiceActor with LogUtils with Injectable with WithUpdateService {
+
+  implicit val system: ActorSystem = inject[ActorSystem]
 
   val sendToMailgunSleep = inject[Int] (identified by "forwarder.mailgun.sleep")
   val forwardingStore = inject[ForwardingStore]
