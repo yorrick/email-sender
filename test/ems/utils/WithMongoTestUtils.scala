@@ -23,8 +23,6 @@ import play.api.libs.concurrent.Execution.Implicits._
  */
 trait WithMongoTestUtils {
 
-//  override val app: FakeApplication = FakeApplication()
-
   val data: Seq[(String, List[JsValue])]
   implicit val app: Application
 
@@ -52,7 +50,6 @@ trait WithMongoTestUtils {
     } else {
       Logger.debug("WithMongoData: initialized mongo data")
     }
-
 
   }
 

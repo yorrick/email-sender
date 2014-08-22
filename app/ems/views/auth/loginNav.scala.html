@@ -17,7 +17,7 @@
                     <li><a href="@ems.controllers.routes.ForwardingController.list()">See your forwardings</a></li>
                     <li><a href="@ems.controllers.routes.AccountController.account">Account</a></li>
                     <li class="divider"></li>
-                    <li><a href="@securesocial.controllers.routes.LoginPage.logout()">Logout</a></li>
+                    <li><a href="@ems.controllers.auth.routes.LoginController.logout()">Logout</a></li>
                 </ul>
             </li>
         </ul>
@@ -26,7 +26,7 @@
         <ul class="nav navbar-nav navbar-right">
             <li class="active">
                 <p class="navbar-text">Not signed in
-                    <a href="@securesocial.controllers.routes.LoginPage.login()" class="btn btn-primary btn-sm" role="button">
+                    <a href="@ems.controllers.auth.routes.LoginController.login()" class="btn btn-primary btn-sm" role="button">
                         Login
                     </a>
                 </p>

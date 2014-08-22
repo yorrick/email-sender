@@ -1,32 +1,33 @@
 package ems.controllers
 
 
-import ems.utils.WithMongoTestData
 import org.junit.runner.RunWith
 import org.specs2.runner._
 import play.api.test._
 
+import ems.utils.WithMongoTestData
 import ems.utils.securesocial.WithSecureSocialUtils
 
 
 @RunWith(classOf[JUnitRunner])
 class ApplicationControllerSpec extends PlaySpecification with WithSecureSocialUtils with WithMongoTestData {
-  sequential
 
-  val applicationController = createController(classOf[Application])
+  sequential
 
   "Main module" should {
 
-    "send 404 on a bad request" in new WithApplication {
+    "send 404 on a bad request" in new WithApplication(app) {
       route(FakeRequest(GET, "/boum")) must beNone
     }
 
-    "render the index page" in new WithApplication {
-      val home = applicationController.index(FakeRequest().withCookies(cookie))
+    "render the index page" in new WithApplication(app) {
+      val controller = app.global.getControllerInstance(classOf[Application])
+      val home = controller.index(FakeRequest().withCookies(cookie))
 
       status(home) must equalTo(OK)
       contentType(home) must beSome.which(_ == "text/html")
       contentAsString(home) must contain("Welcome")
+      contentAsString(home) must contain("Paul Watson")
     }
   }
 

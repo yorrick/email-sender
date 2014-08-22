@@ -1,5 +1,10 @@
 package ems.controllers
 
+
+import akka.actor.{Props}
+import ems.backend.persistence.{ForwardingStore, UserInfoStore}
+import ems.backend.updates.WebsocketInputActor
+
 import scala.concurrent.duration._
 
 import akka.util.Timeout
@@ -10,15 +15,19 @@ import play.api.Logger
 import play.api.libs.json._
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.Play.current
+import scaldi.{Injectable, Injector}
 
-import ems.backend.{UserInfoStore, ForwardingStore, WebsocketInputActor}
 import ems.models._
 
 
 /**
  * Handles all http requests from browsers
  */
-class ForwardingController(override implicit val env: RuntimeEnvironment[User]) extends SecureSocial[User] {
+class ForwardingController(implicit inj: Injector) extends SecureSocial[User] with Injectable {
+
+  override implicit val env = inject [RuntimeEnvironment[User]]
+  val forwardingStore = inject[ForwardingStore]
+  val userInfoStore = inject[UserInfoStore]
 
   /**
    * GET for browser
@@ -30,8 +39,8 @@ class ForwardingController(override implicit val env: RuntimeEnvironment[User]) 
     val user = request.user
 
     val result = for {
-      userInfo <- UserInfoStore.findUserInfoByUserId(user.id)
-      forwardingList <- ForwardingStore.listForwarding(request.user.id).mapTo[List[Forwarding]]
+      userInfo <- userInfoStore.findUserInfoByUserId(user.id)
+      forwardingList <- forwardingStore.listForwarding(request.user.id).mapTo[List[Forwarding]]
     } yield {
       val forwardingDisplayList = forwardingList map {ForwardingDisplay.fromForwarding(_)}
       Ok(ems.views.html.forwarding.list(forwardingDisplayList, user, userInfo))
@@ -51,7 +60,8 @@ class ForwardingController(override implicit val env: RuntimeEnvironment[User]) 
   def updatesSocket = WebSocket.tryAcceptWithActor[JsValue, JsValue] { implicit request =>
     SecureSocial.currentUser[User] map {
       case Some(user) => Right { outActor =>
-        WebsocketInputActor(user, outActor)
+        // here we create props by hand, since scaldi does not support custom parameters injection
+        Props(classOf[WebsocketInputActor], user, outActor, inj)
       }
       case None => Left(Forbidden)
     }

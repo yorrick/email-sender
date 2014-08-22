@@ -6,19 +6,19 @@
 GET        /                            @ems.controllers.Application.index
 
 # forwardings API
-POST        /forwarding/api/twilio/receive		ems.controllers.TwilioController.receive()
-POST        /forwarding/api/mailgun/receive   	ems.controllers.MailgunController.receive()
-POST        /forwarding/api/mailgun/event   	ems.controllers.MailgunController.event()
+POST        /forwarding/api/twilio/receive		@ems.controllers.TwilioController.receive()
+POST        /forwarding/api/mailgun/receive   	@ems.controllers.MailgunController.receive()
+POST        /forwarding/api/mailgun/event   	@ems.controllers.MailgunController.event()
 
 # forwarding pages
 GET         /forwarding/					    @ems.controllers.ForwardingController.list
 GET         /forwarding/updates.socket          @ems.controllers.ForwardingController.updatesSocket
-GET         /forwarding/updates.js              ems.controllers.JavascriptController.updatesJs()
+GET         /forwarding/updates.js              @ems.controllers.JavascriptController.updatesJs()
 
 # Auth pages
-GET         /login                      @securesocial.controllers.LoginPage.login
-GET         /logout                     @securesocial.controllers.LoginPage.logout
-GET         /authenticate/:provider     @securesocial.controllers.ProviderController.authenticate(provider, redirectTo: Option[String])
+GET         /login                      @ems.controllers.auth.LoginController.login
+GET         /logout                     @ems.controllers.auth.LoginController.logout
+GET         /authenticate/:provider     @ems.controllers.auth.ProviderController.authenticate(provider, redirectTo: Option[String])
 
 # Account page
 GET         /account                    @ems.controllers.AccountController.account
@@ -29,4 +29,4 @@ GET     /assets/*file                   controllers.Assets.at(path="/public", fi
 GET     /secure-social-assets/*file     securesocial.controllers.Assets.at(path = "/public/securesocial", file)
 
 # Javascript routes
-GET         /javascriptRoutes           ems.controllers.JavascriptController.javascriptRoutes()
+GET         /javascriptRoutes           @ems.controllers.JavascriptController.javascriptRoutes()

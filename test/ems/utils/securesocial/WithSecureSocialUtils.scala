@@ -1,17 +1,16 @@
 package ems.utils.securesocial
 
 
-import securesocial.core.RuntimeEnvironment
-import securesocial.core.services.AuthenticatorService
-import securesocial.core.authenticator._
+import ems.modules.WebModule
+import ems.utils.TestModule
 import play.api.mvc.Cookie
 
-import ems.models.User
-import ems.backend.utils.{WithControllerUtils, EMSRuntimeEnvironment}
-import ems.utils.WithMongoTestData
+import ems.backend.{WithGlobal, Global}
+import play.api.test.FakeApplication
+import scaldi.play.ControllerInjector
 
 
-trait WithSecureSocialUtils extends WithControllerUtils with WithMongoTestData {
+trait WithSecureSocialUtils {
 
   /**
    * Cookie used for tests.
@@ -20,21 +19,12 @@ trait WithSecureSocialUtils extends WithControllerUtils with WithMongoTestData {
    */
   lazy val cookie = Cookie("emailsenderid", "")
 
-  /**
-   * The runtime environment that will be injected to the classes
-   */
-  lazy val runtimeEnvironment = new EMSRuntimeEnvironment {
-    override lazy val authenticatorService = new AuthenticatorService(
-      new CookieAuthenticatorBuilder[User](new MockAuthenticatorStore(user), idGenerator)
-    )
+  lazy val testGlobal = new WithGlobal {
+    override def applicationModule = new TestModule :: new WebModule :: new ControllerInjector
   }
 
   /**
-   * Creates a controller for the given class
-   * @param controllerClass
-   * @tparam A
-   * @return
+   * An application with an always logged in user
    */
-  def createController[A](controllerClass: Class[A], env: RuntimeEnvironment[User] = runtimeEnvironment) = getControllerInstance[A, User](env)(controllerClass).get
-
+  def app = FakeApplication(withGlobal = Some(testGlobal))
 }

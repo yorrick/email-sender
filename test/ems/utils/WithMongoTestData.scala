@@ -3,7 +3,8 @@ package ems.utils
 
 import _root_.securesocial.core.{AuthenticationMethod, BasicProfile}
 import com.github.nscala_time.time.Imports.DateTime
-import ems.backend.{UserInfoStore, UserStore, ForwardingStore}
+import ems.backend.persistence.mongo.MongoDBUtils
+import ems.backend.persistence.{ForwardingStore, UserStore, UserInfoStore}
 import reactivemongo.bson.BSONObjectID
 import play.api.libs.json.JsValue
 
@@ -13,14 +14,12 @@ import ems.models.{UserInfo, User, Received, Forwarding}
 /**
  * Provides data for mongo based tests
  */
-trait WithMongoTestData {
-
-  def generateId = BSONObjectID.generate
+trait WithMongoTestData extends MongoDBUtils {
 
   lazy val data = Seq(
-    (ForwardingStore.collectionName, forwardingJson),
-    (UserStore.collectionName, userJson),
-    (UserInfoStore.collectionName, userInfoJson)
+    ("forwarding", forwardingJson),
+    ("user", userJson),
+    ("userInfo", userInfoJson)
   )
 
   // forwarding data

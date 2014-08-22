@@ -1,19 +1,18 @@
 package ems.utils.securesocial
 
+import com.github.nscala_time.time.Imports._
+import ems.models.User
+import ems.utils.WithMongoTestData
+import securesocial.core.authenticator.{AuthenticatorStore, CookieAuthenticator}
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
-
-import com.github.nscala_time.time.Imports._
-import securesocial.core.authenticator.{CookieAuthenticator, AuthenticatorStore}
-
-import ems.models.User
 
 
 /**
  * A store that always returns the same User
  */
-class MockAuthenticatorStore(val user: User) extends AuthenticatorStore[CookieAuthenticator[User]] {
+class MockAuthenticatorStore extends AuthenticatorStore[CookieAuthenticator[User]] with WithMongoTestData {
 
   val authenticator: CookieAuthenticator[User] = new CookieAuthenticator(
     "emailsenderid", user, DateTime.nextDay, DateTime.now, DateTime.lastDay, this)

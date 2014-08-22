@@ -2,9 +2,10 @@ package ems.controllers
 
 import play.api.Routes
 import play.api.mvc.{Action, Controller}
+import scaldi.{Injectable, Injector}
 
 
-object JavascriptController extends Controller {
+class JavascriptController(implicit inj: Injector) extends Controller with Injectable {
 
   def updatesJs() = Action { implicit request =>
     Ok(ems.views.js.forwarding.updates())
