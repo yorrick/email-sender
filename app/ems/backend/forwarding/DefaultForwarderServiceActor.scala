@@ -1,6 +1,6 @@
 package ems.backend.forwarding
 
-import akka.actor.{ActorRef, ActorSystem}
+import akka.actor.ActorSystem
 import akka.pattern
 import ems.backend.email.MailgunService
 import ems.backend.persistence.{ForwardingStore, UserInfoStore, UserStore}
@@ -9,12 +9,12 @@ import ems.backend.updates.UpdateService
 import ems.backend.utils.LogUtils
 import ems.models._
 import play.api.Logger
-import play.api.Play.current
-import play.api.libs.concurrent.Akka
-import play.api.libs.concurrent.Execution.Implicits._
+//import play.api.Play.current
+//import play.api.libs.concurrent.Akka
+//import play.api.libs.concurrent.Execution.Implicits._
 import scaldi.{Injectable, Injector}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.{Success, Try}
 
@@ -24,7 +24,8 @@ import scala.util.{Success, Try}
  */
 class DefaultForwarderServiceActor(implicit val inj: Injector) extends ForwarderServiceActor with LogUtils with Injectable {
 
-  implicit val system: ActorSystem = inject[ActorSystem]
+  implicit val system = inject[ActorSystem]
+  implicit val executionContext = inject[ExecutionContext]
 
   val sendToMailgunSleep = inject[Int] (identified by "forwarder.mailgun.sleep")
   val forwardingStore = inject[ForwardingStore]
@@ -68,11 +69,11 @@ class DefaultForwarderServiceActor(implicit val inj: Injector) extends Forwarder
       Logger.debug(s"smsToEmail: ${forwarding.from}")
 
       val future = for {
-        user <- findUserByPhoneNumber(forwarding.from)
+        user <- findUserByPhoneNumber(forwarding.from) andThen logResult("findUserByPhoneNumber")
         // add user and email to forwarding
-        forwarding <- Future.successful(forwarding.withUserAndEmail(user))
+        forwarding <- Future.successful(forwarding.withUserAndEmail(user)) andThen logResult("withUserAndEmail")
         forwarding <- forwardingStore.save(forwarding) andThen notifyWebsockets
-        mailgunId <- pattern.after(sendToMailgunSleep.second, Akka.system.scheduler)(mailgun.sendEmail(forwarding.from, user.main.email.get, forwarding.content))
+        mailgunId <- pattern.after(sendToMailgunSleep.second, system.scheduler)(mailgun.sendEmail(forwarding.from, user.main.email.get, forwarding.content))
         saved <- forwardingStore.updateMailgunIdById(forwarding.id, mailgunId) andThen logResult("updateMailgunIdById")
         forwarding <- forwardingStore.updateStatusById(forwarding.id, Sending) andThen notifyWebsockets andThen logResult("updateStatusById")
       } yield forwarding
@@ -93,7 +94,7 @@ class DefaultForwarderServiceActor(implicit val inj: Injector) extends Forwarder
         // add user and phone number to forwarding
         forwarding <- Future.successful(forwarding.withUserInfoAndPhone(userInfo))
         forwarding <- forwardingStore.save(forwarding) andThen notifyWebsockets
-        twilioId <- pattern.after(sendToMailgunSleep.second, Akka.system.scheduler)(twilioService.sendSms(forwarding.to.get, forwarding.content))
+        twilioId <- pattern.after(sendToMailgunSleep.second, system.scheduler)(twilioService.sendSms(forwarding.to.get, forwarding.content))
         forwarding <- forwardingStore.updateStatusById(forwarding.id, Sent) andThen notifyWebsockets
       } yield forwarding
 

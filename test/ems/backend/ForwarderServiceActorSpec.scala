@@ -7,13 +7,13 @@ import ems.backend.persistence._
 import ems.backend.sms.TwilioService
 import ems.backend.updates.UpdateService
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
 import akka.actor.ActorSystem
 import akka.pattern.ask
 import akka.util.Timeout
 import play.api.test.{FakeApplication, WithApplication, PlaySpecification}
-import play.api.Play.current
 import scaldi.akka.AkkaInjectable
 import scaldi.Module
 
@@ -25,7 +25,6 @@ import scala.util.Try
 
 class ForwarderServiceActorSpec extends PlaySpecification with WithMongoTestData with AkkaInjectable with MockUtils {
 
-  implicit val system = ActorSystem("TestActorSystem")
   implicit val timeout = Timeout(10.second)
 
   implicit val injector = new Module {
@@ -39,16 +38,13 @@ class ForwarderServiceActorSpec extends PlaySpecification with WithMongoTestData
     bind[TwilioService] to mockTwilioService
     bind[UpdateService] to mockUpdateService
     bind[ActorSystem] to mockActorSystem
+    bind[ExecutionContext] to mockExecutionContext
   }
-
-  val app = new FakeApplication(withoutPlugins = Seq(
-    "play.modules.rediscala.RedisPlugin",
-    "play.modules.reactivemongo.ReactiveMongoPlugin"
-  ))
 
   "Forwarder" should {
 
-    "Forward sms to emails" in new WithApplication(app) {
+    "Forward sms to emails" in {
+      implicit val system = inject[ActorSystem]
       val actorRef = injectActorRef[ForwarderServiceActor]
       val result = await((actorRef ? smsToEmailForwarding).mapTo[Try[Forwarding]])
       result must beSuccessfulTry.which(f => f.id == smsToEmailForwarding.id and f.status == Sending)

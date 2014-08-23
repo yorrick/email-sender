@@ -1,19 +1,17 @@
 package ems.utils
 
 import akka.actor.{Actor, ActorSystem}
-import akka.testkit.TestActor.SetAutoPilot
-import akka.testkit.{TestActor, TestActorRef}
+import akka.testkit.TestActorRef
 import ems.backend.email.MailgunService
 import ems.backend.sms.TwilioService
 import ems.backend.updates.UpdateService
 import ems.models.{Sending, ForwardingStatus, Forwarding}
-import org.mockito.Matchers._
-
-import scala.concurrent.Future
-
-// to use matchers like anyInt()
+import org.mockito.Matchers._  // to use matchers like anyInt()
+import scala.concurrent.{ExecutionContext, Future}
 import org.specs2.mock._
 import ems.backend.persistence.{ForwardingStore, UserStore, UserInfoStore}
+import scala.concurrent.ExecutionContext.Implicits.global
+
 
 /**
  * Contains mocks that are used in the tests
@@ -61,4 +59,5 @@ trait MockUtils extends Mockito { self: WithMongoTestData =>
   }
 
   def mockActorSystem = ActorSystem("TestActorSystem")
+  def mockExecutionContext: ExecutionContext = global
 }

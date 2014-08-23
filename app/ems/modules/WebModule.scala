@@ -16,6 +16,8 @@ import securesocial.core.RuntimeEnvironment
 import securesocial.core.authenticator.{CookieAuthenticatorBuilder, IdGenerator, CookieAuthenticator}
 import securesocial.core.services.{AuthenticatorService}
 import ems.models.User
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import scala.concurrent.ExecutionContext
 
 
 class WebModule extends Module {
@@ -37,6 +39,8 @@ class WebModule extends Module {
 
   // get the underlying play akka system (managed by play)
   bind [ActorSystem] to Akka.system
+  // get default play execution context
+  bind [ExecutionContext] to defaultContext
   // always create new instances of actors
   bind[ForwarderServiceActor] toProvider new DefaultForwarderServiceActor
   bind[UpdatesServiceActor] toProvider new WebsocketUpdatesServiceActor
