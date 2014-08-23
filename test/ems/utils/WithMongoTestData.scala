@@ -4,7 +4,6 @@ package ems.utils
 import _root_.securesocial.core.{AuthenticationMethod, BasicProfile}
 import com.github.nscala_time.time.Imports.DateTime
 import ems.backend.persistence.mongo.MongoDBUtils
-import ems.backend.persistence.{ForwardingStore, UserStore, UserInfoStore}
 import reactivemongo.bson.BSONObjectID
 import play.api.libs.json.JsValue
 

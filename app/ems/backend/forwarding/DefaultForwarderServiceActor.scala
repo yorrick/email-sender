@@ -1,11 +1,11 @@
 package ems.backend.forwarding
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern
 import ems.backend.email.MailgunService
 import ems.backend.persistence.{ForwardingStore, UserInfoStore, UserStore}
 import ems.backend.sms.TwilioService
-import ems.backend.updates.WithUpdateService
+import ems.backend.updates.UpdateService
 import ems.backend.utils.LogUtils
 import ems.models._
 import play.api.Logger
@@ -16,14 +16,13 @@ import scaldi.{Injectable, Injector}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
-
-
+import scala.util.{Success, Try}
 
 
 /**
  * Handles forwarding logic
  */
-class DefaultForwarderServiceActor(implicit val inj: Injector) extends ForwarderServiceActor with LogUtils with Injectable with WithUpdateService {
+class DefaultForwarderServiceActor(implicit val inj: Injector) extends ForwarderServiceActor with LogUtils with Injectable {
 
   implicit val system: ActorSystem = inject[ActorSystem]
 
@@ -33,6 +32,16 @@ class DefaultForwarderServiceActor(implicit val inj: Injector) extends Forwarder
   val userInfoStore = inject[UserInfoStore]
   val userStore = inject[UserStore]
   val twilioService = inject[TwilioService]
+  val updatesServiceActor = inject[UpdateService].updatesServiceActor
+
+  /**
+   * Helper function that can be used in futures
+   * @return
+   */
+  def notifyWebsockets: PartialFunction[Try[Forwarding], Unit] = {
+    case Success(forwarding) =>
+      updatesServiceActor ! forwarding
+  }
 
   /**
    * Find user with incoming phone number
@@ -64,15 +73,15 @@ class DefaultForwarderServiceActor(implicit val inj: Injector) extends Forwarder
         forwarding <- Future.successful(forwarding.withUserAndEmail(user))
         forwarding <- forwardingStore.save(forwarding) andThen notifyWebsockets
         mailgunId <- pattern.after(sendToMailgunSleep.second, Akka.system.scheduler)(mailgun.sendEmail(forwarding.from, user.main.email.get, forwarding.content))
-        saved <- forwardingStore.updateMailgunIdById(forwarding.id, mailgunId)
-        forwarding <- forwardingStore.updateStatusById(forwarding.id, Sending) andThen notifyWebsockets
+        saved <- forwardingStore.updateMailgunIdById(forwarding.id, mailgunId) andThen logResult("updateMailgunIdById")
+        forwarding <- forwardingStore.updateStatusById(forwarding.id, Sending) andThen notifyWebsockets andThen logResult("updateStatusById")
       } yield forwarding
 
       val senderRef = sender()
 
-      future onSuccess {
-        case result @ _ =>
-          senderRef ! result
+      // send back whatever result we got
+      future onComplete {
+        case result @ _ => senderRef ! result
       }
 
     // email -> sms

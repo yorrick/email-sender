@@ -1,9 +1,17 @@
 package ems.backend
 
 
-import ems.backend.forwarding.ForwarderServiceActor
+import ems.backend.email.MailgunService
+import ems.backend.forwarding.{DefaultForwarderServiceActor, ForwarderServiceActor}
+import ems.backend.persistence._
+import ems.backend.sms.TwilioService
+import ems.backend.updates.{WebsocketUpdatesServiceActor, UpdatesServiceActor, UpdateService}
+import ems.backend.utils.RedisService
+import play.api.libs.concurrent.Akka
+import org.specs2.mock._
 
 import scala.concurrent.duration._
+import scala.concurrent.Future
 
 import play.api.mvc.{Action, Handler}
 import play.api.mvc.Results._
@@ -11,44 +19,45 @@ import akka.actor.ActorSystem
 import akka.pattern.ask
 import akka.util.Timeout
 import play.api.test.{FakeApplication, PlaySpecification}
+import play.api.Play.current
 import scaldi.akka.AkkaInjectable
+import scaldi.Module
 
 import ems.models.{Sending, Forwarding}
-import ems.utils.{AppInjector, WithMongoServer, WithMongoTestData}
+import ems.utils.{WithMongoApplication, MockUtils, WithMongoServer, WithMongoTestData}
+
+import scala.util.Try
 
 
-class ForwarderServiceActorSpec extends PlaySpecification with WithMongoTestData with AkkaInjectable with AppInjector {
+class ForwarderServiceActorSpec extends PlaySpecification with WithMongoTestData with AkkaInjectable with MockUtils {
 
   implicit val system = ActorSystem("TestActorSystem")
-  implicit val timeout = Timeout(2.second)
+  implicit val timeout = Timeout(10.second)
 
-  val resultMailgunId = "<xxxxxxxx@xxxx.mailgun.org>"
+//  val resultMailgunId = "<xxxxxxxx@xxxx.mailgun.org>"
+//
+//  val fakeMailgunResponse =
+//    s"""{"message": "Queued. Thank you.","id": "${resultMailgunId}"}"""
 
-  val fakeMailgunResponse =
-    s"""{"message": "Queued. Thank you.","id": "${resultMailgunId}"}"""
+  implicit val injector = new Module {
+    bind[ForwarderServiceActor] toProvider new DefaultForwarderServiceActor
 
-  /**
-   * Intercepts all POST made to the application
-   */
-  val routes: PartialFunction[(String, String), Handler] = {
-    case ("POST", _: String) =>
-      Action { Ok(fakeMailgunResponse) }
+    binding identifiedBy "forwarder.mailgun.sleep" to 0
+    bind[ForwardingStore] to mockForwardingStore
+    bind[MailgunService] to mockMailgunService
+    bind[UserInfoStore] to mockUserInfoStore
+    bind[UserStore] to mockUserStore
+    bind[TwilioService] to mockTwilioService
+    bind[UpdateService] to mockUpdateService
+    bind[ActorSystem] to mockActorSystem
   }
-
-  val app = FakeApplication(withRoutes = routes)
-
 
   "Forwarder" should {
 
-    "Forward sms to emails" in new WithMongoServer(data, app) {
-      implicit val injector = appInjector
+    "Forward sms to emails" in new WithMongoApplication(data) {
       val actorRef = injectActorRef[ForwarderServiceActor]
-
-      val forwarding = smsToEmailForwarding.copy(_id = generateId)
-
-      val result = await((actorRef ? forwarding).mapTo[Forwarding])
-      result.id must beEqualTo(forwarding.id)
-      result.status must beEqualTo(Sending)
+      val result = await((actorRef ? smsToEmailForwarding).mapTo[Try[Forwarding]])
+      result must beSuccessfulTry.which(f => f.id == smsToEmailForwarding.id and f.status == Sending)
     }
   }
 
