@@ -5,10 +5,10 @@ import ems.backend.utils.{RedisService, LogUtils}
 import ems.models.{Forwarding, ForwardingDisplay, Signal}
 import play.api.Logger
 import play.api.Play._
-import play.api.libs.concurrent.Execution.Implicits._
 import scaldi.{Injectable, Injector}
 
 import scala.collection.mutable
+import scala.concurrent.ExecutionContext
 
 /**
  * This actor stores all websocket connections to browsers.
@@ -17,6 +17,7 @@ import scala.collection.mutable
 class WebsocketUpdatesServiceActor(implicit inj: Injector) extends UpdatesServiceActor with LogUtils with Injectable {
 
   val redisService = inject[RedisService]
+  implicit val executionContext = inject[ExecutionContext]
   // since this service is injected at startup by scaldi Module, we cannot use scaldi's play config injection...
   val channels: Seq[String] = Seq(current.configuration.getString("notifications.redis.channel").get)
   val redisChannel = "forwardingList"

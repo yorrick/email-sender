@@ -1,5 +1,6 @@
 package ems.backend.utils
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
 import akka.actor.{ActorRef, ActorSystem}
@@ -9,7 +10,6 @@ import ems.models.{Ping, ForwardingDisplay}
 import play.api.Logger
 import play.api.libs.concurrent.Akka
 import play.api.Play.current
-import play.api.libs.concurrent.Execution.Implicits._
 import redis.api.pubsub.Message
 import scaldi.{Injectable, Injector}
 
@@ -20,6 +20,7 @@ import scaldi.{Injectable, Injector}
 class DefaultAkkaServices(implicit inj: Injector) extends Injectable with AkkaServices {
 
   implicit val system = inject[ActorSystem]
+  implicit val executionContext = inject[ExecutionContext]
   val updatesServiceActor: ActorRef = inject[UpdateService].updatesServiceActor
 
   /**

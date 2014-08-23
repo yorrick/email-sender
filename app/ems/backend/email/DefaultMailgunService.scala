@@ -5,10 +5,9 @@ import play.api.http.Status
 import play.api.libs.json.{JsError, JsSuccess, JsValue}
 import play.api.libs.ws.{WS, WSAuthScheme, WSRequestHolder, WSResponse}
 import play.api.Play.current
-import play.api.libs.concurrent.Execution.Implicits._
 import scaldi.{Injectable, Injector}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
  * Utility that send emails using mailgun http api.
@@ -20,6 +19,7 @@ class DefaultMailgunService(implicit inj: Injector) extends Injectable with Mail
   val domain = inject[String] (identified by "mailgun.smtp.login").split("@").last
   val url = inject[String] (identified by "mailgun.api.url")
   val apiUrl = url.format(domain)
+  implicit val executionContext = inject[ExecutionContext]
 
   private def requestHolder: WSRequestHolder = WS.url(apiUrl).withAuth("api", key, WSAuthScheme.BASIC)
 

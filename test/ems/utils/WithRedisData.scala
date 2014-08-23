@@ -1,6 +1,6 @@
 package ems.utils
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{ExecutionContext, Await, Future}
 import scala.concurrent.duration._
 
 import redis.RedisClient
@@ -11,7 +11,7 @@ import play.modules.rediscala.RedisPlugin
 import play.api.test._
 import play.api.Logger
 import play.libs.Akka
-import play.api.libs.concurrent.Execution.Implicits._
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 
 /**
@@ -26,7 +26,7 @@ abstract class WithRedisData(data: => Seq[(String, ByteString)] = Seq(),
 
 
   lazy val closeRedisConnectionsTimeout = 5.second
-  lazy val flushDBTimeout = 2.second
+  lazy val flushDBTimeout = 5.second
 
   override def around[T: AsResult](t: => T): Result = super.around {
     initRedis

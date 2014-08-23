@@ -6,7 +6,7 @@ import org.specs2.runner._
 import play.api.http.{MimeTypes, HeaderNames}
 import play.api.Logger
 import play.api.test._
-
+import scala.concurrent.ExecutionContext.Implicits.global
 import ems.utils.securesocial.WithSecureSocialUtils
 import ems.utils.{WithMongoTestData, WithMongoApplication}
 
@@ -19,6 +19,8 @@ class ForwardingControllerSpec extends PlaySpecification with WithSecureSocialUt
   step {
     Logger.info("Before class")
   }
+
+  implicit val executionContext = global
 
   "Forwarding controller" should {
 

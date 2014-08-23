@@ -1,13 +1,12 @@
 package ems.backend.persistence.mongo
 
 import play.api.Play.current
-import play.api.libs.concurrent.Execution.Implicits._
 import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.collection.JSONCollection
 import reactivemongo.api._
 import reactivemongo.bson.BSONObjectID
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 
 /**
@@ -15,6 +14,7 @@ import scala.concurrent.Future
  */
 trait MongoDBStore extends MongoDBUtils {
 
+  implicit val executionContext: ExecutionContext
   def collectionName: String
   def db: reactivemongo.api.DB = ReactiveMongoPlugin.db
   def collection: JSONCollection = db.collection[JSONCollection](collectionName)

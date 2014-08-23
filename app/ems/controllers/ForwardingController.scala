@@ -5,6 +5,7 @@ import akka.actor.{Props}
 import ems.backend.persistence.{ForwardingStore, UserInfoStore}
 import ems.backend.updates.WebsocketInputActor
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
 import akka.util.Timeout
@@ -13,7 +14,6 @@ import securesocial.core.{RuntimeEnvironment, SecureSocial}
 import play.api.mvc.WebSocket
 import play.api.Logger
 import play.api.libs.json._
-import play.api.libs.concurrent.Execution.Implicits._
 import play.api.Play.current
 import scaldi.{Injectable, Injector}
 
@@ -28,6 +28,7 @@ class ForwardingController(implicit inj: Injector) extends SecureSocial[User] wi
   override implicit val env = inject [RuntimeEnvironment[User]]
   val forwardingStore = inject[ForwardingStore]
   val userInfoStore = inject[UserInfoStore]
+  implicit val executionContext = inject[ExecutionContext]
 
   /**
    * GET for browser
