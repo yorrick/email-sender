@@ -12,13 +12,13 @@ import org.junit.runner.RunWith
 import org.specs2.runner._
 import play.api.test._
 
-import ems.utils.{AppInjector, WithMongoTestData, WithMongoApplication}
+import ems.utils.{AppInjector, WithTestData, WithMongoApplication}
 import ems.utils.securesocial.WithSecureSocialUtils
 import ems.models.User
 
 
 @RunWith(classOf[JUnitRunner])
-class UserStoreSpec extends PlaySpecification with WithSecureSocialUtils with WithMongoTestData with AppInjector with Injectable {
+class UserStoreSpec extends PlaySpecification with WithSecureSocialUtils with WithTestData with AppInjector with Injectable {
   sequential
 
   "User store" should {

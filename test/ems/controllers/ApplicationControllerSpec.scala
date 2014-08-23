@@ -5,12 +5,12 @@ import org.junit.runner.RunWith
 import org.specs2.runner._
 import play.api.test._
 
-import ems.utils.WithMongoTestData
+import ems.utils.WithTestData
 import ems.utils.securesocial.WithSecureSocialUtils
 
 
 @RunWith(classOf[JUnitRunner])
-class ApplicationControllerSpec extends PlaySpecification with WithSecureSocialUtils with WithMongoTestData {
+class ApplicationControllerSpec extends PlaySpecification with WithSecureSocialUtils with WithTestData {
 
   sequential
 

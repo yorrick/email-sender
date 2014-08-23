@@ -6,14 +6,14 @@ import com.github.nscala_time.time.Imports.DateTime
 import ems.backend.persistence.mongo.MongoDBUtils
 import reactivemongo.bson.BSONObjectID
 import play.api.libs.json.JsValue
-
+import scala.language.postfixOps
 import ems.models.{UserInfo, User, Received, Forwarding}
 
 
 /**
  * Provides data for mongo based tests
  */
-trait WithMongoTestData extends MongoDBUtils {
+trait WithTestData extends MongoDBUtils {
 
   lazy val data = Seq(
     ("forwarding", forwardingJson),
@@ -22,18 +22,31 @@ trait WithMongoTestData extends MongoDBUtils {
   )
 
   // forwarding data
-  lazy val forwardingId = "53cd93ce93d970b47bea76fd"
-  lazy val mailgunId = "mailgunId"
+  lazy val smsToEmailForwardingId = "53cd93ce93d970b47bea76fd"
+  lazy val smsToEmailMailgunId = "mailgunId"
   lazy val smsToEmailForwarding = Forwarding(
-    BSONObjectID.parse(forwardingId).get,
+    BSONObjectID.parse(smsToEmailForwardingId).get,
     Some(BSONObjectID.parse(userMongoId).get),
     phoneNumber,
     Some("222222222"),
-    "some text",
+    "Hello from sms",
     DateTime.now,
     Received,
-    mailgunId)
-  lazy val forwardingList = List(smsToEmailForwarding)
+    smsToEmailMailgunId)
+  
+  lazy val emailToSmsForwardingId = "53cd93ce93d970b47bea7699"
+  lazy val emailToSmsForwarding = Forwarding(
+    BSONObjectID.parse(emailToSmsForwardingId).get,
+    Some(BSONObjectID.parse(userMongoId).get),
+    userEmail,
+    Some(phoneNumber),
+    "Hello from email",
+    DateTime.now,
+    Received,
+    "")
+
+  lazy val forwardingList = List(smsToEmailForwarding, emailToSmsForwarding)
+  lazy val forwardingMap = forwardingList map {f => f.id -> f} toMap
   lazy val forwardingJson: List[JsValue] = forwardingList map {Forwarding.forwardingFormat.writes(_)}
 
 

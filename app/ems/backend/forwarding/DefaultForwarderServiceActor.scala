@@ -9,11 +9,7 @@ import ems.backend.updates.UpdateService
 import ems.backend.utils.LogUtils
 import ems.models._
 import play.api.Logger
-//import play.api.Play.current
-//import play.api.libs.concurrent.Akka
-//import play.api.libs.concurrent.Execution.Implicits._
 import scaldi.{Injectable, Injector}
-
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.{Success, Try}
@@ -100,9 +96,9 @@ class DefaultForwarderServiceActor(implicit val inj: Injector) extends Forwarder
 
       val senderRef = sender()
 
-      future onSuccess {
-        case result @ _ =>
-          senderRef ! result
+      // send back whatever result we got
+      future onComplete {
+        case result @ _ => senderRef ! result
       }
 
     case MailgunEvent(messageId, status) =>

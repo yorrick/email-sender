@@ -8,11 +8,11 @@ import play.api.Logger
 import play.api.test._
 import scala.concurrent.ExecutionContext.Implicits.global
 import ems.utils.securesocial.WithSecureSocialUtils
-import ems.utils.{WithMongoTestData, WithMongoApplication}
+import ems.utils.{WithTestData, WithMongoApplication}
 
 
 @RunWith(classOf[JUnitRunner])
-class ForwardingControllerSpec extends PlaySpecification with WithSecureSocialUtils with WithMongoTestData {
+class ForwardingControllerSpec extends PlaySpecification with WithSecureSocialUtils with WithTestData {
   sequential
 //  isolated
 
@@ -30,7 +30,8 @@ class ForwardingControllerSpec extends PlaySpecification with WithSecureSocialUt
 
       status(response) must equalTo(OK)
       contentType(response) must beSome.which(_ == "text/html")
-      contentAsString(response) must contain ("some text")
+      contentAsString(response) must contain ("Hello from sms")
+      contentAsString(response) must contain ("Hello from email")
     }
 
     "block access to non logged users" in new WithMongoApplication(data, app) {

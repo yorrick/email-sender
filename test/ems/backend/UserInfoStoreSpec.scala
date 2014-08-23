@@ -2,7 +2,7 @@ package ems.backend
 
 import ems.backend.persistence.mongo.MongoDBUtils
 import ems.backend.persistence.{ForwardingStore, UserInfoStore}
-import ems.utils.{AppInjector, WithMongoTestData, WithMongoApplication}
+import ems.utils.{AppInjector, WithTestData, WithMongoApplication}
 import ems.utils.securesocial.WithSecureSocialUtils
 import org.junit.runner.RunWith
 import org.specs2.runner._
@@ -11,7 +11,7 @@ import scaldi.Injectable
 
 
 @RunWith(classOf[JUnitRunner])
-class UserInfoStoreSpec extends PlaySpecification with WithSecureSocialUtils with MongoDBUtils with WithMongoTestData with AppInjector with Injectable {
+class UserInfoStoreSpec extends PlaySpecification with WithSecureSocialUtils with MongoDBUtils with WithTestData with AppInjector with Injectable {
   sequential
 
   "User info store" should {

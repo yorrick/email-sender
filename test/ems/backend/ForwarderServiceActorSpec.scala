@@ -18,12 +18,12 @@ import scaldi.akka.AkkaInjectable
 import scaldi.Module
 
 import ems.models.{Sending, Forwarding}
-import ems.utils.{MockUtils, WithMongoTestData}
+import ems.utils.{MockUtils, WithTestData}
 
 import scala.util.Try
 
 
-class ForwarderServiceActorSpec extends PlaySpecification with WithMongoTestData with AkkaInjectable with MockUtils {
+class ForwarderServiceActorSpec extends PlaySpecification with WithTestData with AkkaInjectable with MockUtils {
 
   implicit val timeout = Timeout(10.second)
 
@@ -50,11 +50,13 @@ class ForwarderServiceActorSpec extends PlaySpecification with WithMongoTestData
       result must beSuccessfulTry.which(f => f.id == smsToEmailForwarding.id and f.status == Sending)
     }
 
-//    "Forward emails to sms" in new WithMongoApplication(data) {
-//      val actorRef = injectActorRef[ForwarderServiceActor]
-//      val result = await((actorRef ? emailToSmsForwarding).mapTo[Try[Forwarding]])
-//      result must beSuccessfulTry.which(f => f.id == emailToSmsForwarding.id and f.status == Sending)
-//    }
+    "Forward emails to sms" in {
+      implicit val system = inject[ActorSystem]
+      val actorRef = injectActorRef[ForwarderServiceActor]
+      val result = await((actorRef ? emailToSmsForwarding).mapTo[Try[Forwarding]])
+      result must beSuccessfulTry.which(f => f.id == emailToSmsForwarding.id and f.status == Sending)
+    }
+
   }
 
 }

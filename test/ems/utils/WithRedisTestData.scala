@@ -11,7 +11,7 @@ import scaldi.{Injectable, Injector}
 /**
  * Provides data for redis based tests
  */
-trait WithRedisTestData extends WithMongoTestData with Injectable {
+trait WithRedisTestData extends WithTestData with Injectable {
 
   implicit val injector: Injector = new WebModule
 

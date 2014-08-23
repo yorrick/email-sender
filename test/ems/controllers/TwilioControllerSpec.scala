@@ -5,11 +5,11 @@ import org.junit.runner.RunWith
 import org.specs2.runner._
 import play.api.test._
 
-import ems.utils.{WithMongoTestData, WithMongoApplication}
+import ems.utils.{WithTestData, WithMongoApplication}
 
 
 @RunWith(classOf[JUnitRunner])
-class TwilioControllerSpec extends PlaySpecification with WithMongoTestData {
+class TwilioControllerSpec extends PlaySpecification with WithTestData {
   sequential
 
   "Twilio controller" should {

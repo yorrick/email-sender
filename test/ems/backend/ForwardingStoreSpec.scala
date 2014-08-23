@@ -8,13 +8,13 @@ import play.api.test._
 import scaldi.Injectable
 import scaldi.play.ScaldiSupport
 
-import ems.utils.{AppInjector, WithMongoApplication, WithMongoTestData}
+import ems.utils.{AppInjector, WithMongoApplication, WithTestData}
 import ems.models.{Sending, Sent}
 import ems.backend.persistence.mongo.MongoDBUtils
 
 
 @RunWith(classOf[JUnitRunner])
-class ForwardingStoreSpec extends PlaySpecification with WithMongoTestData with MongoDBUtils with Injectable with AppInjector {
+class ForwardingStoreSpec extends PlaySpecification with WithTestData with MongoDBUtils with Injectable with AppInjector {
   sequential
 
   "Forwarding store" should {
@@ -42,7 +42,7 @@ class ForwardingStoreSpec extends PlaySpecification with WithMongoTestData with 
       implicit val injector = appInjector
       val store = inject[ForwardingStore]
 
-      val result = await(store.updateStatusByMailgunId(mailgunId, Sent))
+      val result = await(store.updateStatusByMailgunId(smsToEmailMailgunId, Sent))
       result.status must beEqualTo(Sent)
     }
 
@@ -60,7 +60,7 @@ class ForwardingStoreSpec extends PlaySpecification with WithMongoTestData with 
       val store = inject[ForwardingStore]
 
       val result = await(store.listForwarding(userMongoId))
-      result.size must beEqualTo(1)
+      result.size must beEqualTo(forwardingList.length)
       result.head.userId must beEqualTo(Some(userMongoId))
     }
   }

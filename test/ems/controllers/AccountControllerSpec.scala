@@ -6,11 +6,11 @@ import org.specs2.runner._
 import play.api.test._
 
 import ems.utils.securesocial.WithSecureSocialUtils
-import ems.utils.{WithMongoTestData, WithMongoApplication}
+import ems.utils.{WithTestData, WithMongoApplication}
 
 
 @RunWith(classOf[JUnitRunner])
-class AccountControllerSpec extends PlaySpecification with WithSecureSocialUtils with WithMongoTestData {
+class AccountControllerSpec extends PlaySpecification with WithSecureSocialUtils with WithTestData {
   sequential
 
   "Account controller" should {
