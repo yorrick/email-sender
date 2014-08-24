@@ -8,7 +8,7 @@ import play.api.Play._
 import scaldi.{Injectable, Injector}
 
 import scala.collection.mutable
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{Future, ExecutionContext}
 
 /**
  * This actor stores all websocket connections to browsers.
@@ -18,9 +18,9 @@ class WebsocketUpdatesServiceActor(implicit inj: Injector) extends UpdatesServic
 
   val redisService = inject[RedisService]
   implicit val executionContext = inject[ExecutionContext]
+  val redisChannel = current.configuration.getString("notifications.redis.channel").get
   // since this service is injected at startup by scaldi Module, we cannot use scaldi's play config injection...
-  val channels: Seq[String] = Seq(current.configuration.getString("notifications.redis.channel").get)
-  val redisChannel = "forwardingList"
+  val channels: Seq[String] = Seq(redisChannel)
 
   val logger: Logger = Logger("application.WebsocketUpdatesServiceActor")
 
@@ -32,14 +32,11 @@ class WebsocketUpdatesServiceActor(implicit inj: Injector) extends UpdatesServic
   def receive = {
     case Connect(user, actor) =>
       logger.debug("Opened a websocket connection")
-      logger.debug(s"Actor hashCode: ${hashCode}")
 
       webSocketOutActors.get(user.id) match {
         case Some(websocketOutList) => websocketOutList += actor
         case None => webSocketOutActors(user.id) = mutable.ListBuffer(actor)
       }
-
-      logger.debug(s"webSocketOutActors: $webSocketOutActors")
 
       sender ! webSocketOutActors.toMap
 
@@ -52,23 +49,26 @@ class WebsocketUpdatesServiceActor(implicit inj: Injector) extends UpdatesServic
       }
 
       webSocketOutActors.remove(user.id)
-      logger.debug(s"webSocketOutActors: $webSocketOutActors")
-
       sender ! webSocketOutActors.toMap
 
     case forwarding: Forwarding =>
       logger.debug(s"Sending message to redis pubsub $forwarding")
-      logger.debug(s"Actor hashCode: ${hashCode}")
       // send notification to redis
-      redisService.client.publish(redisChannel, ForwardingDisplay.fromForwarding(forwarding)) andThen logResult(s"Publish forwarding $forwarding in redis")
+      val pub = redisService.client.publish(redisChannel, ForwardingDisplay.fromForwarding(forwarding))
+
+      val senderRef = sender()
+
+      // send back whatever result we've got
+      pub onComplete {
+        case result @ _ => senderRef ! result
+      }
 
     case signal: Signal =>
       webSocketOutActors.values.flatMap(identity) foreach {_ ! Signal.signalFormat.writes(signal)}
+      sender ! true
 
     case forwardingDisplay: ForwardingDisplay =>
       logger.debug(s"Broadcast forwardingDisplay $forwardingDisplay")
-      logger.debug(s"Actor hashCode: ${hashCode}")
-      logger.debug(s"webSocketOutActors: $webSocketOutActors")
 
       webSocketOutActors.get(forwardingDisplay.userId) map {
         _ foreach { outActor =>
@@ -76,6 +76,8 @@ class WebsocketUpdatesServiceActor(implicit inj: Injector) extends UpdatesServic
           outActor ! json
         }
       }
+
+      sender ! true
   }
 
 }

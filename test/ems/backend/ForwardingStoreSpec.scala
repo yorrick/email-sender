@@ -1,16 +1,23 @@
 package ems.backend
 
 
-import ems.backend.persistence.ForwardingStore
+import akka.actor.ActorSystem
+import ems.backend.email.MailgunService
+import ems.backend.forwarding.{DefaultForwarderServiceActor, ForwarderServiceActor}
+import ems.backend.persistence.{UserStore, UserInfoStore, ForwardingStore}
+import ems.backend.sms.TwilioService
+import ems.backend.updates.UpdateService
 import org.junit.runner.RunWith
 import org.specs2.runner._
 import play.api.test._
-import scaldi.Injectable
+import scaldi.{Module, Injectable}
 import scaldi.play.ScaldiSupport
 
 import ems.utils.{AppInjector, WithMongoApplication, WithTestData}
 import ems.models.{Sending, Sent}
 import ems.backend.persistence.mongo.MongoDBUtils
+
+import scala.concurrent.ExecutionContext
 
 
 @RunWith(classOf[JUnitRunner])

@@ -5,8 +5,12 @@ import akka.testkit.TestActorRef
 import ems.backend.email.MailgunService
 import ems.backend.sms.TwilioService
 import ems.backend.updates.UpdateService
+import ems.backend.utils.RedisService
 import ems.models.{Sending, ForwardingStatus, Forwarding}
-import org.mockito.Matchers._  // to use matchers like anyInt()
+import org.mockito.Matchers._
+import redis.RedisClient
+
+// to use matchers like anyInt()
 import scala.concurrent.{ExecutionContext, Future}
 import org.specs2.mock._
 import ems.backend.persistence.{ForwardingStore, UserStore, UserInfoStore}
@@ -31,12 +35,21 @@ trait MockUtils extends Mockito { self: WithTestData =>
       Future.successful(forwardingMap.get(id.asInstanceOf[String]).get.copy(status = Sending))
     }
 
+//    m.updateStatusById(anyObject[String], anyObject[ForwardingStatus]) answers { rawArgs =>
+//      val args = rawArgs.asInstanceOf[Array[Any]]
+//      val id = args(0).asInstanceOf[String]
+//      val status = args(1).asInstanceOf[ForwardingStatus]
+//      println(s"======================= $id $status")
+//
+//      Future.successful(forwardingMap.get(id).get.copy(status = status))
+//    }
+
     m
   }
 
   def mockMailgunService = {
     val m = mock[MailgunService]
-    
+
     m.sendEmail(anyString, anyString, anyString) returns Future.successful(smsToEmailForwarding.mailgunId)
 
     m
@@ -75,4 +88,19 @@ trait MockUtils extends Mockito { self: WithTestData =>
 
   def mockActorSystem = ActorSystem("TestActorSystem")
   def mockExecutionContext: ExecutionContext = global
+
+//  def mockRedisService = {
+//    val m = mock[RedisService]
+//
+////    val client = mock[RedisClient]
+////    client.publish(anyString, anyObject) returns Future.successful(1)
+//
+//    implicit val system = mockActorSystem
+//    val client = spy(RedisClient())
+//
+//    m.client returns client
+//
+//    m
+//  }
+
 }

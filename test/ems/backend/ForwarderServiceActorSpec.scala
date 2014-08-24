@@ -13,7 +13,7 @@ import scala.concurrent.duration._
 import akka.actor.ActorSystem
 import akka.pattern.ask
 import akka.util.Timeout
-import play.api.test.{FakeApplication, WithApplication, PlaySpecification}
+import play.api.test.PlaySpecification
 import scaldi.akka.AkkaInjectable
 import scaldi.Module
 
