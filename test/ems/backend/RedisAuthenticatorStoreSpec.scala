@@ -13,20 +13,18 @@ import akka.util.Timeout._
 import akka.util.Timeout
 import play.api.test._
 
-import ems.utils.{AppInjector, WithRedisTestData, WithRedisData}
-import ems.utils.securesocial.WithSecureSocialUtils
+import ems.utils.{MockUtils, AppInjector, WithRedisTestData, WithRedisData}
 
 
 @RunWith(classOf[JUnitRunner])
-class RedisAuthenticatorStoreSpec extends PlaySpecification with WithSecureSocialUtils
-      with WithRedisTestData with Injectable with AppInjector {
+class RedisAuthenticatorStoreSpec extends PlaySpecification with WithRedisTestData with Injectable with AppInjector with MockUtils {
 
   sequential
 
   implicit lazy val timeout: Timeout = 5.second
 
   "Authentication store" should {
-    "Return Some when authenticator does exist" in new WithRedisData(redisData) {
+    "Return Some when authenticator does exist" in new WithRedisData(redisData, noMongoApp) {
       implicit val injector = appInjector
       val authStore = inject[RedisAuthenticatorStore[CookieAuthenticator[User]]]
 
@@ -34,7 +32,7 @@ class RedisAuthenticatorStoreSpec extends PlaySpecification with WithSecureSocia
       result should beSome
     }
 
-    "Return None when authenticator does not exist" in new WithRedisData(redisData) {
+    "Return None when authenticator does not exist" in new WithRedisData(redisData, noMongoApp) {
       implicit val injector = appInjector
       val authStore = inject[RedisAuthenticatorStore[CookieAuthenticator[User]]]
 
@@ -42,7 +40,7 @@ class RedisAuthenticatorStoreSpec extends PlaySpecification with WithSecureSocia
       result should beNone
     }
 
-    "Save authenticator" in new WithRedisData(redisData) {
+    "Save authenticator" in new WithRedisData(redisData, noMongoApp) {
       implicit val injector = appInjector
       val authStore = inject[RedisAuthenticatorStore[CookieAuthenticator[User]]]
 
@@ -51,7 +49,7 @@ class RedisAuthenticatorStoreSpec extends PlaySpecification with WithSecureSocia
       result.id must beEqualTo(newId)
     }
 
-    "Delete authenticator" in new WithRedisData(redisData) {
+    "Delete authenticator" in new WithRedisData(redisData, noMongoApp) {
       implicit val injector = appInjector
       val authStore = inject[RedisAuthenticatorStore[CookieAuthenticator[User]]]
 

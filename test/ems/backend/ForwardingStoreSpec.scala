@@ -13,7 +13,7 @@ import play.api.test._
 import scaldi.{Module, Injectable}
 import scaldi.play.ScaldiSupport
 
-import ems.utils.{AppInjector, WithMongoApplication, WithTestData}
+import ems.utils.{MockUtils, AppInjector, WithMongoApplication, WithTestData}
 import ems.models.{Sending, Sent}
 import ems.backend.persistence.mongo.MongoDBUtils
 
@@ -21,12 +21,12 @@ import scala.concurrent.ExecutionContext
 
 
 @RunWith(classOf[JUnitRunner])
-class ForwardingStoreSpec extends PlaySpecification with WithTestData with MongoDBUtils with Injectable with AppInjector {
+class ForwardingStoreSpec extends PlaySpecification with WithTestData with MongoDBUtils with Injectable with AppInjector with MockUtils {
   sequential
 
   "Forwarding store" should {
 
-    "Be able to save a forwarding" in new WithMongoApplication(data) {
+    "Be able to save a forwarding" in new WithMongoApplication(data, noRedisApp) {
       implicit val injector = appInjector
       val store = inject[ForwardingStore]
 
@@ -37,7 +37,7 @@ class ForwardingStoreSpec extends PlaySpecification with WithTestData with Mongo
       result._id must beEqualTo(forwardingId)
     }
 
-    "Update status by id" in new WithMongoApplication(data) {
+    "Update status by id" in new WithMongoApplication(data, noRedisApp) {
       implicit val injector = appInjector
       val store = inject[ForwardingStore]
 
@@ -45,7 +45,7 @@ class ForwardingStoreSpec extends PlaySpecification with WithTestData with Mongo
       result.status must beEqualTo(Sending)
     }
 
-    "Set status by mailgunId" in new WithMongoApplication(data) {
+    "Set status by mailgunId" in new WithMongoApplication(data, noRedisApp) {
       implicit val injector = appInjector
       val store = inject[ForwardingStore]
 
@@ -53,7 +53,7 @@ class ForwardingStoreSpec extends PlaySpecification with WithTestData with Mongo
       result.status must beEqualTo(Sent)
     }
 
-    "Set forwarding mailgunId" in new WithMongoApplication(data) {
+    "Set forwarding mailgunId" in new WithMongoApplication(data, noRedisApp) {
       implicit val injector = appInjector
       val store = inject[ForwardingStore]
 
@@ -62,7 +62,7 @@ class ForwardingStoreSpec extends PlaySpecification with WithTestData with Mongo
       result.mailgunId must beEqualTo(newMailgunId)
     }
 
-    "List user forwarding" in new WithMongoApplication(data) {
+    "List user forwarding" in new WithMongoApplication(data, noRedisApp) {
       implicit val injector = appInjector
       val store = inject[ForwardingStore]
 

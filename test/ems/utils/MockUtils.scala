@@ -8,6 +8,7 @@ import ems.backend.updates.UpdateService
 import ems.backend.utils.RedisService
 import ems.models.{Sending, ForwardingStatus, Forwarding}
 import org.mockito.Matchers._
+import play.api.test.FakeApplication
 import redis.RedisClient
 
 // to use matchers like anyInt()
@@ -21,6 +22,13 @@ import scala.concurrent.ExecutionContext.Implicits.global
  * Contains mocks that are used in the tests
  */
 trait MockUtils extends Mockito { self: WithTestData =>
+
+  val mongoPluginClass = "play.modules.reactivemongo.ReactiveMongoPlugin"
+  val redisPluginClass = "play.modules.rediscala.RedisPlugin"
+
+  def noRedisApp = FakeApplication(withoutPlugins = Seq(redisPluginClass))
+  def noMongoApp = FakeApplication(withoutPlugins = Seq(mongoPluginClass))
+  def app = FakeApplication(withoutPlugins = Seq(mongoPluginClass, redisPluginClass))
 
   def mockForwardingStore = {
     val m = mock[ForwardingStore]
