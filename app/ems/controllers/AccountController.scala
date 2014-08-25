@@ -4,17 +4,14 @@ package ems.controllers
 import ems.backend.email.MailgunService
 import ems.backend.persistence.{UserInfoStoreException, UserInfoStore}
 import ems.backend.sms.TwilioService
-import play.api.mvc.RequestHeader
+import play.api.mvc.{ RequestHeader}
 import scaldi.{Injectable, Injector}
-
 import scala.concurrent.{ExecutionContext, Future}
-
 import securesocial.core.{RuntimeEnvironment, SecureSocial}
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.data.validation.Constraints._
 import play.api.Logger
-
 import ems.models.{PhoneNumber, User}
 
 

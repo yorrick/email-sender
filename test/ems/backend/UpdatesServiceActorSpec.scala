@@ -48,7 +48,7 @@ class UpdatesServiceActorSpec extends PlaySpecification with WithTestData with A
       implicit val injector = appInjector
       val actorRef = injectActorRef[UpdatesServiceActor]
 
-      await((actorRef ? smsToEmailForwarding).mapTo[Try[Long]]) must beSuccessfulTry.withValue(1)
+      await((actorRef ? smsToEmailForwarding).mapTo[Try[Long]]) must beSuccessfulTry
     }
 
     "Accept Signal messages" in new WithApplication(noMongoApp) {

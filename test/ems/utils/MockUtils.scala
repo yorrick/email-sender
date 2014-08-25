@@ -1,17 +1,23 @@
 package ems.utils
 
+import _root_.securesocial.core.RuntimeEnvironment
+import _root_.securesocial.core.authenticator.{Authenticator, AuthenticatorBuilder}
+import _root_.securesocial.core.services.{AuthenticatorService}
 import akka.actor.{Actor, ActorSystem}
 import akka.testkit.TestActorRef
+import com.github.nscala_time.time.Imports._
+import ems.backend.WithGlobal
 import ems.backend.email.MailgunService
 import ems.backend.sms.TwilioService
 import ems.backend.updates.UpdateService
-import ems.backend.utils.RedisService
-import ems.models.{Sending, ForwardingStatus, Forwarding}
+import ems.models.{User, Sending, ForwardingStatus, Forwarding}
+import ems.modules.WebModule
 import org.mockito.Matchers._
+import play.api.mvc.{Results, Result, RequestHeader, Cookie}
 import play.api.test.FakeApplication
-import redis.RedisClient
+import play.mvc.Http.Context
+import scaldi.play.ControllerInjector
 
-// to use matchers like anyInt()
 import scala.concurrent.{ExecutionContext, Future}
 import org.specs2.mock._
 import ems.backend.persistence.{ForwardingStore, UserStore, UserInfoStore}
@@ -23,9 +29,59 @@ import scala.concurrent.ExecutionContext.Implicits.global
  */
 trait MockUtils extends Mockito { self: WithTestData =>
 
+  /**
+   * Cookie used for tests.
+   * The value is not used as the AuthenticationStore is mocked
+   * TODO find a way to use configuration (we need an app in context to be able to use CookieAuthenticator.cookieName)
+   */
+  lazy val cookie = Cookie("emailsenderid", "")
+
+  /**
+   * A runtime env that disables the authentication
+   */
+  def mockRuntimeEnvironment = new RuntimeEnvironment.Default[User] {
+    override lazy val userService = mockUserStore
+    override lazy val authenticatorService = new AuthenticatorService(mockAuthenticatorBuilder)
+  }
+
+  def mockAuthenticatorBuilder = new AuthenticatorBuilder[User] {
+    val authenticator = mockAuthenticator
+
+    def fromRequest(request: RequestHeader): Future[Option[Authenticator[User]]] = Future.successful(Some(authenticator))
+
+    def fromUser(user: User): Future[Authenticator[User]] = Future.successful(authenticator)
+
+    override val id: String = "mockAuthenticatorBuilder"
+  }
+
+  def mockAuthenticator = new Authenticator[User] with Results {
+    override val id: String = "mockAuthenticator"
+
+    override def touch: Future[Authenticator[User]] = Future.successful(this)
+
+    override def updateUser(user: User): Future[Authenticator[User]] = Future.successful(this)
+
+    override def discarding(result: Result): Future[Result] = Future.successful(result)
+
+    override def discarding(javaContext: Context): Future[Unit] = Future.successful(Unit)
+
+    override def touching(result: Result): Future[Result] = Future.successful(result)
+
+    override def touching(javaContext: Context): Future[Unit] = Future.successful(Unit)
+
+    override def isValid: Boolean = true
+
+    override def starting(result: Result): Future[Result] = Future.successful(result)
+
+    override val creationDate: DateTime = DateTime.lastDay
+    override val user: User = self.user
+    override val expirationDate: DateTime = DateTime.nextDay
+    override val lastUsed: DateTime = DateTime.now
+  }
+
+
   val mongoPluginClass = "play.modules.reactivemongo.ReactiveMongoPlugin"
   val redisPluginClass = "play.modules.rediscala.RedisPlugin"
-
   def noRedisApp = FakeApplication(withoutPlugins = Seq(redisPluginClass))
   def noMongoApp = FakeApplication(withoutPlugins = Seq(mongoPluginClass))
   def app = FakeApplication(withoutPlugins = Seq(mongoPluginClass, redisPluginClass))
@@ -43,14 +99,7 @@ trait MockUtils extends Mockito { self: WithTestData =>
       Future.successful(forwardingMap.get(id.asInstanceOf[String]).get.copy(status = Sending))
     }
 
-//    m.updateStatusById(anyObject[String], anyObject[ForwardingStatus]) answers { rawArgs =>
-//      val args = rawArgs.asInstanceOf[Array[Any]]
-//      val id = args(0).asInstanceOf[String]
-//      val status = args(1).asInstanceOf[ForwardingStatus]
-//      println(s"======================= $id $status")
-//
-//      Future.successful(forwardingMap.get(id).get.copy(status = status))
-//    }
+    m.listForwarding(anyString) returns Future.successful(forwardingList)
 
     m
   }
@@ -67,6 +116,7 @@ trait MockUtils extends Mockito { self: WithTestData =>
     val m = mock[UserInfoStore]
     m.findUserInfoByPhoneNumber(anyString) returns Future.successful(userInfo)
     m.findUserInfoByUserId(anyString) returns Future.successful(userInfo)
+    m.savePhoneNumber(anyString, anyString) returns Future.successful(userInfo)
 
     m
   }
@@ -82,6 +132,7 @@ trait MockUtils extends Mockito { self: WithTestData =>
   def mockTwilioService = {
     val m = mock[TwilioService]
     m.sendSms(anyString, anyString) returns Future.successful("twilio_id")
+    m.sendConfirmationSms(anyString) returns Future.successful("twilio_id")
 
     m
   }

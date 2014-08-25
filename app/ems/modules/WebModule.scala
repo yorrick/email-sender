@@ -8,13 +8,16 @@ import ems.backend.persistence._
 import ems.backend.sms.{DefaultTwilioService, TwilioService}
 import ems.backend.updates.{DefaultUpdateService, UpdateService, WebsocketUpdatesServiceActor, UpdatesServiceActor}
 import ems.backend.utils.{DefaultRedisService, RedisService, DefaultAkkaServices, AkkaServices}
+import ems.controllers.EMSViewTemplates
+import ems.controllers.auth.EMSRoutesService
 import play.api.libs.concurrent.Akka
 import play.api.Play.current
 import scaldi.Module
 import scaldi.play.condition._
+import securesocial.controllers.ViewTemplates
 import securesocial.core.RuntimeEnvironment
 import securesocial.core.authenticator.{CookieAuthenticatorBuilder, IdGenerator, CookieAuthenticator}
-import securesocial.core.services.{AuthenticatorService}
+import securesocial.core.services.{CacheService, RoutesService, AuthenticatorService}
 import ems.models.User
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import scala.concurrent.ExecutionContext
@@ -23,11 +26,16 @@ import scala.concurrent.ExecutionContext
 class WebModule extends Module {
 
   bind[RuntimeEnvironment[User]] to new EMSRuntimeEnvironment
+  bind[RoutesService] to new EMSRoutesService()
+  // TODO implement a redis based cached service ? This one is based on play's cache
+  bind[CacheService] to new CacheService.Default()
   bind[UserStore] to new MongoUserStore
   // use real AuthenticatorService in dev and prod
-  bind[AuthenticatorService[User]] when (inDevMode or inProdMode) to new AuthenticatorService(inject[CookieAuthenticatorBuilder[User]])
+  bind[AuthenticatorService[User]] to new AuthenticatorService(inject[CookieAuthenticatorBuilder[User]])
+  bind[ViewTemplates] to new EMSViewTemplates(inject[RuntimeEnvironment[User]])
   bind[CookieAuthenticatorBuilder[User]] to new CookieAuthenticatorBuilder[User](inject[RedisAuthenticatorStore[CookieAuthenticator[User]]], inject[IdGenerator])
   bind[RedisAuthenticatorStore[CookieAuthenticator[User]]] to new RedisCookieAuthenticatorStore()
+
   bind[IdGenerator] to new IdGenerator.Default()
   bind[ForwardingStore] to new MongoForwardingStore
   bind[UserInfoStore] to new MongoUserInfoStore
