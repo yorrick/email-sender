@@ -13,7 +13,7 @@ import play.api.test._
 import scaldi.{Module, Injectable}
 import scaldi.play.ScaldiSupport
 
-import ems.utils.{MockUtils, AppInjector, WithMongoApplication, WithTestData}
+import ems.utils.{TestUtils, AppInjector, WithMongoApplication, WithTestData}
 import ems.models.{Sending, Sent}
 import ems.backend.persistence.mongo.MongoDBUtils
 
@@ -21,7 +21,7 @@ import scala.concurrent.ExecutionContext
 
 
 @RunWith(classOf[JUnitRunner])
-class ForwardingStoreSpec extends PlaySpecification with WithTestData with MongoDBUtils with Injectable with AppInjector with MockUtils {
+class ForwardingStoreSpec extends PlaySpecification with WithTestData with MongoDBUtils with Injectable with AppInjector with TestUtils {
   sequential
 
   "Forwarding store" should {

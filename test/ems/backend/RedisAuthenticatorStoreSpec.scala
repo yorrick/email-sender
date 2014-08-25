@@ -13,11 +13,11 @@ import akka.util.Timeout._
 import akka.util.Timeout
 import play.api.test._
 
-import ems.utils.{MockUtils, AppInjector, WithRedisTestData, WithRedisData}
+import ems.utils.{TestUtils, AppInjector, WithRedisTestData, WithRedisData}
 
 
 @RunWith(classOf[JUnitRunner])
-class RedisAuthenticatorStoreSpec extends PlaySpecification with WithRedisTestData with Injectable with AppInjector with MockUtils {
+class RedisAuthenticatorStoreSpec extends PlaySpecification with WithRedisTestData with Injectable with AppInjector with TestUtils {
 
   sequential
 

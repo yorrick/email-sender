@@ -18,12 +18,12 @@ import scaldi.akka.AkkaInjectable
 import scaldi.Module
 
 import ems.models.{Sending, Forwarding}
-import ems.utils.{MockUtils, WithTestData}
+import ems.utils.{TestUtils, WithTestData}
 
 import scala.util.Try
 
 
-class ForwarderServiceActorSpec extends PlaySpecification with WithTestData with AkkaInjectable with MockUtils {
+class ForwarderServiceActorSpec extends PlaySpecification with WithTestData with AkkaInjectable with TestUtils {
 
   implicit val timeout = Timeout(10.second)
 

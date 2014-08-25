@@ -9,11 +9,11 @@ import akka.util.Timeout
 import akka.pattern.ask
 import play.api.test.{PlaySpecification, WithApplication}
 import scaldi.akka.AkkaInjectable
-import ems.utils.{MockUtils, AppInjector, WithTestData}
+import ems.utils.{TestUtils, AppInjector, WithTestData}
 import scala.util.Try
 
 
-class UpdatesServiceActorSpec extends PlaySpecification with WithTestData with AkkaInjectable with AppInjector with MockUtils {
+class UpdatesServiceActorSpec extends PlaySpecification with WithTestData with AkkaInjectable with AppInjector with TestUtils {
 
   implicit val timeout = Timeout(10.second)
   implicit val system = ActorSystem("TestActorSystem")

@@ -7,14 +7,14 @@ import org.specs2.runner._
 import play.api.Application
 import play.api.test._
 
-import ems.utils.{MockUtils, WithTestData}
+import ems.utils.{TestUtils, WithTestData}
 import scaldi.{Injectable, Module}
 import scaldi.play.ControllerInjector
 import securesocial.core.RuntimeEnvironment
 
 
 @RunWith(classOf[JUnitRunner])
-class MainControllerSpec extends PlaySpecification with MockUtils with WithTestData with Injectable {
+class MainControllerSpec extends PlaySpecification with TestUtils with WithTestData with Injectable {
   sequential
 
   implicit val injector = new Module {

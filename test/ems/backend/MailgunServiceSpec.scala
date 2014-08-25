@@ -7,13 +7,13 @@ import play.api.mvc.{Handler, Action}
 import play.api.test._
 import play.api.mvc.Results.Ok
 
-import ems.utils.{MockUtils, AppInjector, WithTestData}
+import ems.utils.{TestUtils, AppInjector, WithTestData}
 import scaldi.Injectable
 import scaldi.play.ScaldiSupport
 
 
 @RunWith(classOf[JUnitRunner])
-class MailgunServiceSpec extends PlaySpecification with WithTestData with Injectable with AppInjector with MockUtils {
+class MailgunServiceSpec extends PlaySpecification with WithTestData with Injectable with AppInjector with TestUtils {
   sequential
 
   val resultMailgunId = "<xxxxxxxx@xxxx.mailgun.org>"

@@ -13,11 +13,11 @@ import scaldi.{Module, Injectable}
 import securesocial.core.RuntimeEnvironment
 import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.Implicits.global
-import ems.utils.{AppInjector, MockUtils, WithTestData, WithMongoApplication}
+import ems.utils.{AppInjector, TestUtils, WithTestData, WithMongoApplication}
 
 
 @RunWith(classOf[JUnitRunner])
-class ForwardingControllerSpec extends PlaySpecification with MockUtils with WithTestData with Injectable with AppInjector {
+class ForwardingControllerSpec extends PlaySpecification with TestUtils with WithTestData with Injectable with AppInjector {
   sequential
 //  isolated
 

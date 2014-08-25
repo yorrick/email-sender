@@ -18,7 +18,7 @@ import scala.concurrent.ExecutionContext
 
 
 @RunWith(classOf[JUnitRunner])
-class AccountControllerSpec extends PlaySpecification with MockUtils with WithTestData with Injectable {
+class AccountControllerSpec extends PlaySpecification with TestUtils with WithTestData with Injectable {
   sequential
 
   implicit val injector = new Module {

@@ -8,12 +8,12 @@ import play.api.mvc.{Handler, Action}
 import play.api.test._
 import play.api.mvc.Results.Created
 
-import ems.utils.{MockUtils, AppInjector, WithTestData}
+import ems.utils.{TestUtils, AppInjector, WithTestData}
 import scaldi.Injectable
 
 
 @RunWith(classOf[JUnitRunner])
-class TwilioServiceSpec extends PlaySpecification with WithTestData with AppInjector with Injectable with MockUtils {
+class TwilioServiceSpec extends PlaySpecification with WithTestData with AppInjector with Injectable with TestUtils {
   sequential
 
   val resultTwilioId = "SMa3491ba7cff849649150a1aea8aa3575"
