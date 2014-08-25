@@ -3,13 +3,12 @@ package ems.backend.persistence
 import ems.backend.persistence.mongo.MongoDBStore
 import ems.backend.utils.LogUtils
 import ems.models._
-import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json._
 import reactivemongo.core.commands.LastError
 import play.modules.reactivemongo.json.BSONFormats._
 import scaldi.{Injectable, Injector}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 
 
@@ -19,12 +18,8 @@ import scala.concurrent.Future
  */
 class MongoUserInfoStore(implicit inj: Injector) extends MongoDBStore with LogUtils with Injectable with UserInfoStore {
 
-  /**
-   * Service exception
-   * @param msg
-   */
-
   override val collectionName = inject[String] (identified by "store.userInfo.collectionName")
+  implicit val executionContext = inject[ExecutionContext]
 
   /**
    * Finds a user info by user id (or by _id, since they are the same)

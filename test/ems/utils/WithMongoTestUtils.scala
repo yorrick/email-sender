@@ -1,7 +1,7 @@
 package ems.utils
 
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{ExecutionContext, Await, Future}
 import scala.concurrent.duration._
 
 import reactivemongo.api.collections.default.BSONCollection
@@ -13,7 +13,7 @@ import play.modules.reactivemongo.json.BSONFormats
 import play.api.libs.concurrent.Akka
 import play.api.libs.json.JsValue
 import play.api.{Application, Logger}
-import play.api.libs.concurrent.Execution.Implicits._
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 
 /**

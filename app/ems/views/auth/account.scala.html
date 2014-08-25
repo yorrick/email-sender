@@ -9,7 +9,6 @@
 
 @(form: Form[PhoneNumber], smsTarget: String, emailTarget: String)(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User], flash: Flash)
 
-
 @mainAuth("Account", user = Some(user)){
 
     <div class="row">

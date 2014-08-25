@@ -22,6 +22,7 @@ Sms <-> Email bridge application - developped with [scala](http://www.scala-lang
  * deploy the app on [heroku](https://www.heroku.com/) using [a custom scala buildpack](https://github.com/yorrick/heroku-buildpack-scala)
  * use [newrelic](http://newrelic.com/) and [papertrail](https://papertrailapp.com/) for monitoring and logging
  * use [scaldi](http://scaldi.org/) dependency injection framework
+ * unit test [actors](http://doc.akka.io/docs/akka/2.3.3/scala/testing.html), [controllers](https://www.playframework.com/documentation/2.2.0/ScalaTest) and so on, using [mockito and specs2](https://code.google.com/p/specs/wiki/UsingMockito)
 
 #### Architecture evolution
  * to be able to scale out, web UI, api endpoints and forwarding jobs should be split into different nodes

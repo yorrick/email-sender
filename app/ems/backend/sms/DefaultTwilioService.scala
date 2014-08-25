@@ -4,12 +4,11 @@ import ems.backend.utils.LogUtils
 import play.api.Logger
 import play.api.Play.current
 import play.api.http.Status
-import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json.{JsError, JsSuccess, JsValue}
 import play.api.libs.ws.{WS, WSAuthScheme, WSRequestHolder, WSResponse}
 import scaldi.{Injector, Injectable}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 
 /**
@@ -21,6 +20,7 @@ class DefaultTwilioService(implicit inj: Injector) extends LogUtils with TwilioS
   val apiUrl = inject[String] (identified by "twilio.api.url")
   val apiSid = inject[String] (identified by "twilio.api.sid")
   val apiToken = inject[String] (identified by "twilio.api.token")
+  implicit val executionContext = inject[ExecutionContext]
 
   /**
    * Builds a request holder object

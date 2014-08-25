@@ -4,18 +4,14 @@ package ems.controllers
 import ems.backend.email.MailgunService
 import ems.backend.persistence.{UserInfoStoreException, UserInfoStore}
 import ems.backend.sms.TwilioService
-import play.api.mvc.RequestHeader
+import play.api.mvc.{ RequestHeader}
 import scaldi.{Injectable, Injector}
-
-import scala.concurrent.Future
-
+import scala.concurrent.{ExecutionContext, Future}
 import securesocial.core.{RuntimeEnvironment, SecureSocial}
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.data.validation.Constraints._
-import play.api.libs.concurrent.Execution.Implicits._
 import play.api.Logger
-
 import ems.models.{PhoneNumber, User}
 
 
@@ -29,6 +25,7 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
   val phonePrefix = "+1"
 
   override implicit val env = inject [RuntimeEnvironment[User]]
+  implicit val executionContext = inject[ExecutionContext]
   val mailgun = inject[MailgunService]
   val userInfoStore = inject[UserInfoStore]
   val twilioService = inject[TwilioService]

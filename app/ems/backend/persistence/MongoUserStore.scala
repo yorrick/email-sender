@@ -4,14 +4,13 @@ import ems.backend.persistence.mongo.MongoDBStore
 import ems.backend.utils.LogUtils
 import ems.models.{User, UserInfo}
 import play.api.Logger
-import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json.{JsObject, Json}
 import reactivemongo.api.Cursor
 import scaldi.{Injectable, Injector}
 import securesocial.core._
 import securesocial.core.services.SaveMode
 import play.modules.reactivemongo.json.BSONFormats._
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 
 /**
@@ -21,6 +20,7 @@ import scala.concurrent.Future
 class MongoUserStore(implicit inj: Injector) extends UserStore with MongoDBStore with LogUtils with Injectable {
 
   val userInfoStore = inject[UserInfoStore]
+  implicit val executionContext = inject[ExecutionContext]
 
   override val collectionName = inject[String] (identified by "store.user.collectionName")
 
