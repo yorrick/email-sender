@@ -3,7 +3,7 @@
 # ~~~~
 
 # Home page
-GET        /                            @ems.controllers.Application.index
+GET        /                            @ems.controllers.MainController.index
 
 # forwardings API
 POST        /forwarding/api/twilio/receive		@ems.controllers.TwilioController.receive()

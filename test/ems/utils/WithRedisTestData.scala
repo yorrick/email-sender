@@ -1,17 +1,17 @@
 package ems.utils
 
-import _root_.securesocial.core.authenticator.{AuthenticatorStore, CookieAuthenticator}
+import _root_.securesocial.core.authenticator.CookieAuthenticator
 import com.github.nscala_time.time.Imports._
-import ems.backend.auth.{RedisCookieAuthenticatorStore, RedisAuthenticatorStore}
+import ems.backend.auth.RedisAuthenticatorStore
 import ems.models.User
 import ems.modules.WebModule
-import ems.utils.securesocial.WithSecureSocialUtils
 import scaldi.{Injectable, Injector}
+
 
 /**
  * Provides data for redis based tests
  */
-trait WithRedisTestData extends WithMongoTestData with Injectable {
+trait WithRedisTestData extends WithTestData with Injectable {
 
   implicit val injector: Injector = new WebModule
 

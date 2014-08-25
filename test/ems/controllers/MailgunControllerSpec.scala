@@ -5,12 +5,12 @@ import org.junit.runner.RunWith
 import org.specs2.runner._
 import play.api.test._
 
-import ems.utils.{AppInjector, WithMongoTestData, WithMongoApplication}
+import ems.utils.{AppInjector, WithTestData, WithMongoApplication}
 import scaldi.Injectable
 
 
 @RunWith(classOf[JUnitRunner])
-class MailgunControllerSpec extends PlaySpecification with WithMongoTestData with Injectable with AppInjector {
+class MailgunControllerSpec extends PlaySpecification with WithTestData with Injectable with AppInjector {
   sequential
 
   val rawEmailContent =
@@ -36,7 +36,7 @@ class MailgunControllerSpec extends PlaySpecification with WithMongoTestData wit
       val delivered = inject[String] (identified by "mailgun.service.delivered")
 
       val request = FakeRequest(POST, "").withFormUrlEncodedBody(
-        "Message-Id" -> forwardingId,
+        "Message-Id" -> smsToEmailForwardingId,
         "event" -> delivered
       )
 

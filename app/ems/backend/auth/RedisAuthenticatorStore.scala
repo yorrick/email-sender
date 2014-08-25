@@ -2,11 +2,10 @@ package ems.backend.auth
 
 import ems.backend.utils.LogUtils
 import play.api.Logger
-import play.api.libs.concurrent.Execution.Implicits._
 import redis.{ByteStringFormatter, RedisClient}
 import securesocial.core.authenticator.{Authenticator, AuthenticatorStore}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
 
 /**
@@ -17,7 +16,8 @@ import scala.reflect.ClassTag
 abstract class RedisAuthenticatorStore[A <: Authenticator[_]] extends AuthenticatorStore[A] with LogUtils {
   val logger: Logger = Logger("application.RedisAuthenticatorStore")
 
-  implicit def byteStringFormatter: ByteStringFormatter[A]
+  implicit val byteStringFormatter: ByteStringFormatter[A]
+  implicit val executionContext: ExecutionContext
 
   def logResult(msg: String) = super.logResult(msg, logger)
 
