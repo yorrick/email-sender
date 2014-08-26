@@ -19,7 +19,7 @@ import scala.concurrent.{ExecutionContext, Await, Future}
 class DefaultRedisService(implicit inj: Injector) extends RedisService with Injectable {
 
   // since this service is injected at startup by scaldi Module, we cannot use scaldi's play config injection...
-  val channels: Seq[String] = Seq(current.configuration.getString("notifications.redis.channel").get)
+  val channels: Seq[String] = Seq(current.configuration.getString("ems.backend.utils.DefaultRedisService.channel").get)
   val onMessage: Message => Unit = inject[AkkaServices].onRedisMessage
   implicit val executionContext = inject[ExecutionContext]
 

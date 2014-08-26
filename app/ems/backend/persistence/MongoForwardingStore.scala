@@ -16,7 +16,7 @@ import scala.concurrent.{ExecutionContext, Future}
  */
 class MongoForwardingStore(implicit inj: Injector) extends MongoDBStore with LogUtils with ForwardingStore with Injectable {
 
-  override val collectionName = inject[String] (identified by "store.forwarding.collectionName")
+  override val collectionName = inject[String] (identified by "ems.backend.persistence.MongoForwardingStore.collectionName")
   implicit val executionContext = inject[ExecutionContext]
 
   /**

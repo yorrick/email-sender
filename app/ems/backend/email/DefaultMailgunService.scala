@@ -14,10 +14,10 @@ import scala.concurrent.{ExecutionContext, Future}
  */
 class DefaultMailgunService(implicit inj: Injector) extends Injectable with MailgunService {
 
-  val key = inject[String] (identified by "mailgun.api.key")
+  val key = inject[String] (identified by "ems.backend.email.DefaultMailgunService.key")
   // we retrieve the domain from the smtp login since heroku mailgun does not give the domain alone
-  val domain = inject[String] (identified by "mailgun.smtp.login").split("@").last
-  val url = inject[String] (identified by "mailgun.api.url")
+  val domain = inject[String] (identified by "ems.backend.email.DefaultMailgunService.domain").split("@").last
+  val url = inject[String] (identified by "ems.backend.email.DefaultMailgunService.url")
   val apiUrl = url.format(domain)
   implicit val executionContext = inject[ExecutionContext]
 

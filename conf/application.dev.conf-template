@@ -8,13 +8,13 @@ redis {
   }
 }
 
-mailgun.api.key=<API_KEY>
-mailgun.smtp.login=<postmaster@xxxxx.mailgun.org>
+ems.backend.email.DefaultMailgunService.key=<API_KEY>
+ems.backend.email.DefaultMailgunService.domain=<postmaster@xxxxx.mailgun.org>
 
-twilio.api.mainNumber="<NUMBER>"
-twilio.api.url="https://api.twilio.com/2010-04-01/Accounts/<SID>/Messages.json"
-twilio.api.sid="<SID>"
-twilio.api.token="<TOKEN>"
+ems.backend.sms.DefaultTwilioService.apiMainNumber="<NUMBER>"
+ems.backend.sms.DefaultTwilioService.apiUrl="https://api.twilio.com/2010-04-01/Accounts/<SID>/Messages.json"
+ems.backend.sms.DefaultTwilioService.apiSid="<SID>"
+ems.backend.sms.DefaultTwilioService.apiToken="<TOKEN>"
 
 
 include "securesocial/securesocial-dev.conf"

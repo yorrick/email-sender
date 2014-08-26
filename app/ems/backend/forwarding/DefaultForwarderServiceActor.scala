@@ -23,7 +23,7 @@ class DefaultForwarderServiceActor(implicit val inj: Injector) extends Forwarder
   implicit val system = inject[ActorSystem]
   implicit val executionContext = inject[ExecutionContext]
 
-  val sendToMailgunSleep = inject[Int] (identified by "forwarder.mailgun.sleep")
+  val sendToMailgunSleep = inject[Int] (identified by "ems.backend.forwarding.DefaultForwarderServiceActor.sendToMailgunSleep")
   val forwardingStore = inject[ForwardingStore]
   val mailgun = inject[MailgunService]
   val userInfoStore = inject[UserInfoStore]
