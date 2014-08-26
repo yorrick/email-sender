@@ -24,7 +24,7 @@ class MailgunController(implicit inj: Injector) extends Controller with AkkaInje
 
   implicit val system = inject[ActorSystem]
   val forwarder: ActorRef = injectActorRef[ForwarderServiceActor]
-  val delivered = inject[String] (identified by "mailgun.service.delivered")
+  val delivered = inject[String] (identified by "ems.controllers.MailgunController.delivered")
 
   /**
    * Object used to build forms to validate Mailgun POST requests for email deliveries

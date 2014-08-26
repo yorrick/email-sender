@@ -16,10 +16,10 @@ import scala.concurrent.{ExecutionContext, Future}
  */
 class DefaultTwilioService(implicit inj: Injector) extends LogUtils with TwilioService with Injectable {
 
-  val apiMainNumber = inject[String] (identified by "twilio.api.mainNumber")
-  val apiUrl = inject[String] (identified by "twilio.api.url")
-  val apiSid = inject[String] (identified by "twilio.api.sid")
-  val apiToken = inject[String] (identified by "twilio.api.token")
+  val apiMainNumber = inject[String] (identified by "ems.backend.sms.DefaultTwilioService.apiMainNumber")
+  val apiUrl = inject[String] (identified by "ems.backend.sms.DefaultTwilioService.apiUrl")
+  val apiSid = inject[String] (identified by "ems.backend.sms.DefaultTwilioService.apiSid")
+  val apiToken = inject[String] (identified by "ems.backend.sms.DefaultTwilioService.apiToken")
   implicit val executionContext = inject[ExecutionContext]
 
   /**

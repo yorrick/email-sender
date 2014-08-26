@@ -11,7 +11,6 @@ import ems.models.User
 class MainController(implicit inj: Injector) extends SecureSocial[User] with Injectable {
 
   override implicit val env = inject [RuntimeEnvironment[User]]
-//  val message = inject [String] (identified by "my-message")
 
   def index = UserAwareAction { implicit request =>
     implicit val user = request.user
