@@ -10,8 +10,10 @@ import ems.backend.updates.{DefaultUpdateService, UpdateService, WebsocketUpdate
 import ems.backend.utils.{DefaultRedisService, RedisService, DefaultAkkaServices, AkkaServices}
 import ems.controllers.EMSViewTemplates
 import ems.controllers.auth.EMSRoutesService
+import ems.controllers.utils.HttpsOnlyFilter
 import play.api.libs.concurrent.Akka
 import play.api.Play.current
+import play.api.mvc.Filter
 import scaldi.Module
 import scaldi.play.condition._
 import securesocial.controllers.ViewTemplates
@@ -24,6 +26,8 @@ import scala.concurrent.ExecutionContext
 
 
 class WebModule extends Module {
+
+  bind[Filter] to new HttpsOnlyFilter
 
   bind[RuntimeEnvironment[User]] to new EMSRuntimeEnvironment
   bind[RoutesService] to new EMSRoutesService()

@@ -22,7 +22,7 @@ class MongoUserStore(implicit inj: Injector) extends UserStore with MongoDBStore
   val userInfoStore = inject[UserInfoStore]
   implicit val executionContext = inject[ExecutionContext]
 
-  override val collectionName = inject[String] (identified by "store.user.collectionName")
+  override val collectionName = inject[String] (identified by "ems.backend.persistence.MongoUserStore.collectionName")
 
   def find(providerId: String, userId: String): Future[Option[BasicProfile]] = {
     Logger.debug(s"Trying to find a BasicProfile by providerId $providerId and userId $userId")

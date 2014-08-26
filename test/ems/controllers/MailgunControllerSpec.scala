@@ -33,7 +33,7 @@ class MailgunControllerSpec extends PlaySpecification with WithTestData with Inj
 
     "Accept post data for delivery ack" in new WithMongoApplication(data) {
       implicit val injector = appInjector
-      val delivered = inject[String] (identified by "mailgun.service.delivered")
+      val delivered = inject[String] (identified by "ems.controllers.MailgunController.delivered")
 
       val request = FakeRequest(POST, "").withFormUrlEncodedBody(
         "Message-Id" -> smsToEmailForwardingId,

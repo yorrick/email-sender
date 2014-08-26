@@ -18,7 +18,7 @@ class WebsocketUpdatesServiceActor(implicit inj: Injector) extends UpdatesServic
 
   val redisService = inject[RedisService]
   implicit val executionContext = inject[ExecutionContext]
-  val redisChannel = current.configuration.getString("notifications.redis.channel").get
+  val redisChannel = current.configuration.getString("ems.backend.utils.DefaultRedisService.channel").get
   // since this service is injected at startup by scaldi Module, we cannot use scaldi's play config injection...
   val channels: Seq[String] = Seq(redisChannel)
 

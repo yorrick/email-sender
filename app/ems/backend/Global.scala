@@ -1,6 +1,9 @@
 package ems.backend
 
 import java.io.File
+import play.api.mvc.{Filter, Filters, EssentialAction}
+import scaldi.Injectable
+
 import scala.sys.SystemProperties
 
 import com.typesafe.config.ConfigFactory
@@ -13,7 +16,7 @@ import ems.modules.WebModule
 object Global extends WithGlobal
 
 
-trait WithGlobal extends GlobalSettings with ScaldiSupport {
+trait WithGlobal extends GlobalSettings with ScaldiSupport with Injectable {
 
   val CONFIG_FILE = "config.file"
 
@@ -42,6 +45,11 @@ trait WithGlobal extends GlobalSettings with ScaldiSupport {
     }
 
     super.onLoadConfig(loadedConfig ++ overrideConfig, path, classloader, mode)
+  }
+
+  override def doFilter(a: EssentialAction): EssentialAction = {
+    val filter = inject[Filter]
+    Filters(super.doFilter(a), filter)
   }
 
   /**

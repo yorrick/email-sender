@@ -30,7 +30,7 @@ class ForwarderServiceActorSpec extends PlaySpecification with WithTestData with
   implicit val injector = new Module {
     bind[ForwarderServiceActor] toProvider new DefaultForwarderServiceActor
 
-    binding identifiedBy "forwarder.mailgun.sleep" to 0
+    binding identifiedBy "ems.backend.forwarding.DefaultForwarderServiceActor.sendToMailgunSleep" to 0
     bind[ForwardingStore] to mockForwardingStore
     bind[MailgunService] to mockMailgunService
     bind[UserInfoStore] to mockUserInfoStore

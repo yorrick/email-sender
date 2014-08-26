@@ -18,7 +18,7 @@ import scala.concurrent.{ExecutionContext, Future}
  */
 class MongoUserInfoStore(implicit inj: Injector) extends MongoDBStore with LogUtils with Injectable with UserInfoStore {
 
-  override val collectionName = inject[String] (identified by "store.userInfo.collectionName")
+  override val collectionName = inject[String] (identified by "ems.backend.persistence.MongoUserInfoStore.collectionName")
   implicit val executionContext = inject[ExecutionContext]
 
   /**
