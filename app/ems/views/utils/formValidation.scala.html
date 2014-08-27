@@ -1,0 +1,19 @@
+@import ems.views.utils.FormInfo
+
+@(formInfo: FormInfo[_])(content: Html)
+
+<script type="text/javascript">
+
+    $(function() {
+        var validator = $("#accountForm").validate({
+            @content
+        });
+
+        $('.reset').on('click', function (e) {
+            e.preventDefault();
+            validator.resetForm();
+            $("#accountForm")[0].reset();
+        });
+    });
+
+</script>
