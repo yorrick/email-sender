@@ -4,7 +4,8 @@ package ems.controllers
 import ems.backend.email.MailgunService
 import ems.backend.persistence.{UserInfoStoreException, UserInfoStore}
 import ems.backend.sms.TwilioService
-import play.api.mvc.{ RequestHeader}
+import ems.views.utils.FormInfo
+import play.api.mvc.{Result, RequestHeader}
 import scaldi.{Injectable, Injector}
 import scala.concurrent.{ExecutionContext, Future}
 import securesocial.core.{RuntimeEnvironment, SecureSocial}
@@ -36,11 +37,12 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
 
   /**
    * Generates the common display response
-   * @param form
+   * @param formInfo
    * @return
    */
-  def displayResponse(form: Form[PhoneNumber])(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User]) =
-    ems.views.html.auth.account(form, twilioService.apiMainNumber, mailgun.emailSource(twilioService.apiMainNumber))
+  def displayResponse(formInfo: FormInfo[PhoneNumber])(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User]) = {
+    ems.views.html.auth.account(formInfo, twilioService.apiMainNumber, mailgun.emailSource(twilioService.apiMainNumber))
+  }
 
   /**
    * Generates the common redirect response
@@ -61,7 +63,8 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
     implicit val user = request.user
 
     userForm map { form =>
-      Ok(displayResponse(form))
+      val formInfo = FormInfo(form, ems.controllers.routes.AccountController.accountUpdate())
+      Ok(displayResponse(formInfo))
     }
   }
 
@@ -69,38 +72,46 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
     implicit val user = request.user
 
     form.bindFromRequest.fold(
-      formWithErrors =>
-        Future.successful(BadRequest(displayResponse(formWithErrors))),
-      phoneNumber => {
-        val phoneNumberToSave = s"$phonePrefix${phoneNumber.value}"
-
-        userInfoStore.findUserInfoByUserId(user.id) flatMap { userInfo =>
-          Logger.debug(s"Existing user info $userInfo, phoneNumberToSave $phoneNumberToSave")
-
-          if (phoneNumberToSave != userInfo.phoneNumber.getOrElse("")) {
-            // update the phone number in mongo
-            userInfoStore.savePhoneNumber(user.id, phoneNumberToSave) map { userInfo =>
-
-              // send a confirmation to the given phone number, but do not wait for the reply
-              twilioService.sendConfirmationSms(phoneNumberToSave)
-
-              redirectResponse("Phone number saved!")
-            } recover {
-              case UserInfoStoreException(message) =>
-                BadRequest(displayResponse(form.fill(phoneNumber).withGlobalError(message)))
-            }
-
-          } else {
-              Future {redirectResponse("Phone has not changed") }
-          }
-
-        }
-
-      }
+      formWithErrors => {
+        val formInfo = FormInfo(formWithErrors, ems.controllers.routes.AccountController.accountUpdate())
+        Future.successful(BadRequest(displayResponse(formInfo)))
+      },
+      handleFormValidated
     )
   }
 
-  def userForm(implicit user: User): Future[Form[PhoneNumber]] = {
+  private def handleFormValidated(phoneNumber: PhoneNumber)(implicit user: User, request: RequestHeader) = {
+    val phoneNumberToSave = s"$phonePrefix${phoneNumber.value}"
+
+    userInfoStore.findUserInfoByUserId(user.id) flatMap { userInfo =>
+      Logger.debug(s"Existing user info $userInfo, phoneNumberToSave $phoneNumberToSave")
+
+      if (phoneNumberToSave != userInfo.phoneNumber.getOrElse("")) {
+        // update the phone number in mongo
+        userInfoStore.savePhoneNumber(user.id, phoneNumberToSave) map { userInfo =>
+          // send a confirmation to the given phone number, but do not wait for the reply
+          twilioService.sendConfirmationSms(phoneNumberToSave)
+          redirectResponse("Phone number saved!")
+        } recover recoverFromError(phoneNumber)
+
+      } else {
+          Future {redirectResponse("Phone has not changed") }
+      }
+    }
+  }
+
+  private def recoverFromError(phoneNumber: PhoneNumber)(implicit user: User, request: RequestHeader): PartialFunction[Throwable, Result] = {
+    case UserInfoStoreException(message) =>
+      val filledForm = form.fill(phoneNumber).withGlobalError(message)
+      val formInfo = FormInfo(filledForm, ems.controllers.routes.AccountController.accountUpdate())
+      BadRequest(displayResponse(formInfo))
+    case t @ _ =>
+      val filledForm = form.fill(phoneNumber).withGlobalError("An unexpected error occured, could not save phone number")
+      val formInfo = FormInfo(filledForm, ems.controllers.routes.AccountController.accountUpdate())
+      BadRequest(displayResponse(formInfo))
+  }
+
+  private def userForm(implicit user: User): Future[Form[PhoneNumber]] = {
     userInfoStore.findUserInfoByUserId(user.id) map { userInfo =>
       val phoneNumber = userInfo.phoneNumber map { _.stripPrefix(phonePrefix)}
       form.fill(PhoneNumber(phoneNumber.getOrElse("")))

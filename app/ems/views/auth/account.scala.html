@@ -5,9 +5,10 @@
 @import helper.form._
 @import helper._
 @import ems.views.html.utils.alerts
+@import ems.views.utils.FormInfo
 @import ems.views.html.utils.twitterBootstrapInput
 
-@(form: Form[PhoneNumber], smsTarget: String, emailTarget: String)(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User], flash: Flash)
+@(formInfo: FormInfo[PhoneNumber], smsTarget: String, emailTarget: String)(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User], flash: Flash)
 
 
 @implicitFieldConstructor = @{ FieldConstructor(twitterBootstrapInput.f) }
@@ -20,29 +21,20 @@
 @mainAuth("Account", scripts = scripts, user = Some(user)){
 
 	<div class="row">
-		@flash.get("ERROR").map { message =>
-			<div class="alert alert-dismissable alert-danger">
-				<strong>@message</strong>
-			</div>
-		}
-
-		@flash.get("SUCCESS").map { message =>
-			<div class="alert alert-dismissable alert-success">
-				<strong>@message</strong>
-			</div>
-		}
+        @alerts(flash, formInfo.form)
 	</div>
-	<div class="panel panel-success">
+
+	<div class="panel panel-primary">
 		<div class="panel-heading">
-			<h3 class="panel-title">Form</h3>
+			<h3 class="panel-title">Account information</h3>
 		</div>
 		<div class="panel-body">
 			<div class="row">
 				<div class="col-lg-8">
 					<div class="well form-horizontal">
-						@helper.form(action = ems.controllers.routes.AccountController.accountUpdate(), 'id -> "accountForm") {
+						@helper.form(action = formInfo.postAction, 'id -> "accountForm") {
 							<fieldset>
-                                @inputText(form("phoneNumber"), 'class -> "form-control", '_label -> "Phone number")
+                                @inputText(formInfo.form("phoneNumber"), 'class -> "form-control", '_label -> "Phone number")
 							</fieldset>
 							<div class="form-group">
 								<div class="col-lg-10 col-lg-offset-3">
