@@ -9,7 +9,12 @@
 
 @(form: Form[PhoneNumber], smsTarget: String, emailTarget: String)(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User], flash: Flash)
 
-@mainAuth("Account", user = Some(user)){
+@scripts = {
+    <script src="@routes.Assets.at("lib/jquery-validation/jquery.validate.min.js")" type="text/javascript"></script>
+}
+
+
+@mainAuth("Account", scripts= scripts, user = Some(user)){
 
     <div class="row">
         <ul class="col-md-10 col-md-offset-1" >
