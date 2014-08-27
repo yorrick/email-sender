@@ -33,7 +33,24 @@
 		</div>
 		<div class="panel-body">
 			<div class="row">
-				<div class="col-lg-8">
+				<div class="col-lg-5">
+                    <div class="well">
+                        <p>You can send sms to this phone number</p>
+                        <p><strong>@smsTarget</strong></p>
+                    </div>
+                    <div class="well">
+                        <p>You can send emails to this address</p>
+                        <p><strong>@emailTarget</strong></p>
+                    </div>
+                    <div class="well">
+                        <p>Name: @user.main.fullName.getOrElse("")</p>
+                    </div>
+                    <div class="well">
+                        <p>Email: @user.main.email.map { email => @email }.getOrElse("Not Available")</p>
+                    </div>
+				</div>
+
+				<div class="col-lg-7">
 					<div class="well form-horizontal">
 						@helper.form(action = formInfo.postAction, 'id -> "accountForm") {
 							<fieldset>
@@ -47,19 +64,8 @@
 							</div>
 						}
 					</div>
-                    <div class="well">You can send sms to this phone number: <strong>@smsTarget</strong></div>
-                    <div class="well">You can send emails to this address: <strong>@emailTarget</strong></div>
-                    <div class="well">Name: @user.main.fullName.getOrElse("")</div>
-                    <div class="well">Logged in from: @user.main.providerId</div>
-                    <div class="well">Email: @user.main.email.map { email => @email }.getOrElse("Not Available")</div>
 				</div>
-				<div class="col-lg-4">
-					<div class="well">
-					    @**********
-						@sideBar(active)
-					    **********@
-					</div>
-				</div>
+
 			</div>
 
 		</div>
