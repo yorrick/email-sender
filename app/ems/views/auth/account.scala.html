@@ -5,7 +5,7 @@
 @import helper.form._
 @import helper._
 @import ems.views.html.utils.alerts
-@import ems.views.html.utils.formValidation
+@import ems.views.html.utils.formValidationScript
 @import ems.views.utils.FormInfo
 @import ems.views.html.utils.twitterBootstrapInput
 
@@ -17,20 +17,8 @@
 @scripts = {
     <script src="@routes.Assets.at("lib/jquery-validation/jquery.validate.min.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("lib/jquery-validation/additional-methods.min.js")" type="text/javascript"></script>
-    @formValidation(formInfo) {
-        rules: {
-            phoneNumber: {
-                required: true,
-                phoneUS: true,
-            }
-        },
-        messages: {
-            phoneNumber: {
-                required: "Enter your phone number",
-                @formInfo.messages.get("phoneNumber").map { message => phoneUS: "@message" }
-            }
-        }
-    }
+
+    @formValidationScript("accountForm", formInfo)
 }
 
 @mainAuth("Account", scripts = scripts, user = Some(user)){

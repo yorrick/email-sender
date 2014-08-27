@@ -14,6 +14,7 @@ import play.api.data.Forms._
 import play.api.data.validation.Constraints._
 import play.api.Logger
 import ems.models.{PhoneNumber, User}
+import play.api.libs.json._
 
 
 /**
@@ -31,16 +32,24 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
   val userInfoStore = inject[UserInfoStore]
   val twilioService = inject[TwilioService]
 
-  val messages = Map(
-    "phoneNumber" -> "Enter valid phone number, like 5140000000"
-  )
+  val wrongPhoneMessage = "Enter valid phone number, like 5140000000"
+
+  val frontendValidationParams = Json.obj(
+    "rules" -> Json.obj(
+      "phoneNumber" -> Json.obj(
+        "required" -> true,
+        "phoneUS" -> true)),
+    "messages" -> Json.obj(
+      "phoneNumber" -> Json.obj(
+        "required" -> "Enter your phone number",
+        "phoneUS" -> wrongPhoneMessage)))
 
   def formInfo(form: Form[PhoneNumber]) = {
-    FormInfo(form, ems.controllers.routes.AccountController.accountUpdate(), messages)
+    FormInfo(form, ems.controllers.routes.AccountController.accountUpdate(), frontendValidationParams)
   }
 
   val form = Form(mapping(
-    "phoneNumber" -> (text verifying pattern(phoneRegex, error = messages.get("phoneNumber").get))
+    "phoneNumber" -> (text verifying pattern(phoneRegex, wrongPhoneMessage))
   )(PhoneNumber.apply)(PhoneNumber.unapply))
 
   /**

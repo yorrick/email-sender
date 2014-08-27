@@ -1,13 +1,14 @@
 @import ems.views.utils.FormInfo
+@import play.api.libs.json.Json
 
-@(formInfo: FormInfo[_])(content: Html)
+@(formId: String, formInfo: FormInfo[_])
 
 <script type="text/javascript">
 
     $(function() {
-        var validator = $("#accountForm").validate({
-            @content
-        });
+        var validator = $("#@formId").validate(
+            @Html(Json.prettyPrint(formInfo.frontendValidationParams))
+        );
 
         $('.reset').on('click', function (e) {
             e.preventDefault();
