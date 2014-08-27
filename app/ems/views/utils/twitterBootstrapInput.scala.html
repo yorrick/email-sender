@@ -2,6 +2,7 @@
 
 @**************************************************
 * Generate input according twitter bootsrap rules *
+* Generate error according to jquery validation   *
 **************************************************@
 <div class="form-group @if(elements.hasErrors) {has-error}">
     <label class="col-lg-3 control-label" for="@elements.id">@elements.label
@@ -14,7 +15,7 @@
         @elements.input
 
         @if(elements.hasErrors) {
-            <span class="help-block">@elements.errors.mkString(", ")</span>
+            <label id="@elements.id-error" class="error" for="@elements.id">@elements.errors.mkString(", ")</label>
         }
     </div>
 </div>

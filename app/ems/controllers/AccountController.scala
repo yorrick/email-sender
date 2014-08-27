@@ -31,8 +31,16 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
   val userInfoStore = inject[UserInfoStore]
   val twilioService = inject[TwilioService]
 
+  val messages = Map(
+    "phoneNumber" -> "Enter valid phone number, like 5140000000"
+  )
+
+  def formInfo(form: Form[PhoneNumber]) = {
+    FormInfo(form, ems.controllers.routes.AccountController.accountUpdate(), messages)
+  }
+
   val form = Form(mapping(
-    "phoneNumber" -> (text verifying pattern(phoneRegex, "10 digits", "The phone number must have 10 digits"))
+    "phoneNumber" -> (text verifying pattern(phoneRegex, error = messages.get("phoneNumber").get))
   )(PhoneNumber.apply)(PhoneNumber.unapply))
 
   /**
@@ -63,8 +71,7 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
     implicit val user = request.user
 
     userForm map { form =>
-      val formInfo = FormInfo(form, ems.controllers.routes.AccountController.accountUpdate())
-      Ok(displayResponse(formInfo))
+      Ok(displayResponse(formInfo(form)))
     }
   }
 
@@ -73,8 +80,7 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
 
     form.bindFromRequest.fold(
       formWithErrors => {
-        val formInfo = FormInfo(formWithErrors, ems.controllers.routes.AccountController.accountUpdate())
-        Future.successful(BadRequest(displayResponse(formInfo)))
+        Future.successful(BadRequest(displayResponse(formInfo(formWithErrors))))
       },
       handleFormValidated
     )
@@ -103,12 +109,10 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
   private def recoverFromError(phoneNumber: PhoneNumber)(implicit user: User, request: RequestHeader): PartialFunction[Throwable, Result] = {
     case UserInfoStoreException(message) =>
       val filledForm = form.fill(phoneNumber).withGlobalError(message)
-      val formInfo = FormInfo(filledForm, ems.controllers.routes.AccountController.accountUpdate())
-      BadRequest(displayResponse(formInfo))
+      BadRequest(displayResponse(formInfo(filledForm)))
     case t @ _ =>
       val filledForm = form.fill(phoneNumber).withGlobalError("An unexpected error occured, could not save phone number")
-      val formInfo = FormInfo(filledForm, ems.controllers.routes.AccountController.accountUpdate())
-      BadRequest(displayResponse(formInfo))
+      BadRequest(displayResponse(formInfo(filledForm)))
   }
 
   private def userForm(implicit user: User): Future[Form[PhoneNumber]] = {

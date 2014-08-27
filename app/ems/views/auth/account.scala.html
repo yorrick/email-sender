@@ -74,7 +74,7 @@
             messages: {
                 phoneNumber: {
                     required: "Enter your phone number",
-                    phoneUS: "Enter valid phone number, like 5140000000"
+                    @formInfo.messages.get("phoneNumber").map { message => phoneUS: "@message" }
                 }
             }
         });
