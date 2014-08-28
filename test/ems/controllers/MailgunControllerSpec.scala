@@ -36,7 +36,7 @@ class MailgunControllerSpec extends PlaySpecification with WithTestData with Inj
       val delivered = inject[String] (identified by "ems.controllers.MailgunController.delivered")
 
       val request = FakeRequest(POST, "").withFormUrlEncodedBody(
-        "Message-Id" -> smsToEmailForwardingId,
+        "Message-Id" -> smsToEmailMessageId,
         "event" -> delivered
       )
 

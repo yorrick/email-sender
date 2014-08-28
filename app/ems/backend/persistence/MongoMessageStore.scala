@@ -12,98 +12,98 @@ import scala.concurrent.{ExecutionContext, Future}
 
 
 /**
- * Handles forwarding storage in mongodb
+ * Handles message storage in mongodb
  */
-class MongoForwardingStore(implicit inj: Injector) extends MongoDBStore with LogUtils with ForwardingStore with Injectable {
+class MongoMessageStore(implicit inj: Injector) extends MongoDBStore with LogUtils with MessageStore with Injectable {
 
-  override val collectionName = inject[String] (identified by "ems.backend.persistence.MongoForwardingStore.collectionName")
+  override val collectionName = inject[String] (identified by "ems.backend.persistence.MongoMessageStore.collectionName")
   implicit val executionContext = inject[ExecutionContext]
 
   /**
-   * Save an forwarding
-   * @param forwarding
+   * Save an message
+   * @param message
    * @return
    */
-  def save(forwarding: Forwarding): Future[Forwarding] = {
-    collection.insert(forwarding) map {lastError => forwarding}
+  def save(message: Message): Future[Message] = {
+    collection.insert(message) map {lastError => message}
   }
 
   /**
-   * Updates the status of an forwarding using the id
+   * Updates the status of an message using the id
    * @param id
    * @param status
    */
-  def updateStatusById(id: String, status: ForwardingStatus): Future[Forwarding] = {
+  def updateStatusById(id: String, status: MessageStatus): Future[Message] = {
     val modifier = Json.obj("$set" -> Json.obj("status.status" -> status.status))
 
     for {
       bsonId <- toBSONObjectId(id)
       lastError <- collection.update(Json.obj("_id" -> bsonId), modifier)
-      forwarding <- findForwardingById(id)
-    } yield forwarding
+      message <- findMessageById(id)
+    } yield message
 
   }
 
   /**
-   * Set the mailgun id for an forwarding
+   * Set the mailgun id for an message
    * @param id
    * @param mailgunId
    */
-  def updateMailgunIdById(id: String, mailgunId: String): Future[Forwarding] = {
+  def updateMailgunIdById(id: String, mailgunId: String): Future[Message] = {
     val modifier = Json.obj("$set" -> Json.obj("mailgunId" -> mailgunId))
 
     for {
       bsonId <- toBSONObjectId(id)
       lastError <- collection.update(Json.obj("_id" -> bsonId), modifier)
-      forwarding <- findForwardingById(id)
-    } yield forwarding
+      message <- findMessageById(id)
+    } yield message
 
   }
 
   /**
-   * Find a forwarding by id
+   * Find a message by id
    * @param id
    * @return
    */
-  def findForwardingById(id: String): Future[Forwarding] = {
+  def findMessageById(id: String): Future[Message] = {
     toBSONObjectId(id) flatMap { bsonId =>
       val filter = Json.obj("_id" -> bsonId)
-      findSingle(collection.find(filter).cursor[Forwarding])
+      findSingle(collection.find(filter).cursor[Message])
     }
   }
 
   /**
-   * Update forwarding status, given a mailgunId
+   * Update message status, given a mailgunId
    * @param mailgunId
    */
-  def updateStatusByMailgunId(mailgunId: String, status: ForwardingStatus): Future[Forwarding] = {
+  def updateStatusByMailgunId(mailgunId: String, status: MessageStatus): Future[Message] = {
     val modifier = Json.obj("$set" -> Json.obj("status.status" -> status.status))
     val findId = Json.obj("mailgunId" -> mailgunId)
 
     collection.update(findId, modifier) flatMap { lastError =>
-      val cursor = collection.find(findId).cursor[Forwarding]
+      val cursor = collection.find(findId).cursor[Message]
       // return the first result
       findSingle(cursor)
     } andThen logResult(s"updateStatusByMailgunId for mailgunId $mailgunId with status $status")
   }
 
-  private def updateById(forwarding: Forwarding, modifier: JsObject) =
-    collection.update(Json.obj("_id" -> forwarding._id), modifier) map {lastError => forwarding}
+  private def updateById(message: Message, modifier: JsObject) =
+    collection.update(Json.obj("_id" -> message._id), modifier) map {lastError => message}
 
   /**
-   * Returns the list of forwarding for the given user
+   * Returns the list of message for the given user
    * @param userId
    * @return
    */
-  def listForwarding(userId: String): Future[List[Forwarding]] = {
+  def listMessage(userId: String): Future[List[Message]] = {
     toBSONObjectId(userId) flatMap { bsonId =>
-      val cursor: Cursor[Forwarding] = collection.
-        // find all forwarding
+      val cursor: Cursor[Message] = collection.
+        // find all message
         find(Json.obj("_userId" -> bsonId)).
         // sort by creation date
         sort(Json.obj("creationDate" -> -1)).
         // perform the query and get a cursor of JsObject
-        cursor[Forwarding]
+        cursor[Message]
 
       // gather all the JsObjects in a list
       cursor.collect[List]()

@@ -14,14 +14,20 @@ class PhoneNumber(val value: String) {
   /**
    * The full formatted value, like +1 514 123 4567
    */
-  val formattedPrefixValue =
+  lazy val formattedPrefixValue =
     s"${value.slice(0, 2)} ${value.slice(2, 5)} ${value.slice(5, 8)} ${value.slice(8, 12)}"
 
   /**
    * The formatted value with no prefix, like 514 123 4567
    */
-  val formattedNoPrefixValue = formattedPrefixValue.drop(3)
+  lazy val formattedNoPrefixValue = formattedPrefixValue.drop(3)
 
+}
+
+
+object EmtyPhoneNumber extends PhoneNumber("") {
+  override lazy val formattedPrefixValue = ""
+  override lazy val formattedNoPrefixValue = ""
 }
 
 
@@ -65,6 +71,8 @@ object PhoneNumber {
     else
       throw new IllegalArgumentException(s"$value is not a valid phone number")
   }
+
+  def empty = EmtyPhoneNumber
 
   def removeSpaces(string: String) = string.replaceAll("\\s", "").replaceAll("-", "")
 
