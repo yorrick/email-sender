@@ -13,7 +13,7 @@ import play.api.mvc.Result
 import scaldi.akka.AkkaInjectable
 import scaldi.Injector
 
-import ems.models.{Received, Forwarding}
+import ems.models.{Received, Message}
 
 
 /**
@@ -56,10 +56,10 @@ class TwilioController(implicit inj: Injector) extends Controller with AkkaInjec
    * @return
    */
   private def handleFormValidated(post: TwilioPost): Result = {
-    // creates a forwarding with no associated user and destination
-    val forwarding = Forwarding(generateId, None, post.from, None, post.content, DateTime.now, Received, "")
+    // creates a message with no associated user and destination
+    val message = Message(generateId, None, post.from, None, post.content, DateTime.now, Received, "")
 
-    forwarder ! forwarding
+    forwarder ! message
     Ok
   }
 

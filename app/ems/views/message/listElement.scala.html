@@ -1,0 +1,46 @@
+@import ems.models.MessageDisplay
+
+@(message: MessageDisplay, emptyClass: String = "")
+
+@icon = {
+    @if(message.smsToEmail == "true") {
+        glyphicon-phone
+    }
+    @if(message.emailToSms == "true") {
+        glyphicon-envelope
+    }
+}
+
+@gridOffset = {
+    @if(message.emailToSms == "true") {
+        col-md-offset-1
+    }
+}
+
+@spinClasses = {
+    @if(message.status == "Sending") {
+        fa fa-spinner fa-spin
+    }
+}
+
+<div class="row">
+    <div id="@message.id" href="#" class="well well-sm @emptyClass col-md-11 @gridOffset">
+        <h4 class="list-group-item-heading">
+            <span class="glyphicon @icon"></span>
+            <span>@message.from</span>
+        </h4>
+
+        <span class="list-group-item-text">@message.content</span>
+
+        <span class="pull-right">
+            <button class="btn btn-xs btn-info">
+                @message.creationDate
+            </button>
+            <button class="status btn btn-xs btn-info @message.statusCode">
+                <span>@message.status</span>
+                <i class="@spinClasses"></i>
+            </button>
+
+        </span>
+    </div>
+</div>

@@ -1,7 +1,7 @@
 package ems.backend
 
 import ems.backend.persistence.mongo.MongoDBUtils
-import ems.backend.persistence.{ForwardingStore, UserInfoStore}
+import ems.backend.persistence.{MessageStore, UserInfoStore}
 import ems.utils.{TestUtils, AppInjector, WithTestData, WithMongoApplication}
 import org.junit.runner.RunWith
 import org.specs2.runner._

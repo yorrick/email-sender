@@ -2,7 +2,7 @@ package ems.backend.updates
 
 import akka.actor.ActorRef
 import ems.backend.utils.{RedisService, LogUtils}
-import ems.models.{Forwarding, ForwardingDisplay, Signal}
+import ems.models.{Message, MessageDisplay, Signal}
 import play.api.Logger
 import play.api.Play._
 import scaldi.{Injectable, Injector}
@@ -51,10 +51,10 @@ class WebsocketUpdatesServiceActor(implicit inj: Injector) extends UpdatesServic
       webSocketOutActors.remove(user.id)
       sender ! webSocketOutActors.toMap
 
-    case forwarding: Forwarding =>
-      logger.debug(s"Sending message to redis pubsub $forwarding")
+    case message: Message =>
+      logger.debug(s"Sending message to redis pubsub $message")
       // send notification to redis
-      val pub = redisService.client.publish(redisChannel, ForwardingDisplay.fromForwarding(forwarding))
+      val pub = redisService.client.publish(redisChannel, MessageDisplay.fromMessage(message))
 
       val senderRef = sender()
 
@@ -67,12 +67,12 @@ class WebsocketUpdatesServiceActor(implicit inj: Injector) extends UpdatesServic
       webSocketOutActors.values.flatMap(identity) foreach {_ ! Signal.signalFormat.writes(signal)}
       sender ! true
 
-    case forwardingDisplay: ForwardingDisplay =>
-      logger.debug(s"Broadcast forwardingDisplay $forwardingDisplay")
+    case messageDisplay: MessageDisplay =>
+      logger.debug(s"Broadcast messageDisplay $messageDisplay")
 
-      webSocketOutActors.get(forwardingDisplay.userId) map {
+      webSocketOutActors.get(messageDisplay.userId) map {
         _ foreach { outActor =>
-          val json = ForwardingDisplay.forwardingDisplayFormat.writes(forwardingDisplay)
+          val json = MessageDisplay.messageDisplayFormat.writes(messageDisplay)
           outActor ! json
         }
       }

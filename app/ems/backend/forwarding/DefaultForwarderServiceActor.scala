@@ -3,7 +3,7 @@ package ems.backend.forwarding
 import akka.actor.ActorSystem
 import akka.pattern
 import ems.backend.email.MailgunService
-import ems.backend.persistence.{ForwardingStore, UserInfoStore, UserStore}
+import ems.backend.persistence.{MessageStore, UserInfoStore, UserStore}
 import ems.backend.sms.TwilioService
 import ems.backend.updates.UpdateService
 import ems.backend.utils.LogUtils
@@ -24,7 +24,7 @@ class DefaultForwarderServiceActor(implicit val inj: Injector) extends Forwarder
   implicit val executionContext = inject[ExecutionContext]
 
   val sendToMailgunSleep = inject[Int] (identified by "ems.backend.forwarding.DefaultForwarderServiceActor.sendToMailgunSleep")
-  val forwardingStore = inject[ForwardingStore]
+  val messageStore = inject[MessageStore]
   val mailgun = inject[MailgunService]
   val userInfoStore = inject[UserInfoStore]
   val userStore = inject[UserStore]
@@ -35,9 +35,9 @@ class DefaultForwarderServiceActor(implicit val inj: Injector) extends Forwarder
    * Helper function that can be used in futures
    * @return
    */
-  def notifyWebsockets: PartialFunction[Try[Forwarding], Unit] = {
-    case Success(forwarding) =>
-      updatesServiceActor ! forwarding
+  def notifyWebsockets: PartialFunction[Try[Message], Unit] = {
+    case Success(message) =>
+      updatesServiceActor ! message
   }
 
   /**
@@ -61,18 +61,18 @@ class DefaultForwarderServiceActor(implicit val inj: Injector) extends Forwarder
 
   def receive = {
     // sms -> email
-    case forwarding: Forwarding if forwarding.smsToEmail =>
-      Logger.debug(s"smsToEmail: ${forwarding.from}")
+    case message: Message if message.smsToEmail =>
+      Logger.debug(s"smsToEmail: ${message.from}")
 
       val future = for {
-        user <- findUserByPhoneNumber(forwarding.from) andThen logResult("findUserByPhoneNumber")
-        // add user and email to forwarding
-        forwarding <- Future.successful(forwarding.withUserAndEmail(user)) andThen logResult("withUserAndEmail")
-        forwarding <- forwardingStore.save(forwarding) andThen notifyWebsockets
-        mailgunId <- pattern.after(sendToMailgunSleep.second, system.scheduler)(mailgun.sendEmail(forwarding.from, user.main.email.get, forwarding.content))
-        saved <- forwardingStore.updateMailgunIdById(forwarding.id, mailgunId) andThen logResult("updateMailgunIdById")
-        forwarding <- forwardingStore.updateStatusById(forwarding.id, Sending) andThen notifyWebsockets andThen logResult("updateStatusById")
-      } yield forwarding
+        user <- findUserByPhoneNumber(message.from) andThen logResult("findUserByPhoneNumber")
+        // add user and email to message
+        message <- Future.successful(message.withUserAndEmail(user)) andThen logResult("withUserAndEmail")
+        message <- messageStore.save(message) andThen notifyWebsockets
+        mailgunId <- pattern.after(sendToMailgunSleep.second, system.scheduler)(mailgun.sendEmail(message.from, user.main.email.get, message.content))
+        saved <- messageStore.updateMailgunIdById(message.id, mailgunId) andThen logResult("updateMailgunIdById")
+        message <- messageStore.updateStatusById(message.id, Sending) andThen notifyWebsockets andThen logResult("updateStatusById")
+      } yield message
 
       val senderRef = sender()
 
@@ -82,17 +82,17 @@ class DefaultForwarderServiceActor(implicit val inj: Injector) extends Forwarder
       }
 
     // email -> sms
-    case forwarding: Forwarding if forwarding.emailToSms =>
-      Logger.debug(s"emailToSms: ${forwarding.from}")
+    case message: Message if message.emailToSms =>
+      Logger.debug(s"emailToSms: ${message.from}")
 
       val future = for {
-        userInfo <- findUserAndUserInfoByEmail(forwarding.from)
-        // add user and phone number to forwarding
-        forwarding <- Future.successful(forwarding.withUserInfoAndPhone(userInfo))
-        forwarding <- forwardingStore.save(forwarding) andThen notifyWebsockets
-        twilioId <- pattern.after(sendToMailgunSleep.second, system.scheduler)(twilioService.sendSms(forwarding.to.get, forwarding.content))
-        forwarding <- forwardingStore.updateStatusById(forwarding.id, Sent) andThen notifyWebsockets
-      } yield forwarding
+        userInfo <- findUserAndUserInfoByEmail(message.from)
+        // add user and phone number to message
+        message <- Future.successful(message.withUserInfoAndPhone(userInfo))
+        message <- messageStore.save(message) andThen notifyWebsockets
+        twilioId <- pattern.after(sendToMailgunSleep.second, system.scheduler)(twilioService.sendSms(message.to.get, message.content))
+        message <- messageStore.updateStatusById(message.id, Sent) andThen notifyWebsockets
+      } yield message
 
       val senderRef = sender()
 
@@ -102,6 +102,6 @@ class DefaultForwarderServiceActor(implicit val inj: Injector) extends Forwarder
       }
 
     case MailgunEvent(messageId, status) =>
-      forwardingStore.updateStatusByMailgunId(messageId, status) andThen notifyWebsockets
+      messageStore.updateStatusByMailgunId(messageId, status) andThen notifyWebsockets
   }
 }

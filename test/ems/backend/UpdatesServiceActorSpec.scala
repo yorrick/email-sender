@@ -2,7 +2,7 @@ package ems.backend
 
 
 import ems.backend.updates._
-import ems.models.{ForwardingDisplay, Ping}
+import ems.models.{MessageDisplay, Ping}
 import scala.concurrent.duration._
 import akka.actor.{ActorSystem, ActorRef}
 import akka.util.Timeout
@@ -44,11 +44,11 @@ class UpdatesServiceActorSpec extends PlaySpecification with WithTestData with A
       await((actorRef ? Connect(user, actorRef)).mapTo[Map[String, ActorRef]]).size must beEqualTo(1)
     }
 
-    "Accept Forwarding messages" in new WithApplication(noMongoApp) {
+    "Accept messages" in new WithApplication(noMongoApp) {
       implicit val injector = appInjector
       val actorRef = injectActorRef[UpdatesServiceActor]
 
-      await((actorRef ? smsToEmailForwarding).mapTo[Try[Long]]) must beSuccessfulTry
+      await((actorRef ? smsToEmailMessage).mapTo[Try[Long]]) must beSuccessfulTry
     }
 
     "Accept Signal messages" in new WithApplication(noMongoApp) {
@@ -58,13 +58,13 @@ class UpdatesServiceActorSpec extends PlaySpecification with WithTestData with A
       await((actorRef ? Ping).mapTo[Boolean]) must beTrue
     }
 
-    "Accept ForwardingDisplay messages" in new WithApplication(noMongoApp) {
+    "Accept MessageDisplay" in new WithApplication(noMongoApp) {
       implicit val injector = appInjector
       val actorRef = injectActorRef[UpdatesServiceActor]
 
-      val forwardingDisplay = ForwardingDisplay.fromForwarding(smsToEmailForwarding)
+      val messageDisplay = MessageDisplay.fromMessage(smsToEmailMessage)
 
-      await((actorRef ? forwardingDisplay).mapTo[Boolean]) must beTrue
+      await((actorRef ? messageDisplay).mapTo[Boolean]) must beTrue
     }
 
   }

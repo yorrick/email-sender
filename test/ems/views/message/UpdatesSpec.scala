@@ -1,4 +1,4 @@
-package ems.views.forwarding
+package ems.views.message
 
 import org.junit.runner.RunWith
 import org.specs2.runner._
@@ -14,7 +14,7 @@ class UpdatesSpec extends PlaySpecification {
 
     "Be generated" in new WithApplication() {
       implicit val requestHeader = FakeRequest()
-      val javascript: JavaScriptFormat.Appendable = ems.views.js.forwarding.updates()
+      val javascript: JavaScriptFormat.Appendable = ems.views.js.message.updates()
       javascript.toString must contain("chatSocket.onmessage")
     }
 

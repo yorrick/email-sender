@@ -7,7 +7,7 @@ import ems.backend.persistence.mongo.MongoDBUtils
 import reactivemongo.bson.BSONObjectID
 import play.api.libs.json.JsValue
 import scala.language.postfixOps
-import ems.models.{UserInfo, User, Received, Forwarding}
+import ems.models.{UserInfo, User, Received, Message}
 
 
 /**
@@ -16,16 +16,16 @@ import ems.models.{UserInfo, User, Received, Forwarding}
 trait WithTestData extends MongoDBUtils {
 
   lazy val data = Seq(
-    ("forwarding", forwardingJson),
+    ("message", messageJson),
     ("user", userJson),
     ("userInfo", userInfoJson)
   )
 
-  // forwarding data
-  lazy val smsToEmailForwardingId = "53cd93ce93d970b47bea76fd"
+  // message data
+  lazy val smsToEmailMessageId = "53cd93ce93d970b47bea76fd"
   lazy val smsToEmailMailgunId = "mailgunId"
-  lazy val smsToEmailForwarding = Forwarding(
-    BSONObjectID.parse(smsToEmailForwardingId).get,
+  lazy val smsToEmailMessage = Message(
+    BSONObjectID.parse(smsToEmailMessageId).get,
     Some(BSONObjectID.parse(userMongoId).get),
     phoneNumber,
     Some("222222222"),
@@ -34,9 +34,9 @@ trait WithTestData extends MongoDBUtils {
     Received,
     smsToEmailMailgunId)
   
-  lazy val emailToSmsForwardingId = "53cd93ce93d970b47bea7699"
-  lazy val emailToSmsForwarding = Forwarding(
-    BSONObjectID.parse(emailToSmsForwardingId).get,
+  lazy val emailToSmsMessageId = "53cd93ce93d970b47bea7699"
+  lazy val emailToSmsMessage = Message(
+    BSONObjectID.parse(emailToSmsMessageId).get,
     Some(BSONObjectID.parse(userMongoId).get),
     userEmail,
     Some(phoneNumber),
@@ -45,9 +45,9 @@ trait WithTestData extends MongoDBUtils {
     Received,
     "")
 
-  lazy val forwardingList = List(smsToEmailForwarding, emailToSmsForwarding)
-  lazy val forwardingMap = forwardingList map {f => f.id -> f} toMap
-  lazy val forwardingJson: List[JsValue] = forwardingList map {Forwarding.forwardingFormat.writes(_)}
+  lazy val messageList = List(smsToEmailMessage, emailToSmsMessage)
+  lazy val messageMap = messageList map {f => f.id -> f} toMap
+  lazy val messageJson: List[JsValue] = messageList map {Message.messageFormat.writes(_)}
 
 
   // user data

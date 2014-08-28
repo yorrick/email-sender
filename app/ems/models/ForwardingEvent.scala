@@ -8,4 +8,4 @@ import reactivemongo.bson.BSONObjectID
  * @param mailgunId
  * @param status
  */
-case class MailgunEvent(mailgunId: String, status: ForwardingStatus)
+case class MailgunEvent(mailgunId: String, status: MessageStatus)

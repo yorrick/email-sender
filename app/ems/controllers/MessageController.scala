@@ -2,7 +2,7 @@ package ems.controllers
 
 
 import akka.actor.{Props}
-import ems.backend.persistence.{ForwardingStore, UserInfoStore}
+import ems.backend.persistence.{MessageStore, UserInfoStore}
 import ems.backend.updates.WebsocketInputActor
 
 import scala.concurrent.ExecutionContext
@@ -23,10 +23,10 @@ import ems.models._
 /**
  * Handles all http requests from browsers
  */
-class ForwardingController(implicit inj: Injector) extends SecureSocial[User] with Injectable {
+class MessageController(implicit inj: Injector) extends SecureSocial[User] with Injectable {
 
   override implicit val env = inject [RuntimeEnvironment[User]]
-  val forwardingStore = inject[ForwardingStore]
+  val messageStore = inject[MessageStore]
   val userInfoStore = inject[UserInfoStore]
   implicit val executionContext = inject[ExecutionContext]
 
@@ -41,15 +41,15 @@ class ForwardingController(implicit inj: Injector) extends SecureSocial[User] wi
 
     val result = for {
       userInfo <- userInfoStore.findUserInfoByUserId(user.id)
-      forwardingList <- forwardingStore.listForwarding(request.user.id).mapTo[List[Forwarding]]
+      messageList <- messageStore.listMessage(request.user.id).mapTo[List[Message]]
     } yield {
-      val forwardingDisplayList = forwardingList map {ForwardingDisplay.fromForwarding(_)}
-      Ok(ems.views.html.forwarding.list(forwardingDisplayList, user, userInfo))
+      val messageDisplayList = messageList map {MessageDisplay.fromMessage(_)}
+      Ok(ems.views.html.message.list(messageDisplayList, user, userInfo))
     }
 
     result recover {
       case error @ _ =>
-        val message = s"Could not get forwarding list: $error"
+        val message = s"Could not get message list: $error"
         Logger.warn(message)
         NotFound(message)
     }

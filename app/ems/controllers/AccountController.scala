@@ -91,7 +91,8 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
     implicit val user = request.user
 
     userInfoStore.findUserInfoByUserId(user.id) map { userInfo =>
-      form.fill(PhoneNumber.fromCheckedValue(userInfo.phoneNumber.getOrElse("")))
+//      form.fill(PhoneNumber.fromCheckedValue(userInfo.phoneNumber.getOrElse("")))
+      form.fill(userInfo.phoneNumber map {number => PhoneNumber.fromCheckedValue(number) } getOrElse(PhoneNumber.empty))
     } map { form =>
       Ok(displayResponse(formInfo(form)))
     }

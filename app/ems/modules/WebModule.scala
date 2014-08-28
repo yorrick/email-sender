@@ -41,7 +41,7 @@ class WebModule extends Module {
   bind[RedisAuthenticatorStore[CookieAuthenticator[User]]] to new RedisCookieAuthenticatorStore()
 
   bind[IdGenerator] to new IdGenerator.Default()
-  bind[ForwardingStore] to new MongoForwardingStore
+  bind[MessageStore] to new MongoMessageStore
   bind[UserInfoStore] to new MongoUserInfoStore
   bind[TwilioService] to new DefaultTwilioService
   bind[MailgunService] to new DefaultMailgunService
