@@ -40,12 +40,26 @@ class MailgunControllerSpec extends PlaySpecification with WithTestData with Inj
         "event" -> delivered
       )
 
-      val postResponse = app.global.getControllerInstance(classOf[MailgunController]).event(request)
+      val postResponse = inject[MailgunController].event(request)
       status(postResponse) must equalTo(OK)
       contentAsString(postResponse) must equalTo("")
     }
 
+    "Return bad request if data for event is missing" in new WithMongoApplication(data) {
+      implicit val injector = appInjector
+      val delivered = inject[String] (identified by "ems.controllers.MailgunController.delivered")
+
+      val request = FakeRequest(POST, "").withFormUrlEncodedBody(
+        "event" -> delivered
+      )
+
+      val postResponse = inject[MailgunController].event(request)
+      status(postResponse) must equalTo(BAD_REQUEST)
+    }
+
     "Accept post data for email receiving" in new WithMongoApplication(data) {
+      implicit val injector = appInjector
+
       val request = FakeRequest(POST, "").withFormUrlEncodedBody(
         "from" -> "Somebody <somebody@example.com>",
         "recipient" -> "+5140000000@xxxx.mailgun.net",
@@ -53,18 +67,35 @@ class MailgunControllerSpec extends PlaySpecification with WithTestData with Inj
         "body-plain" -> rawEmailContent
       )
 
-      val postResponse = app.global.getControllerInstance(classOf[MailgunController]).receive(request)
+      val postResponse = inject[MailgunController].receive(request)
       status(postResponse) must equalTo(OK)
       contentAsString(postResponse) must equalTo("")
     }
 
+    "Return bad request if email receiving data is missing" in new WithMongoApplication(data) {
+      implicit val injector = appInjector
+
+      val request = FakeRequest(POST, "").withFormUrlEncodedBody(
+        "recipient" -> "+5140000000@xxxx.mailgun.net",
+        "subject" -> "A subject",
+        "body-plain" -> rawEmailContent
+      )
+
+      val postResponse = inject[MailgunController].receive(request)
+      status(postResponse) must equalTo(BAD_REQUEST)
+    }
+
     "Extract email" in new WithMongoApplication(data) {
-      val result = app.global.getControllerInstance(classOf[MailgunController]).extractEmail("Somebody <somebody@example.com>")
+      implicit val injector = appInjector
+
+      val result = inject[MailgunController].extractEmail("Somebody <somebody@example.com>")
       result must beSome.which(_ == "somebody@example.com")
     }
 
     "Extract content properly" in new WithMongoApplication(data) {
-      val result = app.global.getControllerInstance(classOf[MailgunController]).extractContent("Re: Sms forwarding", rawEmailContent)
+      implicit val injector = appInjector
+
+      val result = inject[MailgunController].extractContent("Re: Sms forwarding", rawEmailContent)
       result must beEqualTo("hello from email")
 
     }
