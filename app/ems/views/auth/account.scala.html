@@ -50,20 +50,28 @@
                     </div>
 				</div>
 
-				<div class="col-lg-7">
-					<div class="well form-horizontal">
-						@helper.form(action = formInfo.postAction, 'id -> "accountForm") {
-							<fieldset>
-                                @inputText(formInfo.form("phoneNumber"), 'class -> "form-control", '_label -> "Phone number")
-							</fieldset>
-							<div class="form-group">
-								<div class="col-lg-10 col-lg-offset-3">
-									<button class="btn btn-primary" type="submit">Submit</button>
-									<button class="btn btn-default reset">Reset</button>
-								</div>
-							</div>
-						}
-					</div>
+				<div class="col-lg-7 container">
+                    <div class="well form-horizontal">
+                        @helper.form(action = formInfo.postAction, 'id -> "accountForm") {
+                            <fieldset>
+                                @helper.input(formInfo.form("phoneNumber"), '_label -> "Phone number", 'class -> "form-control", 'placeholder -> "Enter phone number") { (id, name, value, args) =>
+                                    <div class="input-group">
+                                        <span class="input-group-addon">
+                                            <span class="glyphicon glyphicon-phone"></span>
+                                        </span>
+                                        <input name="@name" id="@id" value="@value" @toHtmlArgs(args)>
+                                    </div>
+                                }
+                            </fieldset>
+
+                            <div class="form-group">
+                                <div class="col-lg-10 col-lg-offset-3">
+                                    <button class="btn btn-primary" type="submit">Submit</button>
+                                    <button class="btn btn-default reset">Reset</button>
+                                </div>
+                            </div>
+                        }
+                    </div>
 				</div>
 
 			</div>

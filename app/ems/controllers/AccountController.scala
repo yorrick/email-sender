@@ -42,7 +42,9 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
     "messages" -> Json.obj(
       "phoneNumber" -> Json.obj(
         "required" -> "Enter your phone number",
-        "phoneUS" -> wrongPhoneMessage)))
+        "phoneUS" -> wrongPhoneMessage)),
+    "errorLabelContainer" -> "inputDiv"
+  )
 
   def formInfo(form: Form[PhoneNumber]) = {
     FormInfo(form, ems.controllers.routes.AccountController.accountUpdate(), frontendValidationParams)

@@ -6,9 +6,22 @@
 <script type="text/javascript">
 
     $(function() {
-        var validator = $("#@formId").validate(
-            @Html(Json.prettyPrint(formInfo.frontendValidationParams))
-        );
+        var validateParams = @Html(Json.prettyPrint(formInfo.frontendValidationParams));
+
+
+        validateParams.errorPlacement = function(error, element) {
+            // try to find an input group to add the message to
+            var inputGroup = element.closest(".input-group");
+
+            if (inputGroup.length > 0) {
+                error.insertAfter(inputGroup);
+            } else {
+                // we add the message after the input element (default behaviour)
+                error.insertAfter(element);
+            }
+        }
+
+        var validator = $("#@formId").validate(validateParams);
 
         $('.reset').on('click', function (e) {
             e.preventDefault();

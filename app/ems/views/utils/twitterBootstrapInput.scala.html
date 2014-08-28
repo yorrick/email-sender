@@ -10,12 +10,12 @@
             <span class="required-field">*</span>
         }
     </label>
-    <div class="col-lg-6">
-
+    <div class="col-lg-9">
         @elements.input
 
         @if(elements.hasErrors) {
             <label id="@elements.id-error" class="error" for="@elements.id">@elements.errors.mkString(", ")</label>
         }
     </div>
+
 </div>
