@@ -22,7 +22,7 @@ class MailgunControllerSpec extends PlaySpecification with WithTestData with Inj
       |> hello from email
       |>
       |>
-      |> 2014-08-07 22:12 GMT-04:00 <+14387639474@app25130478.mailgun.org>:
+      |> 2014-08-07 22:12 GMT-04:00 <+14387639474@xxxxxxx.mailgun.org>:
       |>
       |>> Hello from.sms
       |>
