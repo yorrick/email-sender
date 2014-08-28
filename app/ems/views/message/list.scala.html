@@ -1,11 +1,11 @@
 @import ems.views.html.mainAuth
 @import org.joda.time.DateTime
-@import ems.models.ForwardingDisplay
+@import ems.models.MessageDisplay
 @import securesocial.core.{BasicProfile, RuntimeEnvironment}
 @import ems.models.{User, UserInfo}
 
 
-@(forwardingList: List[ForwardingDisplay], user: User, userInfo: UserInfo)(implicit request: RequestHeader, env: RuntimeEnvironment[User])
+@(messageList: List[MessageDisplay], user: User, userInfo: UserInfo)(implicit request: RequestHeader, env: RuntimeEnvironment[User])
 
 @scripts = {
     <script type="text/javascript" charset="utf-8" src="@ems.controllers.routes.JavascriptController.javascriptRoutes()"></script>
@@ -13,7 +13,7 @@
 }
 
 
-@mainAuth("Forwardings", scripts, Some(user)){
+@mainAuth("Messages", scripts, Some(user)){
 
         @*
     <div class="row">
@@ -36,12 +36,12 @@
     </div>
 
     <div class="row">
-        <div id="forwardingList" class="col-md-10 col-md-offset-1 container">
-            @if(forwardingList.isEmpty) {
-                  @ems.views.html.forwarding.listElement(ForwardingDisplay.empty, emptyClass = "empty-forwarding")
+        <div id="messageList" class="col-md-10 col-md-offset-1 container">
+            @if(messageList.isEmpty) {
+                  @ems.views.html.message.listElement(MessageDisplay.empty, emptyClass = "empty-message")
             } else {
-              @for(forwarding <- forwardingList) {
-                  @ems.views.html.forwarding.listElement(forwarding)
+              @for(message <- messageList) {
+                  @ems.views.html.message.listElement(message)
               }
             }
         </div>
@@ -68,12 +68,12 @@
                     </h3>
                 </div>
                 <div class="panel-body">
-                    <div id="forwardingList" class="col-md-12 container">
-                        @if(forwardingList.isEmpty) {
-                            @ems.views.html.forwarding.listElement(ForwardingDisplay.empty, emptyClass = "empty-forwarding")
+                    <div id="messageList" class="col-md-12 container">
+                        @if(messageList.isEmpty) {
+                            @ems.views.html.message.listElement(MessageDisplay.empty, emptyClass = "empty-message")
                         } else {
-                            @for(forwarding <- forwardingList) {
-                                @ems.views.html.forwarding.listElement(forwarding)
+                            @for(message <- messageList) {
+                                @ems.views.html.message.listElement(message)
                             }
                         }
                     </div>

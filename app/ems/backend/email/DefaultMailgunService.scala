@@ -24,7 +24,7 @@ class DefaultMailgunService(implicit inj: Injector) extends Injectable with Mail
   private def requestHolder: WSRequestHolder = WS.url(apiUrl).withAuth("api", key, WSAuthScheme.BASIC)
 
   /**
-   * Mailgun call will never reply with a failure, but with an forwarding that contains the updated status
+   * Mailgun call will never reply with a failure, but with an message that contains the updated status
    * @param from
    * @param to
    * @param content

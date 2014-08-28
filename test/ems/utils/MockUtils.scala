@@ -5,11 +5,11 @@ import akka.testkit.TestActorRef
 import ems.backend.email.MailgunService
 import ems.backend.sms.TwilioService
 import ems.backend.updates.UpdateService
-import ems.models.{Sending, ForwardingStatus, Forwarding}
+import ems.models.{Sending, MessageStatus, Message}
 import org.mockito.Matchers._
 import scala.concurrent.{ExecutionContext, Future}
 import org.specs2.mock._
-import ems.backend.persistence.{ForwardingStore, UserStore, UserInfoStore}
+import ems.backend.persistence.{MessageStore, UserStore, UserInfoStore}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 
@@ -18,20 +18,20 @@ import scala.concurrent.ExecutionContext.Implicits.global
  */
 trait MockUtils extends Mockito { self: WithTestData =>
 
-  def mockForwardingStore = {
-    val m = mock[ForwardingStore]
+  def mockMessageStore = {
+    val m = mock[MessageStore]
 
-    m.save(anyObject[Forwarding]) answers {f => Future.successful(f.asInstanceOf[Forwarding])}
+    m.save(anyObject[Message]) answers {f => Future.successful(f.asInstanceOf[Message])}
 
     m.updateMailgunIdById(anyString, anyString) answers { id =>
-      Future.successful(forwardingMap.get(id.asInstanceOf[String]).get)
+      Future.successful(messageMap.get(id.asInstanceOf[String]).get)
     }
 
-    m.updateStatusById(anyObject[String], anyObject[ForwardingStatus]) answers { id =>
-      Future.successful(forwardingMap.get(id.asInstanceOf[String]).get.copy(status = Sending))
+    m.updateStatusById(anyObject[String], anyObject[MessageStatus]) answers { id =>
+      Future.successful(messageMap.get(id.asInstanceOf[String]).get.copy(status = Sending))
     }
 
-    m.listForwarding(anyString) returns Future.successful(forwardingList)
+    m.listMessage(anyString) returns Future.successful(messageList)
 
     m
   }
@@ -39,7 +39,7 @@ trait MockUtils extends Mockito { self: WithTestData =>
   def mockMailgunService = {
     val m = mock[MailgunService]
 
-    m.sendEmail(anyString, anyString, anyString) returns Future.successful(smsToEmailForwarding.mailgunId)
+    m.sendEmail(anyString, anyString, anyString) returns Future.successful(smsToEmailMessage.mailgunId)
 
     m
   }

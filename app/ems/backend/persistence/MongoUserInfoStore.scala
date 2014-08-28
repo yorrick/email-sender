@@ -14,7 +14,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 
 /**
- * Handles forwarding storage in mongodb
+ * Handles user info storage in mongodb
  */
 class MongoUserInfoStore(implicit inj: Injector) extends MongoDBStore with LogUtils with Injectable with UserInfoStore {
 

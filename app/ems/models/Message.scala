@@ -7,13 +7,13 @@ import play.api.libs.json.Json
 
 
 /**
- * Represent a Forwarding, eg either
+ * Represent a message, eg either
  *  - a sms forwarded to email
  *  - an email forwarded to sms
  */
-case class Forwarding(override val _id: BSONObjectID, _userId: Option[BSONObjectID],
+case class Message(override val _id: BSONObjectID, _userId: Option[BSONObjectID],
   from: String, to: Option[String], content: String, creationDate: DateTime,
-  status: ForwardingStatus, mailgunId: String) extends MongoId(_id) {
+  status: MessageStatus, mailgunId: String) extends MongoId(_id) {
 
   lazy val userId = _userId map { _.stringify }
 
@@ -21,7 +21,7 @@ case class Forwarding(override val _id: BSONObjectID, _userId: Option[BSONObject
 
   def withUserAndEmail(user: User) = copy(_userId = Some(user._id), to = user.main.email)
   def withUserInfoAndPhone(userInfo: UserInfo) = copy(_userId = Some(userInfo._id), to = userInfo.phoneNumber)
-  def withStatus(status: ForwardingStatus) = copy(status = status)
+  def withStatus(status: MessageStatus) = copy(status = status)
   def withMailgunId(mailgunId: String) = copy(mailgunId = mailgunId)
 
   lazy val emailToSms = from.contains("@")
@@ -29,7 +29,7 @@ case class Forwarding(override val _id: BSONObjectID, _userId: Option[BSONObject
 }
 
 
-object Forwarding {
-  implicit val forwardingStatusFormat = Json.format[ForwardingStatus]
-  implicit val forwardingFormat = Json.format[Forwarding]
+object Message {
+  implicit val messageStatusFormat = Json.format[MessageStatus]
+  implicit val messageFormat = Json.format[Message]
 }

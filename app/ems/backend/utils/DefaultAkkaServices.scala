@@ -6,7 +6,7 @@ import scala.concurrent.duration._
 import akka.actor.{ActorRef, ActorSystem}
 import akka.util.ByteString
 import ems.backend.updates.UpdateService
-import ems.models.{Ping, ForwardingDisplay}
+import ems.models.{Ping, MessageDisplay}
 import play.api.Logger
 import play.api.libs.concurrent.Akka
 import play.api.Play.current
@@ -29,8 +29,8 @@ class DefaultAkkaServices(implicit inj: Injector) extends Injectable with AkkaSe
    */
   def onRedisMessage(message: Message) {
     Logger.debug(s"message received: $message")
-    val forwardingDisplay = ForwardingDisplay.forwardingDisplayByteStringFormatter.deserialize(ByteString(message.data))
-    updatesServiceActor ! forwardingDisplay
+    val messageDisplay = MessageDisplay.messageDisplayByteStringFormatter.deserialize(ByteString(message.data))
+    updatesServiceActor ! messageDisplay
   }
 
   def scheduleAkkaEvents {

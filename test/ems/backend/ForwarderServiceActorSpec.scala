@@ -17,7 +17,7 @@ import play.api.test.PlaySpecification
 import scaldi.akka.AkkaInjectable
 import scaldi.Module
 
-import ems.models.{Sending, Forwarding}
+import ems.models.{Sending, Message}
 import ems.utils.{TestUtils, WithTestData}
 
 import scala.util.Try
@@ -31,7 +31,7 @@ class ForwarderServiceActorSpec extends PlaySpecification with WithTestData with
     bind[ForwarderServiceActor] toProvider new DefaultForwarderServiceActor
 
     binding identifiedBy "ems.backend.forwarding.DefaultForwarderServiceActor.sendToMailgunSleep" to 0
-    bind[ForwardingStore] to mockForwardingStore
+    bind[MessageStore] to mockMessageStore
     bind[MailgunService] to mockMailgunService
     bind[UserInfoStore] to mockUserInfoStore
     bind[UserStore] to mockUserStore
@@ -46,15 +46,15 @@ class ForwarderServiceActorSpec extends PlaySpecification with WithTestData with
     "Forward sms to emails" in {
       implicit val system = inject[ActorSystem]
       val actorRef = injectActorRef[ForwarderServiceActor]
-      val result = await((actorRef ? smsToEmailForwarding).mapTo[Try[Forwarding]])
-      result must beSuccessfulTry.which(f => f.id == smsToEmailForwarding.id and f.status == Sending)
+      val result = await((actorRef ? smsToEmailMessage).mapTo[Try[Message]])
+      result must beSuccessfulTry.which(f => f.id == smsToEmailMessage.id and f.status == Sending)
     }
 
     "Forward emails to sms" in {
       implicit val system = inject[ActorSystem]
       val actorRef = injectActorRef[ForwarderServiceActor]
-      val result = await((actorRef ? emailToSmsForwarding).mapTo[Try[Forwarding]])
-      result must beSuccessfulTry.which(f => f.id == emailToSmsForwarding.id and f.status == Sending)
+      val result = await((actorRef ? emailToSmsMessage).mapTo[Try[Message]])
+      result must beSuccessfulTry.which(f => f.id == emailToSmsMessage.id and f.status == Sending)
     }
 
   }

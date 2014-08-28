@@ -13,7 +13,7 @@ import scaldi.akka.AkkaInjectable
 import ems.models
 import ems.backend.forwarding.ForwarderServiceActor
 import ems.backend.persistence.mongo.MongoDBUtils
-import ems.models.{Received, Sent, Failed, Forwarding}
+import ems.models.{Received, Sent, Failed, Message}
 
 
 /**
@@ -56,7 +56,7 @@ class MailgunController(implicit inj: Injector) extends Controller with AkkaInje
   }
 
   /**
-   * Notifies the forwarder that an forwarding has arrived
+   * Notifies the forwarder that a message has arrived
    * Replies with Ok as fast as possible
    * @param receive
    * @return
@@ -66,11 +66,11 @@ class MailgunController(implicit inj: Injector) extends Controller with AkkaInje
       case Some(from) =>
         Logger.debug(s"Extracted email '$from' from string '${receive.from}'")
 
-        // creates a forwarding with no associated user and no destination
-        val forwarding = Forwarding(generateId, None, from, None,
+        // creates a message with no associated user and no destination
+        val message = Message(generateId, None, from, None,
           extractContent(receive.subject, receive.content), DateTime.now, Received, "")
 
-        forwarder ! forwarding
+        forwarder ! message
       case None =>
         Logger.debug(s"Could mot extract email from string '${receive.from}'")
     }

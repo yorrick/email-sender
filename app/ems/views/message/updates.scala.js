@@ -1,16 +1,16 @@
-@import ems.models.ForwardingDisplay._
-@import ems.models.ForwardingDisplay
+@import ems.models.MessageDisplay._
+@import ems.models.MessageDisplay
 
 @()(implicit r: RequestHeader)
 
 $(function() {
 
-    var r = jsRoutes.ems.controllers.ForwardingController.updatesSocket();
+    var r = jsRoutes.ems.controllers.MessageController.updatesSocket();
     var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket
     var chatSocket = new WS(r.webSocketURL())
-    var elementTemplate = '@ems.views.html.forwarding.listElement(ForwardingDisplay(IdMapping.templateTag, UserIdMapping.templateTag, FromMapping.templateTag, ToMapping.templateTag, ContentMapping.templateTag, CreationMapping.templateTag, StatusCodeMapping.templateTag, StatusMapping.templateTag, SmsToEmailMapping.templateTag, EmailToSmsMapping.templateTag))'
+    var elementTemplate = '@ems.views.html.message.listElement(MessageDisplay(IdMapping.templateTag, UserIdMapping.templateTag, FromMapping.templateTag, ToMapping.templateTag, ContentMapping.templateTag, CreationMapping.templateTag, StatusCodeMapping.templateTag, StatusMapping.templateTag, SmsToEmailMapping.templateTag, EmailToSmsMapping.templateTag))'
 
-    // given forwarding <a> tag and received data, updates the spinners
+    // given message <a> tag and received data, updates the spinners
     var updateSpinner = function(element, data) {
         // spinning classes
         var statusButton = element.find("button.status");
@@ -22,7 +22,7 @@ $(function() {
         }
     }
 
-    // given forwarding <a> tag and received data, update the glyphicon
+    // given message <a> tag and received data, update the glyphicon
     var updateGlyphicon = function(element, data) {
           var iconSpan = element.find("span.glyphicon");
 
@@ -34,7 +34,7 @@ $(function() {
           }
     }
 
-    // given forwarding <a> tag and received data, update the grid offset
+    // given message <a> tag and received data, update the grid offset
     var updateGridClasses = function(element, data) {
           if (data.@EmailToSmsMapping.jsonName == "true") {
               element.addClass("col-md-offset-1");
@@ -75,10 +75,10 @@ $(function() {
             var replaced = replaced.replace("@SmsToEmailMapping.templateTag", data.@SmsToEmailMapping.jsonName);
             var replaced = replaced.replace("@EmailToSmsMapping.templateTag", data.@EmailToSmsMapping.jsonName);
 
-            var forwardingElement = $(replaced).hide().prependTo('#forwardingList')
+            var messageElement = $(replaced).hide().prependTo('#messageList')
 
-            $(".empty-forwarding").fadeOut("slow").remove();
-            forwardingElement.fadeIn("slow");
+            $(".empty-message").fadeOut("slow").remove();
+            messageElement.fadeIn("slow");
         }
 
         var element = $('#' + data.@IdMapping.jsonName);
