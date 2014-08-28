@@ -61,7 +61,6 @@ class MongoUserInfoStore(implicit inj: Injector) extends MongoDBStore with LogUt
         Json.obj("$set" -> Json.obj("phoneNumber" -> phoneNumber))
       ) transform (lastError => UserInfo(bsonId, Some(phoneNumber)), handleSaveError _)
     }
-
   }
 
   private def handleSaveError(t: Throwable): UserInfoStoreException = {

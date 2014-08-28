@@ -21,9 +21,7 @@
 }
 
 @for(
-    error <- form.errors
+    error <- form.globalErrors
 ) {
     @display(Helpers.warning.cssClass, Helpers.warning.iconName, error.message)
 }
-
-

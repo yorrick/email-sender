@@ -21,6 +21,7 @@ libraryDependencies ++= Seq(
   "org.webjars" % "font-awesome" % "4.1.0",
   "org.webjars" % "bootstrap" % "3.1.1",
   "org.webjars" % "jquery" % "2.1.1",
+  "org.webjars" % "jquery-validation" % "1.13.0-1",
   "com.newrelic.agent.java" % "newrelic-agent" % "3.6.0",
   // TODO do not depend on SNAPSHOT!
   "org.reactivemongo" %% "play2-reactivemongo" % "0.10.5.akka23-SNAPSHOT",

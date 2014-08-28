@@ -16,6 +16,7 @@ import scala.concurrent.{ExecutionContext, Future}
  */
 class DefaultTwilioService(implicit inj: Injector) extends LogUtils with TwilioService with Injectable {
 
+  val enabled = inject[Boolean] (identified by "ems.backend.sms.DefaultTwilioService.enabled")
   val apiMainNumber = inject[String] (identified by "ems.backend.sms.DefaultTwilioService.apiMainNumber")
   val apiUrl = inject[String] (identified by "ems.backend.sms.DefaultTwilioService.apiUrl")
   val apiSid = inject[String] (identified by "ems.backend.sms.DefaultTwilioService.apiSid")
@@ -46,16 +47,21 @@ class DefaultTwilioService(implicit inj: Injector) extends LogUtils with TwilioS
    * @return
    */
   def sendSms(to: String, content: String): Future[String] = {
+    if (enabled) {
+      val postData = Map(
+        "To" -> Seq(to),
+        "From" -> Seq(apiMainNumber),
+        "Body" -> Seq(content)
+      )
 
-    val postData = Map(
-      "To" -> Seq(to),
-      "From" -> Seq(apiMainNumber),
-      "Body" -> Seq(content)
-    )
-
-    val responseFuture: Future[WSResponse] = requestHolder.post(postData)
-    val okResponse = responseFuture andThen logResult("twilioResponse", extractor = {r => s"${r.status}: ${r.body}"}) filter { _.status == Status.CREATED }
-    okResponse flatMap { response => handleTwilioResponse(response.json)}
+      val responseFuture: Future[WSResponse] = requestHolder.post(postData)
+      val okResponse = responseFuture andThen logResult("twilioResponse", extractor = { r => s"${r.status}: ${r.body}"}) filter {
+        _.status == Status.CREATED
+      }
+      okResponse flatMap { response => handleTwilioResponse(response.json)}
+    } else {
+      Future.successful("fake-twilio-id")
+    }
   }
 
   /**
