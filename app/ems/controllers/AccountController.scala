@@ -5,6 +5,7 @@ import ems.backend.email.MailgunService
 import ems.backend.persistence.{UserInfoStoreException, UserInfoStore}
 import ems.backend.sms.TwilioService
 import ems.views.utils.FormInfo
+import play.api.data.validation.{ValidationError, Invalid, Valid, Constraint}
 import play.api.mvc.{Result, RequestHeader}
 import scaldi.{Injectable, Injector}
 import scala.concurrent.{ExecutionContext, Future}
@@ -32,6 +33,7 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
   val userInfoStore = inject[UserInfoStore]
   val twilioService = inject[TwilioService]
 
+  val emptyPhoneMessage = "Enter your phone number"
   val wrongPhoneMessage = "Enter valid phone number, like 5140000000"
 
   val frontendValidationParams = Json.obj(
@@ -41,9 +43,8 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
         "phoneUS" -> true)),
     "messages" -> Json.obj(
       "phoneNumber" -> Json.obj(
-        "required" -> "Enter your phone number",
-        "phoneUS" -> wrongPhoneMessage)),
-    "errorLabelContainer" -> "inputDiv"
+        "required" -> emptyPhoneMessage,
+        "phoneUS" -> wrongPhoneMessage))
   )
 
   def formInfo(form: Form[PhoneNumber]) = {
@@ -53,6 +54,14 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
   val form = Form(mapping(
     "phoneNumber" -> (text verifying pattern(phoneRegex, wrongPhoneMessage))
   )(PhoneNumber.apply)(PhoneNumber.unapply))
+
+//  def phoneNumberConstraint = Constraint[String] { value: String =>
+//    if (value.isEmpty) Invalid(emptyPhoneMessage)
+//    else {
+//      val strippedValue = value.replaceAllLiterally(" ", "")
+//      phoneRegex.unapplySeq(value).map(_ => Valid).getOrElse(Invalid(ValidationError(wrongPhoneMessage, phoneRegex)))
+//    }
+//  }
 
   /**
    * Generates the common display response

@@ -8,7 +8,6 @@
     $(function() {
         var validateParams = @Html(Json.prettyPrint(formInfo.frontendValidationParams));
 
-
         validateParams.errorPlacement = function(error, element) {
             // try to find an input group to add the message to
             var inputGroup = element.closest(".input-group");
