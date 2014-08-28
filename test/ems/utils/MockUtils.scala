@@ -65,6 +65,7 @@ trait MockUtils extends Mockito { self: WithTestData =>
     val m = mock[TwilioService]
     m.sendSms(anyString, anyString) returns Future.successful("twilio_id")
     m.sendConfirmationSms(anyString) returns Future.successful("twilio_id")
+    m.apiMainNumber returns "+15141234567"
 
     m
   }

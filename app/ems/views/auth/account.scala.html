@@ -9,7 +9,7 @@
 @import ems.views.utils.FormInfo
 @import ems.views.html.utils.twitterBootstrapInput
 
-@(formInfo: FormInfo[PhoneNumber], smsTarget: String, emailTarget: String)(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User], flash: Flash)
+@(formInfo: FormInfo[PhoneNumber], smsTarget: PhoneNumber, emailTarget: String)(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User], flash: Flash)
 
 
 @implicitFieldConstructor = @{ FieldConstructor(twitterBootstrapInput.f) }
@@ -34,19 +34,28 @@
 		<div class="panel-body">
 			<div class="row">
 				<div class="col-lg-5">
+
                     <div class="well">
                         <p>You can send sms to this phone number</p>
-                        <p><strong>@smsTarget</strong></p>
+                        <p>
+                            <span class="glyphicon glyphicon-phone"></span>
+                            <strong>@smsTarget.formattedPrefixValue</strong>
+                        </p>
                     </div>
+
                     <div class="well">
                         <p>You can send emails to this address</p>
-                        <p><strong>@emailTarget</strong></p>
+                        <p>
+                            <span class="glyphicon glyphicon-envelope"></span>
+                            <strong><a href="mailto:@emailTarget" target="_top">@emailTarget</a></strong>
+                        </p>
+
                     </div>
                     <div class="well">
                         <p>Name: @user.main.fullName.getOrElse("")</p>
                     </div>
                     <div class="well">
-                        <p>Email: @user.main.email.map { email => @email }.getOrElse("Not Available")</p>
+                        <p>Email: @user.main.email.map { email => @email }.get</p>
                     </div>
 				</div>
 

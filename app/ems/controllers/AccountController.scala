@@ -12,7 +12,6 @@ import scala.concurrent.{ExecutionContext, Future}
 import securesocial.core.{RuntimeEnvironment, SecureSocial}
 import play.api.data.Form
 import play.api.data.Forms._
-import play.api.data.validation.Constraints._
 import play.api.Logger
 import ems.models.{PhoneNumber, User}
 import play.api.libs.json._
@@ -22,10 +21,6 @@ import play.api.libs.json._
  * Handles authentication custom views
  */
 class AccountController(implicit inj: Injector) extends SecureSocial[User] with Injectable {
-  // regex for north american phone number
-  val phoneRegex = """[0-9.+]{10}""".r
-  // north american phone prefix
-  val phonePrefix = "+1"
 
   override implicit val env = inject [RuntimeEnvironment[User]]
   implicit val executionContext = inject[ExecutionContext]
@@ -34,7 +29,7 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
   val twilioService = inject[TwilioService]
 
   val emptyPhoneMessage = "Enter your phone number"
-  val wrongPhoneMessage = "Enter valid phone number, like 5140000000"
+  val wrongPhoneMessage = s"Enter valid phone number, like ${PhoneNumber.fromNoPrefixValue("514 123 4567").formattedNoPrefixValue}"
 
   val frontendValidationParams = Json.obj(
     "rules" -> Json.obj(
@@ -51,17 +46,21 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
     FormInfo(form, ems.controllers.routes.AccountController.accountUpdate(), frontendValidationParams)
   }
 
-  val form = Form(mapping(
-    "phoneNumber" -> (text verifying pattern(phoneRegex, wrongPhoneMessage))
-  )(PhoneNumber.apply)(PhoneNumber.unapply))
+  val form = Form(
+    mapping("phoneNumber" -> (nonEmptyText verifying phoneNumberConstraint))
+    (rawNumber => PhoneNumber.fromNoPrefixValue(rawNumber))
+    (numberObject => Some(numberObject.formattedNoPrefixValue))
+  )
 
-//  def phoneNumberConstraint = Constraint[String] { value: String =>
-//    if (value.isEmpty) Invalid(emptyPhoneMessage)
-//    else {
-//      val strippedValue = value.replaceAllLiterally(" ", "")
-//      phoneRegex.unapplySeq(value).map(_ => Valid).getOrElse(Invalid(ValidationError(wrongPhoneMessage, phoneRegex)))
-//    }
-//  }
+  def phoneNumberConstraint = Constraint[String] { value: String =>
+    if (value.isEmpty) {
+      Invalid(emptyPhoneMessage)
+    } else if (PhoneNumber.isNoPrefixValid(value)) {
+      Valid
+    } else {
+      Invalid(ValidationError(wrongPhoneMessage, PhoneNumber.noPrefixRegex))
+    }
+  }
 
   /**
    * Generates the common display response
@@ -69,7 +68,8 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
    * @return
    */
   def displayResponse(formInfo: FormInfo[PhoneNumber])(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User]) = {
-    ems.views.html.auth.account(formInfo, twilioService.apiMainNumber, mailgun.emailSource(twilioService.apiMainNumber))
+    val twilioNumber = PhoneNumber.fromCheckedValue(twilioService.apiMainNumber)
+    ems.views.html.auth.account(formInfo, twilioNumber, mailgun.emailSource(twilioService.apiMainNumber))
   }
 
   /**
@@ -90,7 +90,9 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
   def account = SecuredAction.async { implicit request =>
     implicit val user = request.user
 
-    userForm map { form =>
+    userInfoStore.findUserInfoByUserId(user.id) map { userInfo =>
+      form.fill(PhoneNumber.fromCheckedValue(userInfo.phoneNumber.getOrElse("")))
+    } map { form =>
       Ok(displayResponse(formInfo(form)))
     }
   }
@@ -107,16 +109,14 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
   }
 
   private def handleFormValidated(phoneNumber: PhoneNumber)(implicit user: User, request: RequestHeader) = {
-    val phoneNumberToSave = s"$phonePrefix${phoneNumber.value}"
-
     userInfoStore.findUserInfoByUserId(user.id) flatMap { userInfo =>
-      Logger.debug(s"Existing user info $userInfo, phoneNumberToSave $phoneNumberToSave")
+      Logger.debug(s"Existing user info $userInfo, phoneNumberToSave ${phoneNumber.value}")
 
-      if (phoneNumberToSave != userInfo.phoneNumber.getOrElse("")) {
+      if (phoneNumber.value != userInfo.phoneNumber.getOrElse("")) {
         // update the phone number in mongo
-        userInfoStore.savePhoneNumber(user.id, phoneNumberToSave) map { userInfo =>
+        userInfoStore.savePhoneNumber(user.id, phoneNumber.value) map { userInfo =>
           // send a confirmation to the given phone number, but do not wait for the reply
-          twilioService.sendConfirmationSms(phoneNumberToSave)
+          twilioService.sendConfirmationSms(phoneNumber.value)
           redirectResponse("Phone number saved!")
         } recover recoverFromError(phoneNumber)
 
@@ -135,10 +135,4 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
       BadRequest(displayResponse(formInfo(filledForm)))
   }
 
-  private def userForm(implicit user: User): Future[Form[PhoneNumber]] = {
-    userInfoStore.findUserInfoByUserId(user.id) map { userInfo =>
-      val phoneNumber = userInfo.phoneNumber map { _.stripPrefix(phonePrefix)}
-      form.fill(PhoneNumber(phoneNumber.getOrElse("")))
-    }
-  }
 }
