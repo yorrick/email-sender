@@ -28,7 +28,7 @@ class MainControllerSpec extends PlaySpecification with TestUtils with WithTestD
       route(FakeRequest(GET, "/boum")) must beNone
     }
 
-    "render the index page" in {
+    "render the index page" in new WithApplication(app) {
       val home = inject[MainController].index(FakeRequest().withCookies(cookie))
 
       status(home) must equalTo(OK)

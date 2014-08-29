@@ -34,7 +34,7 @@ class AccountControllerSpec extends PlaySpecification with TestUtils with WithTe
 
   "Account controller" should {
 
-    "display the account page" in {
+    "display the account page" in new WithApplication(app) {
       val response = inject[AccountController].account(FakeRequest().withCookies(cookie))
       status(response) must equalTo(OK)
 
@@ -42,7 +42,7 @@ class AccountControllerSpec extends PlaySpecification with TestUtils with WithTe
       contentAsString(response) must contain ("paul.watson@foobar.com")
     }
 
-    "Update phone number" in {
+    "Update phone number" in new WithApplication(app) {
       val request = FakeRequest(POST, "").withFormUrlEncodedBody(
         "phoneNumber" -> "0123456789"
       )
@@ -54,7 +54,7 @@ class AccountControllerSpec extends PlaySpecification with TestUtils with WithTe
       redirectLocation(response) must beEqualTo(Some(ems.controllers.routes.AccountController.account.url))
     }
 
-    "Block wrong phone number" in {
+    "Block wrong phone number" in new WithApplication(app) {
       val request = FakeRequest(POST, "").withFormUrlEncodedBody(
         "phoneNumber" -> "0123"
       )
@@ -63,7 +63,7 @@ class AccountControllerSpec extends PlaySpecification with TestUtils with WithTe
       status(response) must equalTo(BAD_REQUEST)
     }
 
-    "Block duplicate phone number" in {
+    "Block duplicate phone number" in new WithApplication(app) {
       val request = FakeRequest(POST, "").withFormUrlEncodedBody(
         "phoneNumber" -> phoneNumber
       )

@@ -39,7 +39,7 @@ class MessageControllerSpec extends PlaySpecification with TestUtils with WithTe
 
   "Message controller" should {
 
-    "render the message list page" in {
+    "render the message list page" in new WithApplication(app) {
       val response = inject[MessageController].list(FakeRequest().withCookies(cookie))
 
       status(response) must equalTo(OK)

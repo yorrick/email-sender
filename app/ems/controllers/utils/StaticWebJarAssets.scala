@@ -1,7 +1,6 @@
 package ems.controllers.utils
 
 import controllers.Assets
-import play.api.Play
 import play.api.mvc.Controller
 import play.api.Play.current
 
@@ -14,7 +13,7 @@ import play.api.Play.current
  */
 object StaticWebJarAssets extends Controller {
 
-  val maybeContentUrl = Play.configuration.getString("ems.controllers.utils.StaticWebJarAssets.contentUrl")
+  val maybeContentUrl = current.configuration.getString("ems.controllers.utils.StaticWebJarAssets.contentUrl")
 
   def at(file: String) = Assets.at("/META-INF/resources/webjars", file)
 
