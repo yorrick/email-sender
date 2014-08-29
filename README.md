@@ -4,8 +4,8 @@ email-sender
 Sms <-> Email bridge application - developped with [scala](http://www.scala-lang.org/) and [play2](http://www.playframework.com/).
 
 
-[![Build Status](https://travis-ci.org/yorrick/email-sender.svg?branch=master)](https://travis-ci.org/yorrick/email-sender)
-[![Coverage Status](https://coveralls.io/repos/yorrick/email-sender/badge.png?branch=master)](https://coveralls.io/r/yorrick/email-sender?branch=master)
+[![Build Status](https://travis-ci.org/yorrick/email-sender.svg?branch=28-cdn2)](https://travis-ci.org/yorrick/email-sender)
+[![Coverage Status](https://coveralls.io/repos/yorrick/email-sender/badge.png?branch=28-cdn2)](https://coveralls.io/r/yorrick/email-sender?branch=28-cdn2)
 
 
 #### This app is based on a fully async stack
@@ -25,6 +25,7 @@ Sms <-> Email bridge application - developped with [scala](http://www.scala-lang
  * unit test [actors](http://doc.akka.io/docs/akka/2.3.3/scala/testing.html), [controllers](https://www.playframework.com/documentation/2.2.0/ScalaTest) and so on, using [mockito and specs2](https://code.google.com/p/specs/wiki/UsingMockito)
  * [setup SSL](https://github.com/yorrick/email-sender/wiki/SSL-setup) for a play application on heroku
  * integrate [bootstrap](http://getbootstrap.com/) and [jQuery validation](http://jqueryvalidation.org/) with play forms
+ * use [webjars](http://www.webjars.org/) with s CDN and versioning
 
 #### Architecture evolution
  * to be able to scale out, web UI, api endpoints and forwarding jobs should be split into different nodes
