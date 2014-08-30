@@ -4,31 +4,30 @@ package ems.controllers
 import ems.models.User
 import org.junit.runner.RunWith
 import org.specs2.runner._
-import play.api.Application
 import play.api.test._
 
-import ems.utils.{TestUtils, WithTestData}
+import ems.utils.{AppInjector, TestUtils, WithTestData}
 import scaldi.{Injectable, Module}
-import scaldi.play.ControllerInjector
 import securesocial.core.RuntimeEnvironment
 
 
 @RunWith(classOf[JUnitRunner])
-class MainControllerSpec extends PlaySpecification with TestUtils with WithTestData with Injectable {
+class MainControllerSpec extends PlaySpecification with TestUtils with WithTestData with AppInjector with Injectable {
   sequential
 
-  implicit val injector = new Module {
-    bind[Application] to app
+  def testInjector = new Module {
     bind[RuntimeEnvironment[User]] to mockRuntimeEnvironment
-  } :: new ControllerInjector
+  }
 
   "Main module" should {
 
     "send 404 on a bad request" in new WithApplication(app) {
+      implicit val i = testInjector :: appInjector
       route(FakeRequest(GET, "/boum")) must beNone
     }
 
-    "render the index page" in {
+    "render the index page" in new WithApplication(app) {
+      implicit val i = testInjector :: appInjector
       val home = inject[MainController].index(FakeRequest().withCookies(cookie))
 
       status(home) must equalTo(OK)
