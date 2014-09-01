@@ -1,5 +1,6 @@
 @import securesocial.core.RuntimeEnvironment
 @import ems.views.html.main
+@import ems.controllers.utils.CDNAssets
 
 
 @(errorMsg: Option[String] = None)(implicit request: RequestHeader, lang: Lang, env: RuntimeEnvironment[_])
@@ -35,7 +36,7 @@
                 @defining( "images/auth/%s.png".format(provider.id) ) { imageUrl =>
                     <a href="@env.routes.authenticationUrl(provider.id)" class="btn btn-default btn-sm" role="button">
                         <span>@provider.id.capitalize</span>
-                        <img src="@routes.Assets.at(imageUrl)"/>
+                        <img src="@CDNAssets.resourceUrl(routes.Assets.versioned(imageUrl))"/>
                     </a>
                 }
             }
