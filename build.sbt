@@ -64,3 +64,7 @@ scalacOptions ++= Seq(
   "-language:reflectiveCalls",
   "-deprecation"
 )
+
+LessKeys.compress := true
+
+pipelineStages := Seq(digest, gzip)
