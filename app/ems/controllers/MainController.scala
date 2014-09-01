@@ -1,5 +1,6 @@
 package ems.controllers
 
+import controllers.Assets
 import scaldi.{Injectable, Injector}
 import securesocial.core._
 import securesocial.core.SecureSocial

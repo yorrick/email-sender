@@ -8,7 +8,7 @@
 @import ems.views.html.utils.formValidationScript
 @import ems.views.utils.FormInfo
 @import ems.views.html.utils.twitterBootstrapInput
-@import ems.controllers.utils.StaticWebJarAssets
+@import ems.controllers.utils.CDNAssets
 
 
 @(formInfo: FormInfo[PhoneNumber], smsTarget: PhoneNumber, emailTarget: String)(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User], flash: Flash)
@@ -17,8 +17,8 @@
 @implicitFieldConstructor = @{ FieldConstructor(twitterBootstrapInput.f) }
 
 @scripts = {
-    <script type='text/javascript' src='@StaticWebJarAssets.getUrl(WebJarAssets.locate("jquery.validate.min.js"))'></script>
-    <script type='text/javascript' src='@StaticWebJarAssets.getUrl(WebJarAssets.locate("additional-methods.min.js"))'></script>
+    <script type='text/javascript' src='@CDNAssets.webJarUrl(WebJarAssets.locate("jquery.validate.min.js"))'></script>
+    <script type='text/javascript' src='@CDNAssets.webJarUrl(WebJarAssets.locate("additional-methods.min.js"))'></script>
 
     @formValidationScript("accountForm", formInfo)
 }
