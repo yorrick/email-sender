@@ -39,13 +39,6 @@ object CDNAssets extends Controller {
    * @param call
    * @return
    */
-  def resourceUrl(call: Call) = {
-    val result = resourceCDNUrl map { _ + call.url } getOrElse call.url
-    // work around for https://github.com/playframework/playframework/pull/3074
-    result.replaceAllLiterally("//", "/")
-
-    // adds double slash automatically 
-    "//" + result
-  }
+  def resourceUrl(call: Call) = resourceCDNUrl map { _ + call.url } getOrElse call.url
 
 }
