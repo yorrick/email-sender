@@ -54,8 +54,6 @@ class UpdatesServiceActorSpec extends PlaySpecification with WithTestData with A
     "Accept Signal messages" in new WithApplication(noMongoApp) {
       implicit val injector = appInjector
       val actorRef = injectActorRef[UpdatesServiceActor]
-
-      await((actorRef ? Ping).mapTo[Boolean]) must beTrue
     }
 
     "Accept MessageDisplay" in new WithApplication(noMongoApp) {
