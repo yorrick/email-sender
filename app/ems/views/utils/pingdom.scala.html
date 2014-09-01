@@ -1,0 +1,16 @@
+@import play.api.Play.current
+
+
+@current.configuration.getBoolean("ems.views.utils.pingdom.enabled").filter(identity).map { _ =>
+    <script>
+    var _prum = [['id', '5404ed0babe53d3134932a34'],
+                 ['mark', 'firstbyte', (new Date()).getTime()]];
+    (function() {
+        var s = document.getElementsByTagName('script')[0]
+          , p = document.createElement('script');
+        p.async = 'async';
+        p.src = '//rum-static.pingdom.net/prum.min.js';
+        s.parentNode.insertBefore(p, s);
+    })();
+    </script>
+}

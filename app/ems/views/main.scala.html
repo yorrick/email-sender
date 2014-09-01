@@ -1,4 +1,5 @@
 @import ems.controllers.utils.CDNAssets
+@import ems.views.html.utils.pingdom
 
 
 @(title: String, scripts: Html = Html(""), navbarContent: Html = Html(""))(content: Html)
@@ -17,6 +18,8 @@
 
     <script type='text/javascript' src='@CDNAssets.webJarUrl(WebJarAssets.locate("jquery.min.js"))'></script>
     <script type='text/javascript' src='@CDNAssets.webJarUrl(WebJarAssets.locate("js/bootstrap.min.js"))'></script>
+
+    @pingdom()
 
     @scripts
 
