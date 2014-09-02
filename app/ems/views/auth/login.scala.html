@@ -13,21 +13,21 @@
     </div>
 
     @errorMsg.map { msg =>
-    <div class="alert alert-error">
-        @Messages(msg)
-    </div>
+        <div class="alert alert-error">
+            @Messages(msg)
+        </div>
     }
 
     @request.flash.get("success").map { msg =>
-    <div class="alert alert-info">
-        @msg
-    </div>
+        <div class="alert alert-info">
+            @msg
+        </div>
     }
 
     @request.flash.get("error").map { msg =>
-    <div class="alert alert-error">
-        @msg
-    </div>
+        <div class="alert alert-error">
+            @msg
+        </div>
     }
 
     <div class="clearfix">
@@ -43,4 +43,8 @@
             }
         </p>
     </div>
+
+    @for(docs <- ctx.documents.get("footer"); doc <- docs.headOption) {
+        @Html(doc.html)
+    }
 }
