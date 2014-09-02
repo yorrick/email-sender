@@ -1,6 +1,7 @@
 package ems.views.auth
 
 
+import ems.controllers.utils.Context
 import ems.models.User
 import ems.modules.WebModule
 import org.junit.runner.RunWith
@@ -22,6 +23,7 @@ class LoginSpec extends PlaySpecification with Injectable {
     "Be generated" in new WithApplication() {
       implicit val requestHeader = FakeRequest()
       implicit val env = inject[RuntimeEnvironment[User]]
+      implicit val ctx = Context(Map())
 
       val result = ems.views.html.auth.login(None)
       contentAsString(result) must contain("Google")

@@ -36,7 +36,7 @@ class WebModule extends Module {
   bind[UserStore] to new MongoUserStore
   // use real AuthenticatorService in dev and prod
   bind[AuthenticatorService[User]] to new AuthenticatorService(inject[CookieAuthenticatorBuilder[User]])
-  bind[ViewTemplates] to new EMSViewTemplates(inject[RuntimeEnvironment[User]])
+  bind[ViewTemplates] to new EMSViewTemplates(inject[RuntimeEnvironment[User]], inject[PrismicService])
   bind[CookieAuthenticatorBuilder[User]] to new CookieAuthenticatorBuilder[User](inject[RedisAuthenticatorStore[CookieAuthenticator[User]]], inject[IdGenerator])
   bind[RedisAuthenticatorStore[CookieAuthenticator[User]]] to new RedisCookieAuthenticatorStore()
 

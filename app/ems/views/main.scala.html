@@ -1,8 +1,9 @@
 @import ems.controllers.utils.CDNAssets
 @import ems.views.html.utils.pingdom
+@import ems.controllers.utils.Context
 
 
-@(title: String, scripts: Html = Html(""), navbarContent: Html = Html(""))(content: Html)
+@(title: String, scripts: Html = Html(""), navbarContent: Html = Html(""))(content: Html)(implicit ctx: Context)
 
 <!DOCTYPE html>
 <html>

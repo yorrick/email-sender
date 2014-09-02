@@ -1,9 +1,10 @@
 @import securesocial.core.RuntimeEnvironment
 @import ems.views.html.main
 @import ems.controllers.utils.CDNAssets
+@import ems.controllers.utils.Context
 
 
-@(errorMsg: Option[String] = None)(implicit request: RequestHeader, lang: Lang, env: RuntimeEnvironment[_])
+@(errorMsg: Option[String] = None)(implicit request: RequestHeader, lang: Lang, env: RuntimeEnvironment[_], ctx: Context)
 
 
 @main("Login"){

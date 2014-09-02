@@ -31,7 +31,7 @@ trait ControllerUtils extends SecureSocial[User] {
    * @return
    */
   def securedContextAction(tags: String*)(block: securedControllerCallback): Action[AnyContent] =
-    ContextAction("footer") {
+    ContextAction(tags: _*) {
       SecuredAction.async { r: SecuredRequest[_] => r match {
         case SecuredRequest(user, authenticator, ContextRequest(ctx, originalRequest)) =>
           block(user)(ctx)(originalRequest)
@@ -46,7 +46,7 @@ trait ControllerUtils extends SecureSocial[User] {
    * @return
    */
   def userAwareContextAction(tags: String*)(block: userAwareControllerCallback): Action[AnyContent] =
-    ContextAction("footer") {
+    ContextAction(tags: _*) {
       UserAwareAction { r: RequestWithUser[_] => r match {
         case RequestWithUser(user, authenticator, ContextRequest(ctx, originalRequest)) =>
           block(user)(ctx)(originalRequest)

@@ -8,6 +8,7 @@
 
 @(messageList: List[MessageDisplay], user: User, userInfo: UserInfo)(implicit env: RuntimeEnvironment[User], ctx: Context)
 
+
 @scripts = {
     <script type="text/javascript" charset="utf-8" src="@ems.controllers.routes.JavascriptController.javascriptRoutes()"></script>
     <script type="text/javascript" charset="utf-8" src="@ems.controllers.routes.JavascriptController.updatesJs()"></script>

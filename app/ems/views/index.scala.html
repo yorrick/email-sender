@@ -9,7 +9,9 @@
 @mainAuth("Welcome", user = user){
 
     <div class="jumbotron">
-        @ctx.documents("welcome").headOption.map { doc => @Html(doc.html) }
+        @for(docs <- ctx.documents.get("welcome"); doc <- docs.headOption) {
+            @Html(doc.html)
+        }
     </div>
 
     @user match {
