@@ -16,6 +16,8 @@ resolvers += "play2-rediscala" at "http://dl.bintray.com/yorrick/maven"
 
 resolvers += "securesocial" at "http://dl.bintray.com/yorrick/maven"
 
+resolvers += "Prismic.io kits" at "https://github.com/prismicio/repository/raw/master/maven/"
+
 libraryDependencies ++= Seq(
   "org.webjars" %% "webjars-play" % "2.3.0",
   "org.webjars" % "font-awesome" % "4.1.0",
@@ -31,7 +33,8 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-testkit" % "2.3.3" % "test",
   "org.scaldi" %% "scaldi" % "0.4",
   "org.scaldi" %% "scaldi-play" % "0.4.1",
-  "org.scaldi" %% "scaldi-akka" % "0.4"
+  "org.scaldi" %% "scaldi-akka" % "0.4",
+  "io.prismic" %% "scala-kit" % "1.0-M16"
 )
 
 libraryDependencies += ws

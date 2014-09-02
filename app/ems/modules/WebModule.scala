@@ -2,6 +2,7 @@ package ems.modules
 
 import akka.actor.ActorSystem
 import ems.backend.auth.{RedisCookieAuthenticatorStore, RedisAuthenticatorStore, EMSRuntimeEnvironment}
+import ems.backend.cms.{PrismicService, DefaultPrismicService}
 import ems.backend.email.{MailgunService, DefaultMailgunService}
 import ems.backend.forwarding.{DefaultForwarderServiceActor, ForwarderServiceActor}
 import ems.backend.persistence._
@@ -15,7 +16,6 @@ import play.api.libs.concurrent.Akka
 import play.api.Play.current
 import play.api.mvc.Filter
 import scaldi.Module
-import scaldi.play.condition._
 import securesocial.controllers.ViewTemplates
 import securesocial.core.RuntimeEnvironment
 import securesocial.core.authenticator.{CookieAuthenticatorBuilder, IdGenerator, CookieAuthenticator}
@@ -48,6 +48,7 @@ class WebModule extends Module {
   bind[AkkaServices] to new DefaultAkkaServices initWith(_.scheduleAkkaEvents)
   bind[RedisService] to new DefaultRedisService initWith(_.openConnections) destroyWith(_.closeConnections)
   bind[UpdateService] to new DefaultUpdateService
+  bind[PrismicService] to new DefaultPrismicService
 
   // get the underlying play akka system (managed by play)
   bind [ActorSystem] to Akka.system

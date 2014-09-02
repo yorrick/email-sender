@@ -4,8 +4,8 @@ email-sender
 Sms <-> Email bridge application - developped with [scala](http://www.scala-lang.org/) and [play2](http://www.playframework.com/).
 
 
-[![Build Status](https://travis-ci.org/yorrick/email-sender.svg?branch=master)](https://travis-ci.org/yorrick/email-sender)
-[![Coverage Status](https://coveralls.io/repos/yorrick/email-sender/badge.png?branch=master)](https://coveralls.io/r/yorrick/email-sender?branch=master)
+[![Build Status](https://travis-ci.org/yorrick/email-sender.svg?branch=27-doc)](https://travis-ci.org/yorrick/email-sender)
+[![Coverage Status](https://coveralls.io/repos/yorrick/email-sender/badge.png?branch=27-doc)](https://coveralls.io/r/yorrick/email-sender?branch=27-doc)
 
 
 #### This app is based on a fully async stack
@@ -27,6 +27,7 @@ Sms <-> Email bridge application - developped with [scala](http://www.scala-lang
  * integrate [bootstrap](http://getbootstrap.com/) and [jQuery validation](http://jqueryvalidation.org/) with play forms
  * use [webjars](http://www.webjars.org/) with CDN and versioning
  * serve internal static resources using a CDN ([cloudfront](http://aws.amazon.com/cloudfront/)), with asset versioning (using [sbt-digest](https://github.com/sbt/sbt-digest))
+ * how to integrate [prismic CMS](https://prismic.io/), to display CMS content anywhere
 
 #### Architecture evolution
  * to be able to scale out, web UI, api endpoints and forwarding jobs should be split into different nodes

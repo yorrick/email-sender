@@ -1,21 +1,26 @@
 package ems.controllers
 
-import controllers.Assets
+import ems.backend.cms.PrismicService
 import scaldi.{Injectable, Injector}
 import securesocial.core._
 import securesocial.core.SecureSocial
-import play.api.Logger
-
 import ems.models.User
+import scala.concurrent.ExecutionContext
 
 
 class MainController(implicit inj: Injector) extends SecureSocial[User] with Injectable {
 
   override implicit val env = inject [RuntimeEnvironment[User]]
+  implicit val executionContext = inject[ExecutionContext]
+  val cmsService = inject[PrismicService]
 
-  def index = UserAwareAction { implicit request =>
+  def index = UserAwareAction.async { implicit request =>
     implicit val user = request.user
-    Ok(ems.views.html.index())
+
+    for {
+      doc <- cmsService.getMainPageDocument
+      linkResolver <- cmsService.linkResolver
+    } yield Ok(ems.views.html.index(doc, linkResolver))
   }
 
 }

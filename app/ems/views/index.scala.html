@@ -1,7 +1,8 @@
 @import ems.models.User
+@import io.prismic.{DocumentLinkResolver, Document}
 
 
-@()(implicit user: Option[User])
+@(document: Option[Document], linkResolver: DocumentLinkResolver)(implicit user: Option[User])
 
 
 @mainAuth("Welcome", user = user){
@@ -9,8 +10,9 @@
     <p></p>
 
     <div class="jumbotron">
-        <h1>Welcome</h1>
-        <p>This is a bridge between sms and emails. Send emails by sending sms, and send sms by sending emails</p>
+        @document.map { doc =>
+            @Html(doc.asHtml(linkResolver))
+        }
     </div>
 
     @user match {
