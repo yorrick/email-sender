@@ -1,9 +1,7 @@
 package ems.backend.cms
 
-import controllers.routes
 import io.prismic.{Fragment, DocumentLinkResolver, Api, BuiltInCache}
 import play.api.Logger
-import play.api.mvc.RequestHeader
 import scaldi.{Injectable, Injector}
 
 import scala.concurrent.{Future, ExecutionContext}
@@ -38,7 +36,7 @@ class DefaultPrismicService(implicit inj: Injector) extends PrismicService with 
    * TODO implement this
    * Resolve links to documents
    */
-  val linkResolver: Future[DocumentLinkResolver] = apiFuture map { api=> DocumentLinkResolver(api) {
+  val getLinkResolver: Future[DocumentLinkResolver] = apiFuture map { api=> DocumentLinkResolver(api) {
     case (Fragment.DocumentLink(id, docType, tags, slug, false), maybeBookmarked) => ""
     case (link@Fragment.DocumentLink(_, _, _, _, true), _)                        => ""
   }}

@@ -19,7 +19,7 @@ class MainController(implicit inj: Injector) extends SecureSocial[User] with Inj
 
     for {
       doc <- cmsService.getMainPageDocument
-      linkResolver <- cmsService.linkResolver
+      linkResolver <- cmsService.getLinkResolver
     } yield Ok(ems.views.html.index(doc, linkResolver))
   }
 

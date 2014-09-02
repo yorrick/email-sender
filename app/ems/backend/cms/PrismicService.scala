@@ -19,6 +19,6 @@ trait PrismicService {
    * Builds a link resolver
    * @return
    */
-  def linkResolver: Future[DocumentLinkResolver]
+  def getLinkResolver: Future[DocumentLinkResolver]
 
 }
