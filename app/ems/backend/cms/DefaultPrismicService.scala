@@ -38,7 +38,7 @@ class DefaultPrismicService(implicit inj: Injector) extends PrismicService with 
    */
   val getLinkResolver: Future[DocumentLinkResolver] = apiFuture map { api=> DocumentLinkResolver(api) {
     case (Fragment.DocumentLink(id, docType, tags, slug, false), maybeBookmarked) => ""
-    case (link@Fragment.DocumentLink(_, _, _, _, true), _)                        => ""
+    case (link @ Fragment.DocumentLink(_, _, _, _, true), _)                      => ""
   }}
 
   def getMainPageDocument = {

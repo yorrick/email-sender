@@ -1,62 +1,77 @@
 package ems.controllers.utils
 
-import play.api.Logger
+import ems.backend.cms.PrismicService
+import io.prismic.{DocumentLinkResolver, Document}
 import play.api.mvc._
-
+import scaldi.{Injectable, Injector}
 import scala.concurrent.Future
 
 
+//class ContextUtils(implicit inj: Injector) extends Injectable {
+//
+//  val prismicService = inject[PrismicService]
+//
+//  def buildAction[A](prismicTag: String) = {
+//    for {
+//      document <- prismicService.getMainPageDocument
+//    } yield {
+//      new Action[A] {
+//
+//        def apply(request: Request[A]): Future[Result] =
+//          for {
+//            linkResolver <- prismicService.getLinkResolver
+//            result <- action(new ContextRequest(Context(prismicService), request))
+//          } yield {
+//            result
+//          }
+//
+//        lazy val parser = action.parser
+//      }
+//    }
+//  }
+//}
+
 //case class ContextAction[A](action: Action[A]) extends Action[A] {
 //
-//  def apply(request: Request[A]): Future[Result] = {
-//    Logger.info("=========================Calling ContextAction")
-//    action(request)
-//  }
+//  def apply(request: Request[A]): Future[Result] =
+//    for {
+//      linkResolver <- prismicService.getLinkResolver
+//      result <- action(new ContextRequest(Context(prismicService), request))
+//    } yield {
+//      result
+//    }
 //
 //  lazy val parser = action.parser
 //}
 
 
+case class ContextAction[A](prismicTag: String)(action: Action[A])(implicit inj: Injector) extends Action[A] with Injectable {
 
-//object ContextActionBuilder extends ActionBuilder[Request] {
-//  def invokeBlock[A](request: Request[A], block: (Request[A]) => Future[Result]) = {
-//    block(request)
-//  }
-//  override def composeAction[A](action: Action[A]) = new ContextAction(action)
-//}
+  val prismicService = inject[PrismicService]
+  implicit def ec = executionContext
 
-case class Context(theValue: String)
+  def buildProcessedDocument(document: Option[Document], linkResolver: DocumentLinkResolver): Option[ProcessedDocument] =
+    document map { doc => ProcessedDocument(doc, doc.asHtml(linkResolver)) }
 
-object FakeContext extends Context("toto")
-
-case class ContextRequest[A](val context: Context, request: Request[A]) extends WrappedRequest[A](request)
-
-//object ContextAction extends ActionBuilder[ContextRequest] with ActionTransformer[Request, ContextRequest] {
-//  def transform[A](request: Request[A]) = Future.successful {
-//    new ContextRequest(FakeContext, request)
-//  }
-//}
-
-//object ContextAction extends ActionBuilder[ContextRequest] {
-//
-//  def invokeBlock[A](request: Request[A], block: (ContextRequest[A]) => Future[Result]): Future[Result] =
-//    request match {
-//      case r: TokenRequest[A] => checkPermissions(r, permissions.toSeq, block)
-//      case _ => resolve(InternalServerError)
-//    }
-//
-//  override def composeAction[A](action: Action[A]) = hasToken.async(action.parser) { tokenRequest =>
-//    action(tokenRequest)
-//  }
-//
-//}
-
-case class ContextAction[A](action: Action[A]) extends Action[A] {
-
-  def apply(request: Request[A]): Future[Result] = {
-    action(new ContextRequest(FakeContext, request))
-  }
+  def apply(request: Request[A]): Future[Result] =
+    for {
+      doc <- prismicService.getMainPageDocument
+      linkResolver <- prismicService.getLinkResolver
+      result <- action(new ContextRequest(Context(buildProcessedDocument(doc, linkResolver)), request))
+    } yield {
+      result
+    }
 
   lazy val parser = action.parser
 }
+
+//case class ContextAction[A](action: Action[A]) extends Action[A] {
+//
+//  def apply(request: Request[A]): Future[Result] = {
+//    val ctx = null
+//    action(new ContextRequest(ctx, request))
+//  }
+//
+//  lazy val parser = action.parser
+//}
 

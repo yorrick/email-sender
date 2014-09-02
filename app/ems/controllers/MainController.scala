@@ -13,19 +13,16 @@ class MainController(implicit inj: Injector) extends SecureSocial[User] with Inj
 
   override implicit val env = inject[RuntimeEnvironment[User]]
   implicit val executionContext = inject[ExecutionContext]
-  val cmsService = inject[PrismicService]
+  val prismicService = inject[PrismicService]
 
-  def index = ContextAction {
-    UserAwareAction.async { r: RequestWithUser[_] => r match {
+  def index = ContextAction("main-page") {
+    UserAwareAction { r: RequestWithUser[_] => r match {
       case RequestWithUser(user, authenticator, ContextRequest(ctx, originalRequest)) =>
 
         implicit val u = user
         implicit val c = ctx
 
-        for {
-          doc <- cmsService.getMainPageDocument
-          linkResolver <- cmsService.getLinkResolver
-        } yield Ok(ems.views.html.index(doc, linkResolver))
+        Ok(ems.views.html.index())
 
       }
     }

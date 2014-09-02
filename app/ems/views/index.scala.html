@@ -1,16 +1,16 @@
 @import ems.models.User
 @import ems.controllers.utils.Context
-@import io.prismic.{DocumentLinkResolver, Document}
+@import io.prismic.Document
 
 
-@(document: Option[Document], linkResolver: DocumentLinkResolver)(implicit user: Option[User], ctx: Context)
+@()(implicit user: Option[User], ctx: Context)
 
 
 @mainAuth("Welcome", user = user){
 
     <div class="jumbotron">
-        @document.map { doc =>
-            @Html(doc.asHtml(linkResolver))
+        @ctx.document.map { doc =>
+            @Html(doc.html)
         }
     </div>
 
