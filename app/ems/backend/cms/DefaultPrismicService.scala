@@ -42,6 +42,7 @@ class DefaultPrismicService(implicit inj: Injector) extends PrismicService with 
   }}
 
   def getMainPageDocument = {
+//    val query = """[[:d = at(document.type, "main-page")][:d = any(document.tags, ["welcome"])]]"""
     val query = """[[:d = any(document.tags, ["welcome"])]]"""
 
     for {

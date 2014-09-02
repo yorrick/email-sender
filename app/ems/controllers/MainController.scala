@@ -1,6 +1,7 @@
 package ems.controllers
 
 import ems.backend.cms.PrismicService
+import ems.controllers.utils.{ContextAction, ContextRequest}
 import scaldi.{Injectable, Injector}
 import securesocial.core._
 import securesocial.core.SecureSocial
@@ -10,17 +11,25 @@ import scala.concurrent.ExecutionContext
 
 class MainController(implicit inj: Injector) extends SecureSocial[User] with Injectable {
 
-  override implicit val env = inject [RuntimeEnvironment[User]]
+  override implicit val env = inject[RuntimeEnvironment[User]]
   implicit val executionContext = inject[ExecutionContext]
   val cmsService = inject[PrismicService]
 
-  def index = UserAwareAction.async { implicit request =>
-    implicit val user = request.user
+  def index = ContextAction {
+    UserAwareAction.async { r: RequestWithUser[_] => r match {
+      case RequestWithUser(user, authenticator, ContextRequest(ctx, originalRequest)) =>
 
-    for {
-      doc <- cmsService.getMainPageDocument
-      linkResolver <- cmsService.getLinkResolver
-    } yield Ok(ems.views.html.index(doc, linkResolver))
+        implicit val u = user
+        implicit val c = ctx
+
+        for {
+          doc <- cmsService.getMainPageDocument
+          linkResolver <- cmsService.getLinkResolver
+        } yield Ok(ems.views.html.index(doc, linkResolver))
+
+      }
+    }
   }
+
 
 }
