@@ -1,6 +1,5 @@
 package ems.controllers
 
-import ems.backend.cms.PrismicService
 import ems.controllers.utils.{ContextAction, ContextRequest}
 import scaldi.{Injectable, Injector}
 import securesocial.core._
@@ -13,9 +12,8 @@ class MainController(implicit inj: Injector) extends SecureSocial[User] with Inj
 
   override implicit val env = inject[RuntimeEnvironment[User]]
   implicit val executionContext = inject[ExecutionContext]
-  val prismicService = inject[PrismicService]
 
-  def index = ContextAction("main-page") {
+  def index = ContextAction("welcome", "footer") {
     UserAwareAction { r: RequestWithUser[_] => r match {
       case RequestWithUser(user, authenticator, ContextRequest(ctx, originalRequest)) =>
 

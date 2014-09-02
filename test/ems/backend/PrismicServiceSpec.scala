@@ -173,7 +173,7 @@ class PrismicServiceSpec extends PlaySpecification with WithTestData with AppInj
     "Fetch main page doc" in new WithServer(app = app) {
       implicit val i = appInjector
       val service = inject[PrismicService]
-      await(service.getMainPageDocument) must beSome.which(_.id == "VAT2YS4AAC8A4K7l")
+      await(service.getDocuments("welcome")).size must beEqualTo(1)
     }
 
   }

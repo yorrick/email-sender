@@ -10,10 +10,10 @@ import scala.concurrent.Future
 trait PrismicService {
 
   /**
-   * Returns the document that will be displayed on the main page
+   * Returns all documents matching tags
    * @return
    */
-  def getMainPageDocument: Future[Option[Document]]
+  def getDocuments(tags: String*): Future[Map[String, Seq[Document]]]
 
   /**
    * Builds a link resolver

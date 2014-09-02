@@ -9,9 +9,7 @@
 @mainAuth("Welcome", user = user){
 
     <div class="jumbotron">
-        @ctx.document.map { doc =>
-            @Html(doc.html)
-        }
+        @ctx.documents("welcome").headOption.map { doc => @Html(doc.html) }
     </div>
 
     @user match {

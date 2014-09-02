@@ -88,15 +88,8 @@ trait MockUtils extends Mockito { self: WithTestData =>
   def mockPrismicService = {
     val m = mock[PrismicService]
 
-    m.getMainPageDocument returns Future.successful(Some(new prismic.Document(
-      "id",
-      "type",
-      "href",
-      Seq[String](),
-      Seq[String](),
-      Nil,
-      Map()
-    )))
+    val doc = new prismic.Document("id", "type", "href", Seq[String](), Seq[String](), Nil, Map())
+    m.getDocuments(anyObject()) returns Future.successful(Map("welcome" -> Seq(doc)))
 
     m.getLinkResolver returns Future.successful(new DocumentLinkResolver {
       override def apply(link: DocumentLink): String = ""

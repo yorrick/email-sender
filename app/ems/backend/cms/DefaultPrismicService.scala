@@ -1,6 +1,6 @@
 package ems.backend.cms
 
-import io.prismic.{Fragment, DocumentLinkResolver, Api, BuiltInCache}
+import io.prismic._
 import play.api.Logger
 import scaldi.{Injectable, Injector}
 
@@ -41,14 +41,25 @@ class DefaultPrismicService(implicit inj: Injector) extends PrismicService with 
     case (link @ Fragment.DocumentLink(_, _, _, _, true), _)                      => ""
   }}
 
-  def getMainPageDocument = {
-//    val query = """[[:d = at(document.type, "main-page")][:d = any(document.tags, ["welcome"])]]"""
-    val query = """[[:d = any(document.tags, ["welcome"])]]"""
+  def getDocuments(tags: String*) = {
+    val wrappedTags = tags map {"\"" + _ + "\""} mkString(", ")
+    val query = s"""[[:d = any(document.tags, [$wrappedTags])]]"""
 
-    for {
+    val docListFuture = for {
       api <- apiFuture
-      document <- api.forms("everything").query(query).ref(api.master).submit() map (_.results.headOption)
-    } yield document
+      documentList <- api.forms("everything").query(query).ref(api.master).submit() map (_.results)
+    } yield documentList
+
+    docListFuture map { docList =>
+      // warning: we iterate N times over the list, where N is the number of tags asked for
+      // this is not a problem in this case since we have very small numbers of tags, but this could be improved
+      val r: Seq[(String, List[Document])] = tags map { searchedTag: String =>
+        searchedTag -> (docList filter { _.tags.contains(searchedTag)})
+      }
+
+      r.toMap
+
+    }
 
   }
 

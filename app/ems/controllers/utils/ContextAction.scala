@@ -7,71 +7,27 @@ import scaldi.{Injectable, Injector}
 import scala.concurrent.Future
 
 
-//class ContextUtils(implicit inj: Injector) extends Injectable {
-//
-//  val prismicService = inject[PrismicService]
-//
-//  def buildAction[A](prismicTag: String) = {
-//    for {
-//      document <- prismicService.getMainPageDocument
-//    } yield {
-//      new Action[A] {
-//
-//        def apply(request: Request[A]): Future[Result] =
-//          for {
-//            linkResolver <- prismicService.getLinkResolver
-//            result <- action(new ContextRequest(Context(prismicService), request))
-//          } yield {
-//            result
-//          }
-//
-//        lazy val parser = action.parser
-//      }
-//    }
-//  }
-//}
-
-//case class ContextAction[A](action: Action[A]) extends Action[A] {
-//
-//  def apply(request: Request[A]): Future[Result] =
-//    for {
-//      linkResolver <- prismicService.getLinkResolver
-//      result <- action(new ContextRequest(Context(prismicService), request))
-//    } yield {
-//      result
-//    }
-//
-//  lazy val parser = action.parser
-//}
-
-
-case class ContextAction[A](prismicTag: String)(action: Action[A])(implicit inj: Injector) extends Action[A] with Injectable {
+case class ContextAction[A](prismicTags: String*)(action: Action[A])(implicit inj: Injector) extends Action[A] with Injectable {
 
   val prismicService = inject[PrismicService]
   implicit def ec = executionContext
 
-  def buildProcessedDocument(document: Option[Document], linkResolver: DocumentLinkResolver): Option[ProcessedDocument] =
-    document map { doc => ProcessedDocument(doc, doc.asHtml(linkResolver)) }
+//  def buildProcessedDocument(document: Option[Document], linkResolver: DocumentLinkResolver): Option[ProcessedDocument] =
+//    document map { doc => ProcessedDocument(doc, doc.asHtml(linkResolver)) }
+  def buildProcessedDocument(documents: Map[String, Seq[Document]], linkResolver: DocumentLinkResolver) =
+    documents map { case (tag, docs) =>
+      val pDocs = docs map { doc => ProcessedDocument(doc, doc.asHtml(linkResolver))}
+      (tag, pDocs)
+    }
 
   def apply(request: Request[A]): Future[Result] =
     for {
-      doc <- prismicService.getMainPageDocument
+      docs <- prismicService.getDocuments(prismicTags: _*)
       linkResolver <- prismicService.getLinkResolver
-      result <- action(new ContextRequest(Context(buildProcessedDocument(doc, linkResolver)), request))
+      result <- action(new ContextRequest(Context(buildProcessedDocument(docs, linkResolver)), request))
     } yield {
       result
     }
 
   lazy val parser = action.parser
 }
-
-//case class ContextAction[A](action: Action[A]) extends Action[A] {
-//
-//  def apply(request: Request[A]): Future[Result] = {
-//    val ctx = null
-//    action(new ContextRequest(ctx, request))
-//  }
-//
-//  lazy val parser = action.parser
-//}
-
