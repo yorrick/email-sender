@@ -4,6 +4,7 @@ package ems.controllers
 import akka.actor.{Props}
 import ems.backend.persistence.{MessageStore, UserInfoStore}
 import ems.backend.updates.WebsocketInputActor
+import ems.controllers.utils.{ContextAction, ContextRequest}
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
@@ -16,6 +17,7 @@ import play.api.Logger
 import play.api.libs.json._
 import play.api.Play.current
 import scaldi.{Injectable, Injector}
+import scala.language.postfixOps
 
 import ems.models._
 
@@ -34,24 +36,31 @@ class MessageController(implicit inj: Injector) extends SecureSocial[User] with 
    * GET for browser
    * @return
    */
-  def list = SecuredAction.async { implicit request =>
-    import scala.language.postfixOps
-    implicit val timeout = Timeout(1 second)
-    val user = request.user
+  def list = ContextAction("footer") {
+    SecuredAction.async { r: SecuredRequest[_] => r match {
+      case SecuredRequest(user, authenticator, ContextRequest(ctx, originalRequest)) =>
 
-    val result = for {
-      userInfo <- userInfoStore.findUserInfoByUserId(user.id)
-      messageList <- messageStore.listMessage(request.user.id).mapTo[List[Message]]
-    } yield {
-      val messageDisplayList = messageList map {MessageDisplay.fromMessage(_)}
-      Ok(ems.views.html.message.list(messageDisplayList, user, userInfo))
-    }
+        implicit val timeout = Timeout(1 second)
+        implicit val u = user
+        implicit val c = ctx
 
-    result recover {
-      case error @ _ =>
-        val message = s"Could not get message list: $error"
-        Logger.warn(message)
-        NotFound(message)
+        val result = for {
+          userInfo <- userInfoStore.findUserInfoByUserId(user.id)
+          messageList <- messageStore.listMessage(user.id).mapTo[List[Message]]
+        } yield {
+          val messageDisplayList = messageList map {
+            MessageDisplay.fromMessage(_)
+          }
+          Ok(ems.views.html.message.list(messageDisplayList, user, userInfo))
+        }
+
+        result recover {
+          case error@_ =>
+            val message = s"Could not get message list: $error"
+            Logger.warn(message)
+            NotFound(message)
+        }
+      }
     }
   }
 

@@ -2,6 +2,7 @@ package ems.controllers
 
 
 import _root_.securesocial.core.RuntimeEnvironment
+import ems.backend.cms.PrismicService
 import ems.backend.email.MailgunService
 import ems.backend.persistence.{UserInfoStore}
 import ems.backend.sms.TwilioService
@@ -25,6 +26,7 @@ class AccountControllerSpec extends PlaySpecification with TestUtils with WithTe
     bind[MailgunService] to mockMailgunService
     bind[UserInfoStore] to mockUserInfoStore
     bind[TwilioService] to mockTwilioService
+    bind[PrismicService] to mockPrismicService
   }
 
   "Account controller" should {

@@ -9,9 +9,10 @@
 @import ems.views.utils.FormInfo
 @import ems.views.html.utils.twitterBootstrapInput
 @import ems.controllers.utils.CDNAssets
+@import ems.controllers.utils.Context
 
 
-@(formInfo: FormInfo[PhoneNumber], smsTarget: PhoneNumber, emailTarget: String)(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User], flash: Flash)
+@(formInfo: FormInfo[PhoneNumber], smsTarget: PhoneNumber, emailTarget: String)(implicit user: User, env: RuntimeEnvironment[User], flash: Flash, ctx: Context)
 
 
 @implicitFieldConstructor = @{ FieldConstructor(twitterBootstrapInput.f) }

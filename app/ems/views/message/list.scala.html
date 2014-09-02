@@ -3,9 +3,10 @@
 @import ems.models.MessageDisplay
 @import securesocial.core.{BasicProfile, RuntimeEnvironment}
 @import ems.models.{User, UserInfo}
+@import ems.controllers.utils.Context
 
 
-@(messageList: List[MessageDisplay], user: User, userInfo: UserInfo)(implicit request: RequestHeader, env: RuntimeEnvironment[User])
+@(messageList: List[MessageDisplay], user: User, userInfo: UserInfo)(implicit env: RuntimeEnvironment[User], ctx: Context)
 
 @scripts = {
     <script type="text/javascript" charset="utf-8" src="@ems.controllers.routes.JavascriptController.javascriptRoutes()"></script>
