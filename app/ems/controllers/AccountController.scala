@@ -4,48 +4,18 @@ package ems.controllers
 import ems.backend.email.MailgunService
 import ems.backend.persistence.{UserInfoStoreException, UserInfoStore}
 import ems.backend.sms.TwilioService
-import ems.controllers.utils.{Context, ContextRequest, ContextAction}
+import ems.controllers.utils.{ControllerUtils, Context}
 import ems.views.utils.FormInfo
 import play.api.data.validation.{ValidationError, Invalid, Valid, Constraint}
 import play.api.mvc._
 import scaldi.{Injectable, Injector}
-import securesocial.core.java.SecuredAction
 import scala.concurrent.{ExecutionContext, Future}
-import securesocial.core.{RuntimeEnvironment, SecureSocial}
+import securesocial.core.{RuntimeEnvironment}
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.Logger
 import ems.models.{PhoneNumber, User}
 import play.api.libs.json._
-
-
-
-trait ControllerUtils extends SecureSocial[User] {
-
-  implicit val injector: Injector
-
-  /**
-   * Type for the callback controller function
-   */
-  type controllerFunction = User => Context => Request[_] => Future[Result]
-
-  /**
-   * Builds an action using a simple function that takes user, context and request as parameters
-   * @param tags
-   * @param block
-   * @return
-   */
-  def securedContextAction(tags: String*)(block: controllerFunction): Action[AnyContent] =
-    ContextAction("footer") {
-      SecuredAction.async { r: SecuredRequest[_] => r match {
-        case SecuredRequest(user, authenticator, ContextRequest(ctx, originalRequest)) =>
-          block(user)(ctx)(originalRequest)
-      }
-      }
-    }
-
-
-}
 
 
 /**
