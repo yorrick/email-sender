@@ -1,6 +1,7 @@
 package ems.controllers
 
 import ems.controllers.utils.ControllerUtils
+import io.prismic.Fragment
 import scaldi.{Injectable, Injector}
 import securesocial.core._
 import ems.models.User

@@ -10,7 +10,7 @@
 
     <div class="jumbotron">
         @for(docs <- ctx.documents.get("welcome"); doc <- docs.headOption) {
-            @Html(doc.html)
+            @Html(doc.asHtml(ctx.linkResolver))
         }
     </div>
 

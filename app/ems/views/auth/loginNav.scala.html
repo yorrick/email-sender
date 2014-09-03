@@ -16,23 +16,32 @@
             </h1>
         </div>
 
-        <div class="collapse navbar-collapse">
+        <div class="collapse navbar-collapse row">
 
             @user match {
                 case Some(user) => {
 
-                    <ul class="nav navbar-nav">
+                    <ul class="nav navbar-nav vcenter">
 
-                        <li class="active">
-                            <p class="navbar-text no-margin">
+                        <li>
+                            <p class="navbar-text">
+                                <a href="@ems.controllers.routes.MainController.index()" class="btn btn-primary btn-md" role="button">
+                                    Home
+                                </a>
+                            </p>
+                        </li>
+
+                        <li>
+                            <p class="navbar-text">
                                 <a href="@ems.controllers.routes.MessageController.list()" class="btn btn-primary btn-md" role="button">
                                     Messages
                                 </a>
                             </p>
                         </li>
+
                     </ul>
 
-                    <ul class="nav navbar-nav navbar-right">
+                    <ul class="nav navbar-nav navbar-right vcenter">
 
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle no-padding" data-toggle="dropdown">

@@ -19,11 +19,11 @@ case class ContextAction[A](prismicTags: String*)(action: Action[A])(implicit in
   val prismicService = inject[PrismicService]
   implicit def ec = executionContext
 
-  def buildProcessedDocument(documents: Map[String, Seq[Document]], linkResolver: DocumentLinkResolver) =
-    documents map { case (tag, docs) =>
-      val pDocs = docs map { doc => ProcessedDocument(doc, doc.asHtml(linkResolver))}
-      (tag, pDocs)
-    }
+//  def buildProcessedDocument(documents: Map[String, Seq[Document]], linkResolver: DocumentLinkResolver) =
+//    documents map { case (tag, docs) =>
+//      val pDocs = docs map { doc => ProcessedDocument(doc, doc.asHtml(linkResolver))}
+//      (tag, pDocs)
+//    }
 
   /**
    * action is executed after prismic answers
@@ -34,7 +34,7 @@ case class ContextAction[A](prismicTags: String*)(action: Action[A])(implicit in
     for {
       docs <- prismicService.getDocuments(prismicTags: _*)
       linkResolver <- prismicService.getLinkResolver
-      result <- action(new ContextRequest(Context(buildProcessedDocument(docs, linkResolver)), request))
+      result <- action(new ContextRequest(Context(docs, linkResolver), request))
     } yield {
       result
     }
