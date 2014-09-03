@@ -4,12 +4,13 @@ package ems.controllers
 import ems.backend.email.MailgunService
 import ems.backend.persistence.{UserInfoStoreException, UserInfoStore}
 import ems.backend.sms.TwilioService
+import ems.controllers.utils.{ControllerUtils, Context}
 import ems.views.utils.FormInfo
 import play.api.data.validation.{ValidationError, Invalid, Valid, Constraint}
-import play.api.mvc.{Result, RequestHeader}
+import play.api.mvc._
 import scaldi.{Injectable, Injector}
 import scala.concurrent.{ExecutionContext, Future}
-import securesocial.core.{RuntimeEnvironment, SecureSocial}
+import securesocial.core.{RuntimeEnvironment}
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.Logger
@@ -20,7 +21,7 @@ import play.api.libs.json._
 /**
  * Handles authentication custom views
  */
-class AccountController(implicit inj: Injector) extends SecureSocial[User] with Injectable {
+class AccountController(implicit val injector: Injector) extends ControllerUtils with Injectable {
 
   override implicit val env = inject [RuntimeEnvironment[User]]
   implicit val executionContext = inject[ExecutionContext]
@@ -67,7 +68,7 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
    * @param formInfo
    * @return
    */
-  def displayResponse(formInfo: FormInfo[PhoneNumber])(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User]) = {
+  def displayResponse(formInfo: FormInfo[PhoneNumber])(implicit user: User, flash: Flash, env: RuntimeEnvironment[User], ctx: Context) = {
     val twilioNumber = PhoneNumber.fromCheckedValue(twilioService.apiMainNumber)
     ems.views.html.auth.account(formInfo, twilioNumber, mailgun.emailSource(twilioService.apiMainNumber))
   }
@@ -76,31 +77,25 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
    * Generates the common redirect response
    * @param message
    * @param user
-   * @param request
    * @param env
    * @return
    */
-  def redirectResponse(message: String)(implicit user: User, request: RequestHeader, env: RuntimeEnvironment[User]) =
+  def redirectResponse(message: String)(implicit user: User, flash: Flash, env: RuntimeEnvironment[User]) =
     Redirect(ems.controllers.routes.AccountController.account).flashing("success" -> message)
 
   /**
    * Account view
    * @return
    */
-  def account = SecuredAction.async { implicit request =>
-    implicit val user = request.user
-
+  def account = securedContextAction("footer") { implicit user => implicit ctx => implicit request =>
     userInfoStore.findUserInfoByUserId(user.id) map { userInfo =>
-//      form.fill(PhoneNumber.fromCheckedValue(userInfo.phoneNumber.getOrElse("")))
-      form.fill(userInfo.phoneNumber map {number => PhoneNumber.fromCheckedValue(number) } getOrElse(PhoneNumber.empty))
+      form.fill(userInfo.phoneNumber map { number => PhoneNumber.fromCheckedValue(number)} getOrElse (PhoneNumber.empty))
     } map { form =>
       Ok(displayResponse(formInfo(form)))
     }
   }
 
-  def accountUpdate = SecuredAction.async { implicit request =>
-    implicit val user = request.user
-
+  def accountUpdate = securedContextAction("footer") { implicit user => implicit ctx => implicit request =>
     form.bindFromRequest.fold(
       formWithErrors => {
         Future.successful(BadRequest(displayResponse(formInfo(formWithErrors))))
@@ -109,7 +104,7 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
     )
   }
 
-  private def handleFormValidated(phoneNumber: PhoneNumber)(implicit user: User, request: RequestHeader) = {
+  private def handleFormValidated(phoneNumber: PhoneNumber)(implicit user: User, flash: Flash, ctx: Context) = {
     userInfoStore.findUserInfoByUserId(user.id) flatMap { userInfo =>
       Logger.debug(s"Existing user info $userInfo, phoneNumberToSave ${phoneNumber.value}")
 
@@ -127,7 +122,7 @@ class AccountController(implicit inj: Injector) extends SecureSocial[User] with 
     }
   }
 
-  private def recoverFromError(phoneNumber: PhoneNumber)(implicit user: User, request: RequestHeader): PartialFunction[Throwable, Result] = {
+  private def recoverFromError(phoneNumber: PhoneNumber)(implicit user: User, flash: Flash, ctx: Context): PartialFunction[Throwable, Result] = {
     case UserInfoStoreException(message) =>
       val filledForm = form.fill(phoneNumber).withGlobalError(message)
       BadRequest(displayResponse(formInfo(filledForm)))

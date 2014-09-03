@@ -1,8 +1,9 @@
 @import ems.controllers.utils.CDNAssets
 @import ems.views.html.utils.pingdom
+@import ems.controllers.utils.Context
 
 
-@(title: String, scripts: Html = Html(""), navbarContent: Html = Html(""))(content: Html)
+@(title: String, scripts: Html = Html(""), navbarContent: Html = Html(""))(content: Html)(implicit ctx: Context)
 
 <!DOCTYPE html>
 <html>
@@ -26,29 +27,34 @@
 </head>
 <body>
 
-    <nav class="navbar navbar-default" role="navigation">
-      <div class="container-fluid">
-
-        <!-- Brand and toggle get grouped for better mobile display -->
-        <div class="navbar-header">
-          <h1>
-              <a class="h1" href="@ems.controllers.routes.MainController.index()">
-                  <span class="glyphicon glyphicon-phone"></span>
-                  <span class="glyphicon glyphicon-resize-horizontal"></span>
-                  <span class="glyphicon glyphicon-envelope"></span>
-              </a>
-          </h1>
-        </div>
-
-        <!-- Collect the nav links, forms, and other content for toggling -->
-        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-            @navbarContent
-        </div>
-      </div>
-    </nav>
+    @navbarContent
 
     <div class="container">
         @content
+    </div>
+
+    <div class="footer">
+        <div class="container text-muted">
+            <div class="row">
+                <div class="col-md-6">
+                    @for(docs <- ctx.documents.get("footer"); doc <- docs.headOption) {
+                        @doc.getText("footer.footer-content")
+                    }
+                </div>
+
+                <div class="col-md-6 text-right">
+                    @for(docs <- ctx.documents.get("footer"); doc <- docs.headOption) {
+                        @doc.getImage("footer.Image", "icon").map { img =>
+                            @Html(img.asHtml)
+                        }
+                        @doc.getHtml("footer.link", ctx.linkResolver).map { link =>
+                            @Html(link)
+                        }
+                    }
+                </div>
+
+            </div>
+        </div>
     </div>
 </body>
 </html>

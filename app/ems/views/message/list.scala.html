@@ -3,9 +3,11 @@
 @import ems.models.MessageDisplay
 @import securesocial.core.{BasicProfile, RuntimeEnvironment}
 @import ems.models.{User, UserInfo}
+@import ems.controllers.utils.Context
 
 
-@(messageList: List[MessageDisplay], user: User, userInfo: UserInfo)(implicit request: RequestHeader, env: RuntimeEnvironment[User])
+@(messageList: List[MessageDisplay], user: User, userInfo: UserInfo)(implicit env: RuntimeEnvironment[User], ctx: Context)
+
 
 @scripts = {
     <script type="text/javascript" charset="utf-8" src="@ems.controllers.routes.JavascriptController.javascriptRoutes()"></script>
@@ -15,42 +17,9 @@
 
 @mainAuth("Messages", scripts, Some(user)){
 
-        @*
     <div class="row">
-        <div class="col-md-8 col-md-offset-2">
-            <h2 class="h2 text-center">
-                <span>
-                    @userInfo.phoneNumber match {
-                        case Some(phoneNumber) => {
-                            @userInfo.phoneNumber
-                        }
-                        case None => {
-                            <a href="@ems.controllers.routes.AccountController.account">Please give us a phone number</a>
-                        }
-                    }
-                </span>
-                <span class="glyphicon glyphicon-resize-horizontal"></span>
-                <span>@user.main.email.getOrElse("No email address")</span>
-            </h2>
-        </div>
-    </div>
-
-    <div class="row">
-        <div id="messageList" class="col-md-10 col-md-offset-1 container">
-            @if(messageList.isEmpty) {
-                  @ems.views.html.message.listElement(MessageDisplay.empty, emptyClass = "empty-message")
-            } else {
-              @for(message <- messageList) {
-                  @ems.views.html.message.listElement(message)
-              }
-            }
-        </div>
-    </div>
-        *@
-
-    <div class="row">
-        <div class="col-md-10 col-md-offset-1">
-            <div class="panel panel-default">
+        <div class="col-md-12">
+            <div class="panel panel-primary">
                 <div class="panel-heading">
                     <h3 class="panel-title">
                         <span>

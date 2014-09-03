@@ -27,6 +27,7 @@ Sms <-> Email bridge application - developped with [scala](http://www.scala-lang
  * integrate [bootstrap](http://getbootstrap.com/) and [jQuery validation](http://jqueryvalidation.org/) with play forms
  * use [webjars](http://www.webjars.org/) with CDN and versioning
  * serve internal static resources using a CDN ([cloudfront](http://aws.amazon.com/cloudfront/)), with asset versioning (using [sbt-digest](https://github.com/sbt/sbt-digest))
+ * how to integrate [prismic CMS](https://prismic.io/), to display CMS content anywhere
 
 #### Architecture evolution
  * to be able to scale out, web UI, api endpoints and forwarding jobs should be split into different nodes

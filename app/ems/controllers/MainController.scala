@@ -1,20 +1,17 @@
 package ems.controllers
 
-import controllers.Assets
+import ems.controllers.utils.ControllerUtils
+import io.prismic.Fragment
 import scaldi.{Injectable, Injector}
 import securesocial.core._
-import securesocial.core.SecureSocial
-import play.api.Logger
-
 import ems.models.User
 
 
-class MainController(implicit inj: Injector) extends SecureSocial[User] with Injectable {
+class MainController(implicit val injector: Injector) extends ControllerUtils with Injectable {
 
-  override implicit val env = inject [RuntimeEnvironment[User]]
+  override implicit val env = inject[RuntimeEnvironment[User]]
 
-  def index = UserAwareAction { implicit request =>
-    implicit val user = request.user
+  def index = userAwareContextAction("welcome", "footer") { implicit user => implicit ctx => implicit request =>
     Ok(ems.views.html.index())
   }
 

@@ -1,8 +1,6 @@
 package ems.backend.auth
 
 import ems.backend.persistence.UserStore
-import ems.controllers.EMSViewTemplates
-import ems.controllers.auth.EMSRoutesService
 import ems.models.User
 import scaldi.{Injectable, Injector}
 import securesocial.controllers.ViewTemplates

@@ -1,8 +1,11 @@
 package ems.views.auth
 
 
+import ems.controllers.utils.Context
 import ems.models.User
 import ems.modules.WebModule
+import io.prismic.DocumentLinkResolver
+import io.prismic.Fragment.DocumentLink
 import org.junit.runner.RunWith
 import org.specs2.runner._
 import play.api.test._
@@ -22,6 +25,9 @@ class LoginSpec extends PlaySpecification with Injectable {
     "Be generated" in new WithApplication() {
       implicit val requestHeader = FakeRequest()
       implicit val env = inject[RuntimeEnvironment[User]]
+      implicit val ctx = Context(Map(), new DocumentLinkResolver {
+        override def apply(link: DocumentLink): String = ""
+      })
 
       val result = ems.views.html.auth.login(None)
       contentAsString(result) must contain("Google")
