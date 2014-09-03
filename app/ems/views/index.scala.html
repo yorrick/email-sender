@@ -1,16 +1,17 @@
 @import ems.models.User
+@import ems.controllers.utils.Context
+@import io.prismic.Document
 
 
-@()(implicit user: Option[User])
+@()(implicit user: Option[User], ctx: Context)
 
 
 @mainAuth("Welcome", user = user){
-    <h2></h2>
-    <p></p>
 
     <div class="jumbotron">
-        <h1>Welcome</h1>
-        <p>This is a bridge between sms and emails. Send emails by sending sms, and send sms by sending emails</p>
+        @for(docs <- ctx.documents.get("welcome"); doc <- docs.headOption) {
+            @Html(doc.asHtml(ctx.linkResolver))
+        }
     </div>
 
     @user match {

@@ -1,8 +1,9 @@
 @import ems.models.User
 @import ems.views.html.auth.loginNav
+@import ems.controllers.utils.Context
 
 
-@(title: String, scripts: Html = Html(""), user: Option[User] = None)(content: Html)
+@(title: String, scripts: Html = Html(""), user: Option[User] = None)(content: Html)(implicit ctx: Context)
 
 
 @main(title, scripts, loginNav(user))(content)

@@ -1,6 +1,7 @@
 package ems.controllers
 
 
+import ems.backend.cms.PrismicService
 import ems.models.User
 import org.junit.runner.RunWith
 import org.specs2.runner._
@@ -17,6 +18,7 @@ class MainControllerSpec extends PlaySpecification with TestUtils with WithTestD
 
   def testInjector = new Module {
     bind[RuntimeEnvironment[User]] to mockRuntimeEnvironment
+    bind[PrismicService] to mockPrismicService
   }
 
   "Main module" should {

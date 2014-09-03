@@ -65,7 +65,6 @@ class WebsocketUpdatesServiceActor(implicit inj: Injector) extends UpdatesServic
 
     case signal: Signal =>
       webSocketOutActors.values.flatMap(identity) foreach {_ ! Signal.signalFormat.writes(signal)}
-      sender ! true
 
     case messageDisplay: MessageDisplay =>
       logger.debug(s"Broadcast messageDisplay $messageDisplay")

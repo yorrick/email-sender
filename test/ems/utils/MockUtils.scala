@@ -2,15 +2,19 @@ package ems.utils
 
 import akka.actor.{Actor, ActorSystem}
 import akka.testkit.TestActorRef
+import ems.backend.cms.PrismicService
 import ems.backend.email.MailgunService
 import ems.backend.sms.TwilioService
 import ems.backend.updates.UpdateService
 import ems.models.{Sending, MessageStatus, Message}
+import io.prismic.DocumentLinkResolver
+import io.prismic.Fragment.DocumentLink
 import org.mockito.Matchers._
 import scala.concurrent.{ExecutionContext, Future}
 import org.specs2.mock._
 import ems.backend.persistence.{MessageStore, UserStore, UserInfoStore}
 import scala.concurrent.ExecutionContext.Implicits.global
+import io.prismic
 
 
 /**
@@ -80,6 +84,19 @@ trait MockUtils extends Mockito { self: WithTestData =>
 
   def mockActorSystem = ActorSystem("TestActorSystem")
   def mockExecutionContext: ExecutionContext = global
+
+  def mockPrismicService = {
+    val m = mock[PrismicService]
+
+    val doc = new prismic.Document("id", "type", "href", Seq[String](), Seq[String](), Nil, Map())
+    m.getDocuments(anyObject()) returns Future.successful(Map("welcome" -> Seq(doc)))
+
+    m.getLinkResolver returns Future.successful(new DocumentLinkResolver {
+      override def apply(link: DocumentLink): String = ""
+    })
+
+    m
+  }
 
 //  def mockRedisService = {
 //    val m = mock[RedisService]
