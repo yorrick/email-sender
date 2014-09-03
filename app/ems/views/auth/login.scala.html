@@ -1,5 +1,5 @@
 @import securesocial.core.RuntimeEnvironment
-@import ems.views.html.main
+@import ems.views.html.mainAuth
 @import ems.controllers.utils.CDNAssets
 @import ems.controllers.utils.Context
 
@@ -7,7 +7,7 @@
 @(errorMsg: Option[String] = None)(implicit request: RequestHeader, lang: Lang, env: RuntimeEnvironment[_], ctx: Context)
 
 
-@main("Login"){
+@mainAuth("Welcome", user = None){
     <div class="page-header">
         <h1>@Messages("securesocial.login.title")</h1>
     </div>
@@ -44,7 +44,4 @@
         </p>
     </div>
 
-    @for(docs <- ctx.documents.get("footer"); doc <- docs.headOption) {
-        @Html(doc.html)
-    }
 }

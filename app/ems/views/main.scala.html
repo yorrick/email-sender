@@ -27,29 +27,18 @@
 </head>
 <body>
 
-    <nav class="navbar navbar-default" role="navigation">
-      <div class="container-fluid">
-
-        <!-- Brand and toggle get grouped for better mobile display -->
-        <div class="navbar-header">
-          <h1>
-              <a class="h1" href="@ems.controllers.routes.MainController.index()">
-                  <span class="glyphicon glyphicon-phone"></span>
-                  <span class="glyphicon glyphicon-resize-horizontal"></span>
-                  <span class="glyphicon glyphicon-envelope"></span>
-              </a>
-          </h1>
-        </div>
-
-        <!-- Collect the nav links, forms, and other content for toggling -->
-        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-            @navbarContent
-        </div>
-      </div>
-    </nav>
+    @navbarContent
 
     <div class="container">
         @content
+    </div>
+
+    <div class="footer">
+        <div class="container text-muted">
+            @for(docs <- ctx.documents.get("footer"); doc <- docs.headOption) {
+                @Html(doc.html)
+            }
+        </div>
     </div>
 </body>
 </html>

@@ -3,34 +3,66 @@
 
 @(user: Option[User])
 
+<nav class="navbar navbar-default" role="navigation">
+    <div class="container">
 
-@user match {
-    case Some(user) => {
-        <ul class="nav navbar-nav navbar-right">
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                    <img class="user-picture" src="@user.main.avatarUrl"/>
-                    <span>@user.main.fullName.get</span>
-                    <span class="caret"></span>
+        <div class="navbar-header">
+            <h1 class="no-margin">
+                <a class="h1" href="@ems.controllers.routes.MainController.index()">
+                    <span class="glyphicon glyphicon-phone"></span>
+                    <span class="glyphicon glyphicon-resize-horizontal"></span>
+                    <span class="glyphicon glyphicon-envelope"></span>
                 </a>
-                <ul class="dropdown-menu" role="menu">
-                    <li><a href="@ems.controllers.routes.MessageController.list()">See your messages</a></li>
-                    <li><a href="@ems.controllers.routes.AccountController.account">Account</a></li>
-                    <li class="divider"></li>
-                    <li><a href="@ems.controllers.auth.routes.LoginController.logout()">Logout</a></li>
-                </ul>
-            </li>
-        </ul>
-    }
-    case None => {
-        <ul class="nav navbar-nav navbar-right">
-            <li class="active">
-                <p class="navbar-text">Not signed in
-                    <a href="@ems.controllers.auth.routes.LoginController.login()" class="btn btn-primary btn-sm" role="button">
-                        Login
-                    </a>
-                </p>
-            </li>
-        </ul>
-    }
-}
+            </h1>
+        </div>
+
+        <div class="collapse navbar-collapse">
+
+            @user match {
+                case Some(user) => {
+
+                    <ul class="nav navbar-nav">
+
+                        <li class="active">
+                            <p class="navbar-text no-margin">
+                                <a href="@ems.controllers.routes.MessageController.list()" class="btn btn-primary btn-md" role="button">
+                                    Messages
+                                </a>
+                            </p>
+                        </li>
+                    </ul>
+
+                    <ul class="nav navbar-nav navbar-right">
+
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle no-padding" data-toggle="dropdown">
+                                <img class="user-picture img-circle" src="@user.main.avatarUrl"/>
+                                <span>@user.main.fullName.get</span>
+                                <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu" role="menu">
+                                <li><a href="@ems.controllers.routes.AccountController.account">Account</a></li>
+                                <li class="divider"></li>
+                                <li><a href="@ems.controllers.auth.routes.LoginController.logout()">Logout</a></li>
+                            </ul>
+                        </li>
+
+                    </ul>
+                }
+                case None => {
+                    <ul class="nav navbar-nav navbar-right">
+                        <li class="active">
+                            <p class="navbar-text">Not signed in
+                                <a href="@ems.controllers.auth.routes.LoginController.login()" class="btn btn-primary btn-sm" role="button">
+                                    Login
+                                </a>
+                            </p>
+                        </li>
+                    </ul>
+                }
+            }
+        </div>
+
+    </div>
+</nav>
+
