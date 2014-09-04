@@ -1,0 +1,28 @@
+@*******************************
+ Renders a list of prismic news
+*******************************@
+
+@import ems.controllers.utils.Context
+@import io.prismic.Fragment.WebLink
+@import io.prismic.{Document, DocumentLinkResolver}
+
+
+@(newsNumber: Int = 3)(implicit ctx: Context)
+
+@display(news: Document, linkResolver: DocumentLinkResolver) = {
+    <div class="jumbotron news">
+        @news.getHtml("news.content", linkResolver).map(Html.apply)
+        <em class="infos">@news.getDate("news.date", "MMMM dd, yyyy")</em>
+    </div>
+}
+
+
+@for(
+    pc <- ctx.prismicContext;
+    newsList <- pc.documents.get("news")
+) {
+    @for(news <- newsList.reverse.take(newsNumber)) {
+        @display(news, pc.linkResolver)
+    }
+}
+

@@ -49,7 +49,7 @@ class DefaultPrismicService(implicit inj: Injector) extends PrismicService with 
 
     val docListFuture = for {
       api <- apiFuture
-      documentList <- api.forms("everything").query(query).ref(api.master).submit() map (_.results)
+      documentList <- api.forms("everything").query(query).set("orderings", "[my.news.date]").ref(api.master).submit() map (_.results)
     } yield documentList
 
     docListFuture map { docList =>
@@ -60,7 +60,6 @@ class DefaultPrismicService(implicit inj: Injector) extends PrismicService with 
       }
 
       r.toMap
-
     }
 
   }

@@ -11,7 +11,7 @@ class MainController(implicit val injector: Injector) extends ControllerUtils wi
 
   override implicit val env = inject[RuntimeEnvironment[User]]
 
-  def index = userAwareContextAction("welcome") { implicit user => implicit ctx => implicit request =>
+  def index = userAwareContextAction("welcome", "news") { implicit user => implicit ctx => implicit request =>
     Ok(ems.views.html.index())
   }
 
