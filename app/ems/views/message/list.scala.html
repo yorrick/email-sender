@@ -28,7 +28,10 @@
                                     @userInfo.phoneNumber
                                 }
                                 case None => {
-                                    <a href="@ems.controllers.routes.AccountController.account">Please give us a phone number</a>
+                                    <a class="text-danger" href="@ems.controllers.routes.AccountController.account">
+                                        <span class="glyphicon glyphicon-warning-sign"></span>
+                                        Please give us a phone number
+                                    </a>
                                 }
                             }
                         </span>
