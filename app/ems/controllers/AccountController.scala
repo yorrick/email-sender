@@ -87,7 +87,7 @@ class AccountController(implicit val injector: Injector) extends ControllerUtils
    * Account view
    * @return
    */
-  def account = securedContextAction("footer") { implicit user => implicit ctx => implicit request =>
+  def account = securedContextAction() { implicit user => implicit ctx => implicit request =>
     userInfoStore.findUserInfoByUserId(user.id) map { userInfo =>
       form.fill(userInfo.phoneNumber map { number => PhoneNumber.fromCheckedValue(number)} getOrElse (PhoneNumber.empty))
     } map { form =>
@@ -95,7 +95,7 @@ class AccountController(implicit val injector: Injector) extends ControllerUtils
     }
   }
 
-  def accountUpdate = securedContextAction("footer") { implicit user => implicit ctx => implicit request =>
+  def accountUpdate = securedContextAction() { implicit user => implicit ctx => implicit request =>
     form.bindFromRequest.fold(
       formWithErrors => {
         Future.successful(BadRequest(displayResponse(formInfo(formWithErrors))))

@@ -1,0 +1,25 @@
+@import ems.controllers.utils.Context
+@import io.prismic.Fragment.WebLink
+@import ems.views.html.prismic.contact
+
+
+@()(implicit ctx: Context)
+
+
+<div class="footer">
+    <div class="container text-muted">
+        <div class="row">
+
+            <div class="col-md-6">
+                @ctx.firstDocument("footer").map { case (footer, linkResolver) =>
+                    @footer.getText("footer.footer-content")
+                }
+            </div>
+
+            <div class="col-md-6 text-right">
+                @contact()
+            </div>
+
+        </div>
+    </div>
+</div>

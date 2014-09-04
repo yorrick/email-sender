@@ -1,0 +1,35 @@
+@****************************************
+ Renders a list of prismic icon contacts
+****************************************@
+
+@import ems.controllers.utils.Context
+@import io.prismic.Fragment.WebLink
+@import io.prismic.Document
+
+
+@()(implicit ctx: Context)
+
+
+@display(contact: Document) = {
+
+    @contact.getLink("contact-icon.link") match {
+        case Some(webLink: WebLink) => {
+            <a href="@webLink.url">
+                <img src="@contact.getImage("contact-icon.image", "icon").map(_.url).getOrElse("")">
+            </a>
+        }
+        case _ => {}
+    }
+
+}
+
+
+@for(
+    pc <- ctx.prismicContext;
+    contacts <- pc.documents.get("contact")
+) {
+    @for(contact <- contacts) {
+        @display(contact)
+    }
+}
+

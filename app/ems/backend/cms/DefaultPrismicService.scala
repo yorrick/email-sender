@@ -28,9 +28,11 @@ class DefaultPrismicService(implicit inj: Injector) extends PrismicService with 
 
   /**
    * Builds api object
+   * This is very important to build a new api object for each request, otherwise ref will stay the same and you'll
+   * get stale versions of documents
    * @return
    */
-  val apiFuture: Future[Api] = Api.get(prismicApiUrl, cache = cache, logger = logger)
+  def apiFuture: Future[Api] = Api.get(prismicApiUrl, cache = cache, logger = logger)
 
   /**
    * TODO implement this
@@ -47,7 +49,7 @@ class DefaultPrismicService(implicit inj: Injector) extends PrismicService with 
 
     val docListFuture = for {
       api <- apiFuture
-      documentList <- api.forms("everything").query(query).ref(api.master).submit() map (_.results)
+      documentList <- api.forms("everything").query(query).set("orderings", "[my.news.date]").ref(api.master).submit() map (_.results)
     } yield documentList
 
     docListFuture map { docList =>
@@ -58,7 +60,6 @@ class DefaultPrismicService(implicit inj: Injector) extends PrismicService with 
       }
 
       r.toMap
-
     }
 
   }

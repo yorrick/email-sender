@@ -1,6 +1,7 @@
 @import ems.models.User
 @import ems.controllers.utils.Context
 @import io.prismic.Document
+@import ems.views.html.prismic.news
 
 
 @()(implicit user: Option[User], ctx: Context)
@@ -8,26 +9,39 @@
 
 @mainAuth("Welcome", user = user){
 
-    <div class="jumbotron">
-        @for(docs <- ctx.documents.get("welcome"); doc <- docs.headOption) {
-            @Html(doc.asHtml(ctx.linkResolver))
-        }
+    <div class="row">
+
+        <div class="col-md-7">
+
+            <div class="jumbotron">
+                @ctx.firstDocument("welcome").map { case (doc, linkResolver) =>
+                    @Html(doc.asHtml(linkResolver))
+                }
+            </div>
+
+            <div>
+                @user match {
+                    case Some(user) => {
+                        <p>
+                            <a href="@ems.controllers.routes.MessageController.list()" class="btn btn-primary btn-lg" role="button">
+                                See your messages
+                            </a>
+                        </p>
+                    }
+                    case None => {
+                        <p>
+                            <a href="@ems.controllers.auth.routes.LoginController.login()" class="btn btn-primary btn-lg" role="button">
+                                Login
+                            </a>
+                        </p>
+                    }
+                }
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            @news()
+        </div>
     </div>
 
-    @user match {
-        case Some(user) => {
-            <p>
-                <a href="@ems.controllers.routes.MessageController.list()" class="btn btn-primary btn-lg" role="button">
-                    See your messages
-                </a>
-            </p>
-        }
-        case None => {
-            <p>
-                <a href="@ems.controllers.auth.routes.LoginController.login()" class="btn btn-primary btn-lg" role="button">
-                    Login
-                </a>
-            </p>
-        }
-    }
 }

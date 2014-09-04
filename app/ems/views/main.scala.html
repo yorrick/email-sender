@@ -33,28 +33,7 @@
         @content
     </div>
 
-    <div class="footer">
-        <div class="container text-muted">
-            <div class="row">
-                <div class="col-md-6">
-                    @for(docs <- ctx.documents.get("footer"); doc <- docs.headOption) {
-                        @doc.getText("footer.footer-content")
-                    }
-                </div>
+    @footer()
 
-                <div class="col-md-6 text-right">
-                    @for(docs <- ctx.documents.get("footer"); doc <- docs.headOption) {
-                        @doc.getImage("footer.Image", "icon").map { img =>
-                            @Html(img.asHtml)
-                        }
-                        @doc.getHtml("footer.link", ctx.linkResolver).map { link =>
-                            @Html(link)
-                        }
-                    }
-                </div>
-
-            </div>
-        </div>
-    </div>
 </body>
 </html>
