@@ -9,8 +9,8 @@
 @mainAuth("Welcome", user = user){
 
     <div class="jumbotron">
-        @for(docs <- ctx.documents.get("welcome"); doc <- docs.headOption) {
-            @Html(doc.asHtml(ctx.linkResolver))
+        @for(pc <- ctx.prismicContext; docs <- pc.documents.get("welcome"); doc <- docs.headOption) {
+            @Html(doc.asHtml(pc.linkResolver))
         }
     </div>
 

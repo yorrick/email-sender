@@ -3,4 +3,7 @@ package ems.controllers.utils
 import io.prismic.{DocumentLinkResolver, Document}
 
 
-case class Context(documents: Map[String, Seq[Document]], linkResolver: DocumentLinkResolver)
+case class Context(prismicContext: Option[PrismicContext])
+
+
+case class PrismicContext(documents: Map[String, Seq[Document]], linkResolver: DocumentLinkResolver)

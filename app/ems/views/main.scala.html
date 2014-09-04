@@ -37,17 +37,17 @@
         <div class="container text-muted">
             <div class="row">
                 <div class="col-md-6">
-                    @for(docs <- ctx.documents.get("footer"); doc <- docs.headOption) {
+                    @for(pc <- ctx.prismicContext; docs <- pc.documents.get("footer"); doc <- docs.headOption) {
                         @doc.getText("footer.footer-content")
                     }
                 </div>
 
                 <div class="col-md-6 text-right">
-                    @for(docs <- ctx.documents.get("footer"); doc <- docs.headOption) {
+                    @for(pc <- ctx.prismicContext; docs <- pc.documents.get("footer"); doc <- docs.headOption) {
                         @doc.getImage("footer.Image", "icon").map { img =>
                             @Html(img.asHtml)
                         }
-                        @doc.getHtml("footer.link", ctx.linkResolver).map { link =>
+                        @doc.getHtml("footer.link", pc.linkResolver).map { link =>
                             @Html(link)
                         }
                     }

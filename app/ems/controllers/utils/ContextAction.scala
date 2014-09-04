@@ -19,25 +19,27 @@ case class ContextAction[A](prismicTags: String*)(action: Action[A])(implicit in
   val prismicService = inject[PrismicService]
   implicit def ec = executionContext
 
-//  def buildProcessedDocument(documents: Map[String, Seq[Document]], linkResolver: DocumentLinkResolver) =
-//    documents map { case (tag, docs) =>
-//      val pDocs = docs map { doc => ProcessedDocument(doc, doc.asHtml(linkResolver))}
-//      (tag, pDocs)
-//    }
-
   /**
-   * action is executed after prismic answers
+   * Action is executed after prismic answers.
+   * If prismic fails on way or another, we do NOT want to be dpwn as well!
+   * This is why we recover any error that shows up at this point.
+   *
    * @param request
    * @return
    */
-  def apply(request: Request[A]): Future[Result] =
-    for {
+  def apply(request: Request[A]): Future[Result] = {
+    val prismicResponse = for {
       docs <- prismicService.getDocuments(prismicTags: _*)
       linkResolver <- prismicService.getLinkResolver
-      result <- action(new ContextRequest(Context(docs, linkResolver), request))
-    } yield {
-      result
+    } yield Some(PrismicContext(docs, linkResolver))
+
+    prismicResponse recover {
+      case t: Throwable => None
+    } flatMap { case pc: Option[PrismicContext] =>
+      action(new ContextRequest(Context(pc), request))
     }
+
+  }
 
   lazy val parser = action.parser
 }
