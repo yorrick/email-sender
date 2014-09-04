@@ -2,6 +2,7 @@ package ems.controllers.utils
 
 import ems.backend.cms.PrismicService
 import io.prismic.{DocumentLinkResolver, Document}
+import play.api.Logger
 import play.api.mvc._
 import scaldi.{Injectable, Injector}
 import scala.concurrent.Future
@@ -43,7 +44,9 @@ case class ContextAction[A](prismicTags: String*)(action: Action[A])(implicit in
     } yield Some(PrismicContext(docs, linkResolver))
 
     prismicResponse recover {
-      case t: Throwable => None
+      case t: Throwable =>
+        Logger.warn(s"Error calling prismic API: $t")
+        None
     } flatMap { case pc: Option[PrismicContext] =>
       action(new ContextRequest(Context(pc), request))
     }
