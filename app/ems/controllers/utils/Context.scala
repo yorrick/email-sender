@@ -3,7 +3,12 @@ package ems.controllers.utils
 import io.prismic.{DocumentLinkResolver, Document}
 
 
-case class Context(prismicContext: Option[PrismicContext])
+case class Context(prismicContext: Option[PrismicContext]) {
 
-
-case class PrismicContext(documents: Map[String, Seq[Document]], linkResolver: DocumentLinkResolver)
+  /**
+   * Returns the first prismic document with this tag, if possible
+   * @param tag
+   */
+  def firstDocument(tag: String): Option[(Document, DocumentLinkResolver)] =
+    prismicContext flatMap { pc => pc.firstOf(tag) map { (_, pc.linkResolver)}}
+}
