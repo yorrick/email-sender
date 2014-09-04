@@ -1,0 +1,23 @@
+@****************************************
+      Renders a prismic icon contact
+****************************************@
+
+@import ems.controllers.utils.Context
+@import io.prismic.Fragment.WebLink
+
+
+@()(implicit ctx: Context)
+
+
+@ctx.firstDocument("footer").map { case (footer, linkResolver) =>
+
+    @footer.getLink("footer.link") match {
+        case Some(webLink: WebLink) => {
+            <a href="@webLink.url">
+                <img src="@footer.getImage("footer.Image", "icon").map(_.url).getOrElse("")">
+            </a>
+        }
+        case _ => {}
+    }
+
+}

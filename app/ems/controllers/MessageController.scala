@@ -32,7 +32,7 @@ class MessageController(implicit val injector: Injector) extends ControllerUtils
    * GET for browser
    * @return
    */
-  def list = securedContextAction("footer") { implicit user => implicit ctx => implicit request =>
+  def list = securedContextAction() { implicit user => implicit ctx => implicit request =>
     implicit val timeout = Timeout(1 second)
 
     val result = for {

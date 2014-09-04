@@ -25,6 +25,7 @@ class ContextActionSpec extends PlaySpecification with TestUtils with WithTestDa
     "Not change the result" in {
       implicit val i = new Module {
         bind[PrismicService] to mockPrismicService
+        binding identifiedBy "ems.controllers.utils.ContextAction.defaultTags" to ""
       }
 
       val response = ContextAction("welcome")(someAction).apply(FakeRequest())
@@ -38,6 +39,7 @@ class ContextActionSpec extends PlaySpecification with TestUtils with WithTestDa
         bind[PrismicService] to new DefaultPrismicService
         // nobody listens to this port, so the call will fail
         binding identifiedBy "ems.controllers.MainController.prismic.api" to "http://localhost:19001/api"
+        binding identifiedBy "ems.controllers.utils.ContextAction.defaultTags" to ""
         bind[ExecutionContext] to mockExecutionContext
       }
       val response = ContextAction("welcome")(someAction).apply(FakeRequest())

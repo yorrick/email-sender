@@ -21,7 +21,7 @@ class LoginController(implicit val injector: Injector) extends BaseLoginPage[Use
   override implicit val env = inject [RuntimeEnvironment[User]]
 
 //  override def login = UserAwareAction { implicit request =>
-  override def login = userAwareContextAction("footer") { implicit user => implicit ctx => implicit request =>
+  override def login = userAwareContextAction() { implicit user => implicit ctx => implicit request =>
     val to = ProviderControllerHelper.landingUrl
     if ( user.isDefined ) {
       // if the user is already logged in just redirect to the app

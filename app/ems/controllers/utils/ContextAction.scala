@@ -20,6 +20,12 @@ case class ContextAction[A](prismicTags: String*)(action: Action[A])(implicit in
   implicit def ec = executionContext
 
   /**
+   * Seq of tags that are loaded by default in context
+   * We inject tags this way because scaldi play integration does not support Seq or List injection
+   */
+  val defaultTags: Seq[String] = (inject[String] (identified by "ems.controllers.utils.ContextAction.defaultTags")).split(",")
+
+  /**
    * Action is executed after prismic answers.
    * If prismic fails on way or another, we do NOT want to be dpwn as well!
    * This is why we recover any error that shows up at this point.
@@ -28,8 +34,11 @@ case class ContextAction[A](prismicTags: String*)(action: Action[A])(implicit in
    * @return
    */
   def apply(request: Request[A]): Future[Result] = {
+    // remove any duplicate
+    val allTags: Set[String] = defaultTags.toSet ++ prismicTags
+
     val prismicResponse = for {
-      docs <- prismicService.getDocuments(prismicTags: _*)
+      docs <- prismicService.getDocuments(allTags.toSeq: _*)
       linkResolver <- prismicService.getLinkResolver
     } yield Some(PrismicContext(docs, linkResolver))
 

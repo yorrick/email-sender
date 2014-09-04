@@ -33,26 +33,7 @@
         @content
     </div>
 
-    <div class="footer">
-        <div class="container text-muted">
-            <div class="row">
-                @ctx.firstDocument("footer").map { case (doc, linkResolver) =>
-                    <div class="col-md-6">
-                        @doc.getText("footer.footer-content")
-                    </div>
+    @footer()
 
-                    <div class="col-md-6 text-right">
-                        @doc.getImage("footer.Image", "icon").map { img =>
-                            @Html(img.asHtml)
-                        }
-                        @doc.getHtml("footer.link", linkResolver).map { link =>
-                            @Html(link)
-                        }
-                    </div>
-                }
-
-            </div>
-        </div>
-    </div>
 </body>
 </html>
