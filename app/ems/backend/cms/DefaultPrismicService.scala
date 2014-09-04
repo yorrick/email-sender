@@ -28,9 +28,11 @@ class DefaultPrismicService(implicit inj: Injector) extends PrismicService with 
 
   /**
    * Builds api object
+   * This is very important to build a new api object for each request, otherwise ref will stay the same and you'll
+   * get stale versions of documents
    * @return
    */
-  val apiFuture: Future[Api] = Api.get(prismicApiUrl, cache = cache, logger = logger)
+  def apiFuture: Future[Api] = Api.get(prismicApiUrl, cache = cache, logger = logger)
 
   /**
    * TODO implement this
